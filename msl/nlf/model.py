@@ -509,12 +509,12 @@ class Model:
             Standard uncertainties in the y data.
         debug
             If enabled, a summary of the input data that would be passed to the
-            fitting model is returned (the DLL is not called). Enabling this
-            parameter is useful for debugging issues if the DLL raises an error
-            or if the fit result is unexpected (e.g., the data points with
-            smaller uncertainties are not having a stronger influence on the
-            result, perhaps because an unweighted fit has been selected as one
-            of the fit *options*).
+            fit function in the DLL is returned (the DLL function is not called).
+            Enabling this parameter is useful for debugging issues if the DLL
+            raises an error or if the fit result is unexpected (e.g., the data
+            points with smaller uncertainties are not having a stronger influence
+            on the result, perhaps because an unweighted fit has been selected
+            as one of the fit *options*).
         **options
             All additional keyword arguments are passed to :meth:`.options`.
 

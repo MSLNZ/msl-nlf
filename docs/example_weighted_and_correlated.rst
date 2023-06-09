@@ -40,9 +40,9 @@ Prepare the model
     model.set_correlation('y', 'y', value=0.5)
     model.set_correlation('x1', 'x1', value=0.8)
 
-To see a summary of the data that would be sent to the model, call the
-:meth:`~msl.nlf.model.Model.fit()` method with *debug=True* and print the
-returned object
+To see a summary of the data that would be sent to the fit function in the DLL,
+call the :meth:`~msl.nlf.model.Model.fit()` method with *debug=True* and print
+the returned object (an instance of :class:`~msl.nlf.datatypes.Input` is returned)
 
 .. code-block:: python
 
@@ -69,7 +69,8 @@ The summary that is printed is
 
 To see a summary of the fit result, call the
 :meth:`~msl.nlf.model.Model.fit()` method with *debug=False* (which is also
-the default value) and print the returned object
+the default value) and print the returned object (an instance of
+:class:`~msl.nlf.datatypes.Result` is returned)
 
 .. code-block:: python
 
