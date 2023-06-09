@@ -358,6 +358,7 @@ class InputParameters(Parameters[InputParameter]):
         Examples
         --------
 
+            >>> from msl.nlf import InputParameter, InputParameters
             >>> params = InputParameters()
             >>> a1 = params.add('a1', 1)
             >>> a2 = params.add('a2', 0.34, True)
@@ -404,6 +405,7 @@ class InputParameters(Parameters[InputParameter]):
         Examples
         --------
 
+            >>> from msl.nlf import InputParameter, InputParameters
             >>> inputs = (InputParameter('a1', 1),
             ...           ('a2', 2, True),
             ...           {'name': 'a3', 'value': 3})
