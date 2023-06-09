@@ -268,7 +268,7 @@ class ConstantModel(Model):
 
         .. math::
 
-            f(x; a) = a1
+            f(x; a) = a_1
 
         Parameters
         ----------
