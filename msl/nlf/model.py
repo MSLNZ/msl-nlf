@@ -114,7 +114,7 @@ class Model:
             The path to a non-linear fit DLL file. A default DLL is chosen
             based on the bitness of the Python interpreter. If you want to
             load a 32-bit DLL in 64-bit Python then set *dll* to be **nlf32**.
-            See :ref:`nlf_32vs64` for reasons why you may want to use a
+            See :ref:`nlf-32vs64` for reasons why you may want to use a
             different DLL bitness. You may also specify a path to a DLL that
             is located in a particular directory of your computer.
         **options
