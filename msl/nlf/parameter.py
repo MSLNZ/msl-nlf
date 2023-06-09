@@ -348,7 +348,7 @@ class InputParameters(Parameters[InputParameter]):
             * name, value, constant, label
 
         You could alternatively add an :class:`.InputParameter` in the same way
-        that you add items to a :class:`dict`, by using square brackets.
+        that you add items to a :class:`dict`
 
         Returns
         -------
