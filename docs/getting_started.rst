@@ -152,14 +152,33 @@ You can get a specific parameter by *name* or by *label* (provide that the
     >>> params['label-14']
     InputParameter(name='a14', value=14.0, constant=False, label='label-14')
 
-and you can update a parameter by its *name* or by *label* (the update is
-performed *in-place*, i.e., a copy of the parameter is not created)
+and you can update a parameter by specifying its *name* or *label* to the
+:meth:`~msl.nlf.parameter.InputParameters.update` method
 
 .. code-block:: pycon
 
     >>> params.update('a1', value=5.3, label='intercept')
+    >>> params['a1']
     InputParameter(name='a1', value=5.3, constant=False, label='intercept')
+
     >>> params.update('label-7', value=1e3, constant=True, label='amplitude')
+    >>> params['a7']
     InputParameter(name='a7', value=1000.0, constant=True, label='amplitude')
+
+or you can update a parameter by directly modifying an attribute
+
+.. code-block:: pycon
+
+    >>> a1.label = 'something-new'
+    >>> a1.constant = False
+    >>> a1.value = -3.2
+    >>> params['a1']
+    InputParameter(name='a1', value=-3.2, constant=False, label='something-new')
+
+    >>> params['label-3'].label = 'fwhm'
+    >>> params['fwhm'].constant = True
+    >>> params['fwhm'].value = 0.03
+    >>> params['a3']
+    InputParameter(name='a3', value=0.03, constant=True, label='fwhm')
 
 See the :ref:`nlf-examples` for further help.

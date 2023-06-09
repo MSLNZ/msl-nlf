@@ -457,10 +457,8 @@ class InputParameters(Parameters[InputParameter]):
         p = self[name_or_label]
         return self._map.pop(p.name)
 
-    def update(self, name_or_label: str, **attribs) -> InputParameter:
+    def update(self, name_or_label: str, **attribs) -> None:
         """Update the attributes of an :class:`.InputParameter`.
-
-        The update is done *in-place* (a new parameter is not created).
 
         Parameters
         ----------
@@ -471,23 +469,29 @@ class InputParameters(Parameters[InputParameter]):
         **attribs
             The new attributes.
 
-        Returns
-        -------
-        InputParameter
-            The input parameter that was updated.
-
         Examples
         --------
+        First, add a parameter
 
+            >>> from msl.nlf import InputParameters
             >>> params = InputParameters()
-            >>> p1 = params.add('a1', 1)
-            >>> p1
+            >>> a1 = params.add('a1', 1)
+            >>> a1
             InputParameter(name='a1', value=1.0, constant=False, label=None)
-            >>> p1_updated = params.update('a1', value=0, constant=True, label='intercept')
-            >>> p1_updated
+
+        then update it by calling the :meth:`.update` method
+
+            >>> params.update('a1', value=0, constant=True, label='intercept')
+            >>> a1
             InputParameter(name='a1', value=0.0, constant=True, label='intercept')
-            >>> p1 is p1_updated
-            True
+
+        Alternatively, you can update a parameter by directly modifying an attribute
+
+            >>> a1.label = 'something-new'
+            >>> a1.constant = False
+            >>> a1.value = -3.2
+            >>> params['a1']
+            InputParameter(name='a1', value=-3.2, constant=False, label='something-new')
 
         """
         parameter = self[name_or_label]
@@ -500,7 +504,6 @@ class InputParameters(Parameters[InputParameter]):
                 parameter.label = v
             elif k == 'name' and name_or_label != v:
                 parameter.name = v
-        return parameter
 
 
 class ResultParameters(Parameters[ResultParameter]):
