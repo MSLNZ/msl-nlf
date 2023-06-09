@@ -346,3 +346,11 @@ def test_to_ureal_6():
     assert get_correlation(a6, a5) == 0.56
     assert get_correlation(a6, a6) == 1.00
     assert get_correlation(a6, noise) == 0.00
+
+    assert get_correlation(noise, a1) == 0.00
+    assert get_correlation(noise, a2) == 0.00
+    assert get_correlation(noise, a3) == 0.00
+    assert get_correlation(noise, a4) == 0.00
+    assert get_correlation(noise, a5) == 0.00
+    assert get_correlation(noise, a6) == 0.00
+    assert get_correlation(noise, noise) == 1.00
