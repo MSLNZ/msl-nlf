@@ -33,8 +33,8 @@ Dependencies
 Optional Dependencies
 +++++++++++++++++++++
 The GUM Tree Calculator, GTC_, is not automatically installed when MSL-NLF
-is installed, but it is required to create an
-:ref:`uncertain real number <uncertain_real_number>`
+is installed, but it is required to create a correlated ensemble of
+:ref:`uncertain real numbers <uncertain_real_number>`
 from a :class:`~msl.nlf.datatypes.Result`.
 
 To automatically include GTC_ when installing MSL-NLF run
