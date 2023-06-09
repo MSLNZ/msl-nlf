@@ -3,6 +3,7 @@
 ========
 Examples
 ========
+More examples showing how to use the non-linear fitting software.
 
 .. toctree::
    :maxdepth: 1
