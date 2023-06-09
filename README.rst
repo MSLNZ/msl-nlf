@@ -39,9 +39,8 @@ As a simple example, one might need to model data that has a linear relationship
 
 .. code-block:: pycon
 
-   >>> import numpy as np
-   >>> x = np.array([1.6, 3.2, 5.5, 7.8, 9.4])
-   >>> y = np.array([7.8, 19.1, 17.6, 33.9, 45.4])
+   >>> x = [1.6, 3.2, 5.5, 7.8, 9.4]
+   >>> y = [7.8, 19.1, 17.6, 33.9, 45.4]
 
 The first task to perform is to create a Model_ and specify the fit equation as
 a string (see the documentation of Model_ for an overview of what arithmetic
@@ -56,11 +55,11 @@ Provide an initial guess for the parameters (*a1* and *a2*) and apply the fit
 
 .. code-block:: pycon
 
-   >>> result = model.fit(x, y, params=[0, 4])
+   >>> result = model.fit(x, y, params=[1, 1])
    >>> result.params
    ResultParameters(
-     ResultParameter(name='a1', value=0.5224390244..., uncert=5.1324181499..., label=None),
-     ResultParameter(name='a2', value=4.4068292682..., uncert=0.8277017245..., label=None)
+     ResultParameter(name='a1', value=0.522439024..., uncert=5.132418149..., label=None),
+     ResultParameter(name='a2', value=4.406829268..., uncert=0.827701724..., label=None)
    )
 
 The *result* object that is returned contains information about the fit result,
