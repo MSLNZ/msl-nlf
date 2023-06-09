@@ -94,7 +94,7 @@ parameter is held constant during the fitting process
 
 
 .. |docs| image:: https://readthedocs.org/projects/msl-nlf/badge/?version=latest
-   :target: https://msl-nlf.readthedocs.io/en/stable/
+   :target: https://msl-nlf.readthedocs.io/en/latest/
    :alt: Documentation Status
 
 .. |pypi| image:: https://badge.fury.io/py/msl-nlf.svg
