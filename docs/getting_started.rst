@@ -34,13 +34,18 @@ The :class:`~msl.nlf.datatypes.Result` object that is returned from the fit cont
 information about the fit result, such as the chi-square value and the covariance matrix,
 but we simply showed a summary of the fit parameters above.
 
+.. _nlf-input-parameters:
+
+Input Parameters
+----------------
 If you want to have control over which parameters should be held constant during the
 fitting process and which are allowed to vary or if you want to assign a label to a
 parameter, you need to create an :class:`~msl.nlf.parameter.InputParameters` instance.
 
-In this case, we will use one of the built-in models, :class:`~msl.nlf.models.LinearModel`,
-to perform the linear fit and create :class:`~msl.nlf.parameter.InputParameters`.
-We use the :class:`~msl.nlf.parameter.InputParameters` instance to provide an initial
+In this case, we will use one of the built-in :ref:`models <nlf-models>`,
+:class:`~msl.nlf.models.LinearModel`, to perform the linear fit and create
+:class:`~msl.nlf.parameter.InputParameters`. We use the
+:class:`~msl.nlf.parameter.InputParameters` instance to provide an initial
 value for each parameter, define labels, and set whether the initial value of a
 parameter is held constant during the fitting process
 
@@ -52,7 +57,7 @@ parameter is held constant during the fitting process
     'a1+a2*x'
     >>> params = model.create_parameters()
     >>> a1 = params.add(name='a1', value=0, constant=True, label='intercept')
-    >>> a2 = params.add('a2', 4, False, 'slope')  # alternative way to add a parameter
+    >>> a2 = params.add('a2', 1, False, 'slope')  # alternative way to add a parameter
     >>> result = model.fit(x, y, params=params)
     >>> result.params
     ResultParameters(
@@ -60,20 +65,20 @@ parameter is held constant during the fitting process
       ResultParameter(name='a2', value=4.4815604681..., uncert=0.3315980376..., label='slope')
     )
 
-There are multiple ways to add a parameter to an :class:`~msl.nlf.parameter.InputParameters`
-instance. Above, we showed that calling :meth:`~msl.nlf.model.Model.create_parameters`
-is one way to create an :class:`~msl.nlf.parameter.InputParameters` instance. It can also be
-instantiated directly
+We showed above that calling :meth:`~msl.nlf.model.Model.create_parameters` is
+one way to create an :class:`~msl.nlf.parameter.InputParameters` instance. It
+can also be instantiated directly
 
 .. code-block:: pycon
 
     >>> from msl.nlf import InputParameters
     >>> params = InputParameters()
 
-To add a parameter to the collection of :class:`~msl.nlf.parameter.InputParameters`,
-you could explicitly add an instance of an :class:`~msl.nlf.parameter.InputParameter`
-object (using the :meth:`~msl.nlf.parameter.InputParameters.add` method or as one would
-add items to a :class:`dict` -- using square brackets),
+There are multiple ways to add a parameter to an
+:class:`~msl.nlf.parameter.InputParameters` object. To add a parameter, you
+could explicitly add an instance of an :class:`~msl.nlf.parameter.InputParameter`
+(using the :meth:`~msl.nlf.parameter.InputParameters.add` method or as one would
+add items to a :class:`dict`)
 
 .. code-block:: pycon
 
@@ -83,7 +88,7 @@ add items to a :class:`dict` -- using square brackets),
     >>> a3 = params.add(InputParameter('a3', 3, constant=True, label='label-3'))
     >>> params['a4'] = InputParameter('a4', 4)
 
-you could also specify positional arguments (or a :class:`tuple`)
+You could also specify positional arguments (or set it equal to a :class:`tuple`)
 
 .. code-block:: pycon
 
@@ -94,7 +99,7 @@ you could also specify positional arguments (or a :class:`tuple`)
     >>> params['a9'] = 9, True
     >>> params['a10'] = 10, True, 'label-10'
 
-or, you could specify keyword arguments (or a :class:`dict`),
+or you could specify keyword arguments (or set it equal to a :class:`dict`)
 
 .. code-block:: pycon
 
@@ -107,9 +112,9 @@ or, you could specify keyword arguments (or a :class:`dict`),
     >>> params['a17'] = {'value': 17, 'label': 'label-17'}
     >>> params['a18'] = {'value': 18, 'constant': False, 'label': 'label-18'}
 
-There is a :meth:`~msl.nlf.parameter.InputParameters.add_many` method as well.
+There is an :meth:`~msl.nlf.parameter.InputParameters.add_many` method as well.
 
-Iterate through the collection of input parameters to see what it contains
+Here, we iterate through the collection of input parameters to see what it contains
 
 .. code-block:: pycon
 
@@ -142,7 +147,7 @@ or just get all of the values
     array([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,  11.,  12.,  13.,
            14., 15., 16., 17., 18.])
 
-You can get a specific parameter by *name* or by *label* (provide that the
+You can get a specific parameter by its *name* or *label* (provide that the
 *label* is not :data:`None`)
 
 .. code-block:: pycon
@@ -181,4 +186,155 @@ or you can update a parameter by directly modifying an attribute
     >>> params['a3']
     InputParameter(name='a3', value=0.03, constant=True, label='fwhm')
 
-See the :ref:`nlf-examples` for further help.
+.. _nlf-debugging:
+
+Debugging (Input)
+-----------------
+If you call the :meth:`~msl.nlf.model.Model.fit` method with *debug=True* the
+fit function in the DLL is not called and an :class:`~msl.nlf.datatypes.Input`
+object is returned that contains the information that would have been sent
+to the fit function in the DLL
+
+.. code-block:: pycon
+
+    >>> model = LinearModel()
+    >>> info = model.fit(x, y, params=[1, 1], debug=True)
+    >>> info.weighted
+    False
+    >>> info.fitting_method
+    'Levenberg-Marquardt'
+    >>> info.x
+    array([[1.6, 3.2, 5.5, 7.8, 9.4]])
+
+You can display a summary of the input information
+
+    >>> info
+    Input(
+      correlated=False
+      correlations=
+        Correlations(
+          data=[]
+          is_correlated=[[False False]
+                         [False False]]
+        )
+      delta=0.1
+      equation='a1+a2*x'
+      fitting_method='Levenberg-Marquardt'
+      max_iterations=999
+      params=
+        InputParameters(
+          InputParameter(name='a1', value=1.0, constant=False, label=None),
+          InputParameter(name='a2', value=1.0, constant=False, label=None)
+        )
+      second_derivs_B=True
+      second_derivs_H=True
+      tolerance=1e-20
+      ux=[[0. 0. 0. 0. 0.]]
+      uy=[0. 0. 0. 0. 0.]
+      uy_weights_only=False
+      weighted=False
+      x=[[1.6 3.2 5.5 7.8 9.4]]
+      y=[ 7.8 19.1 17.6 33.9 45.4]
+    )
+
+.. _nlf-fit-result:
+
+Fit Result
+----------
+When a fit is performed, the returned object is a
+:class:`~msl.nlf.datatypes.Result` instance
+
+.. code-block:: pycon
+
+    >>> model = LinearModel()
+    >>> result = model.fit(x, y, params=[1, 1])
+    >>> result.chisq
+    84.266087804...
+    >>> result.correlation
+    array([[ 1.        , -0.88698141],
+           [-0.88698141,  1.        ]])
+    >>> result.params.values()
+    array([0.52243902, 4.40682927])
+    >>> for param in result.params:
+    ...     print(param.name, param.value, param.uncert)
+    a1 0.5224390243941... 5.132418149940...
+    a2 4.4068292682920... 0.827701724508...
+
+You can display a summary of the fit result
+
+.. code-block:: pycon
+
+    >>> result
+    Result(
+      calls=2
+      chisq=84.266087804878
+      correlation=[[ 1.         -0.88698141]
+                   [-0.88698141  1.        ]]
+      covariance=[[ 0.93780488 -0.13414634]
+                  [-0.13414634  0.02439024]]
+      dof=3
+      eof=5.299876973568286
+      iterations=22
+      params=
+        ResultParameters(
+          ResultParameter(name='a1', value=0.5224390243941934, uncert=5.132418149940028, label=None),
+          ResultParameter(name='a2', value=4.4068292682920465, uncert=0.8277017245089597, label=None)
+        )
+    )
+
+Using the *result* object and the :meth:`~msl.nlf.model.Model.evaluate` method,
+the residuals can be calculated
+
+.. code-block:: pycon
+
+    >>> y - model.evaluate(x, result)
+    array([ 0.22663415,  4.47570732, -7.16      , -0.99570732,  3.45336585])
+
+.. _nlf-context-manager:
+
+A Model as a Context Manager
+----------------------------
+The fit function in the DLL reads the information it needs for the fitting process
+from RAM but also from files on the hard disk. Configuration (and perhaps correlation)
+files are written to a temporary directory for the DLL function to read from. This
+temporary directory should automatically get deleted when you are done using the
+:class:`~msl.nlf.model.Model` (when the objects reference count is 0 and gets
+garbage collected).
+
+Also, if loading a 32-bit DLL in 64-bit Python (see :ref:`nlf-32vs64`) a client-server
+application starts in the background when a :class:`~msl.nlf.model.Model` is
+created. Similarly, the client-server application should automatically shut down
+when you are done using the :class:`~msl.nlf.model.Model`.
+
+A :class:`~msl.nlf.model.Model` can be used a context manager (see :ref:`with`) which
+will delete the temporary directory (and shut down the client-server application)
+once the *with* block is finished, for example,
+
+.. code-block:: python
+
+    from msl.nlf import Model
+
+    x = [1, 2, 3, 4, 5]
+    y = [1.1, 4.02, 9.2, 16.2, 25.5]
+
+    with Model('a1*x^2', dll='nlf32') as model:  # temporary files created, client-server protocol starts
+        result = model.fit(x, y, params=[1])
+
+    # no longer in the 'with' block
+    # temporary files have been deleted
+    # the client-server protocol has shut down
+    # you must create a new Model if you want to use it again
+
+It takes approximately 1 second to start the client-server application if you
+choose to load a 32-bit DLL in 64-bit Python. Below shows pseudocode that
+demonstrates the best way to apply fits::
+
+    # Don't do this. Don't create a new model to process each data file.
+    for data in data_files:
+        with LinearModel(dll='nlf32') as model:
+            result = model.fit(data.x, data.y)
+
+    # Do this instead. Create a model once and then fit each data file.
+    with LinearModel(dll='nlf32') as model:
+        for data in data_files:
+            result = model.fit(data.x, data.y)
