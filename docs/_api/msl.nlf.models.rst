@@ -1,3 +1,5 @@
+.. _nlf-models:
+
 msl.nlf.models module
 =====================
 
