@@ -16,7 +16,7 @@ try:
 except ImportError:
     multiple_ureal = None
     set_correlation = None
-    UncertainReal = 'UncertainReal'
+    UncertainReal = object
 
 from .parameter import InputParameters
 from .parameter import ResultParameters
@@ -251,6 +251,39 @@ class Result:
         :class:`list` of :class:`~lib.UncertainReal`
             A correlated ensemble of
             :ref:`uncertain real numbers <uncertain_real_number>`.
+
+        Examples
+        --------
+        Suppose the sample data has a linear relationship
+
+            >>> x = [3, 7, 11, 15, 18, 27, 29, 30, 30, 31, 31, 32, 33, 33, 34, 36,
+            ...      36, 36, 37, 38, 39, 39, 39, 40, 41, 42, 42, 43, 44, 45, 46, 47, 50]
+            >>> y = [5, 11, 21, 16, 16, 28, 27, 25, 35, 30, 40, 32, 34, 32, 34, 37,
+            ...      38, 34, 36, 38, 37, 36, 45, 39, 41, 40, 44, 37, 44, 46, 46, 49, 51]
+
+        The intercept and slope are determined from a fit
+
+            >>> from msl.nlf import LinearModel
+            >>> with LinearModel() as model:
+            ...    result = model.fit(x, y)
+
+        We can estimate the response to a particular stimulus, say :math:`x=21.5`
+
+            >>> intercept, slope = result.to_ureal()
+            >>> intercept + 21.5*slope
+            ureal(23.2579622250441...,0.821607058888506...,31.0)
+
+        or a single future indication in response to a given stimulus may also be of
+        interest (again, at :math:`x=21.5`)
+
+            >>> intercept, slope, future = result.to_ureal(with_future=True)
+            >>> intercept + 21.5*slope + future
+            ureal(23.2579622250441...,3.332409257957110...,31.0)
+
+        The value here is the same as above (because the stimulus is the same),
+        but the uncertainty is much larger, reflecting the variability of single
+        indications as well as the underlying uncertainty in the intercept and
+        slope.
         """
         if multiple_ureal is None:
             raise OSError('GTC is not installed, run: pip install GTC')
