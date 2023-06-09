@@ -169,7 +169,7 @@ setup(
     author=fetch_init('__author__'),
     author_email='info@measurement.govt.nz',
     url='https://github.com/MSLNZ/msl-nlf',
-    description='A wrapper around the non-linear fitting software',
+    description='A wrapper around the Delphi non-linear fitting software',
     long_description=read('README.rst'),
     platforms='any',
     license='MIT',
