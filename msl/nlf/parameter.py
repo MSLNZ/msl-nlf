@@ -339,8 +339,8 @@ class InputParameters(Parameters[InputParameter]):
         """Add an :class:`.InputParameter`.
 
         An :class:`.InputParameter` can be added using either positional or
-        keyword arguments, but you cannot mix not both. You can specify
-        positional arguments by using one of four options:
+        keyword arguments, but you cannot use both simultaneously. You can
+        specify positional arguments by using one of four options:
 
             * InputParameter (a single argument must be an :class:`.InputParameter`)
             * name, value
