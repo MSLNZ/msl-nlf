@@ -64,7 +64,7 @@ Provide an initial guess for the parameters (*a1* and *a2*) and apply the fit
      ResultParameter(name='a2', value=4.406829268..., uncert=0.827701724..., label=None)
    )
 
-The *result* object that is returned contains information about the fit result,
+The Result_ object that is returned contains information about the fit result,
 such as the chi-square value and the covariance matrix, but we simply showed
 a summary of the fit parameters above.
 
@@ -72,7 +72,7 @@ If you want to have control over which parameters should be held constant during
 fitting process and which are allowed to vary or if you want to assign a label to a
 parameter, you need to create an InputParameters_ instance.
 
-In this case, we will use one of the built-in models to perform a linear fit and
+In this case, we will use one of the built-in models_ to perform a linear fit and
 create InputParameters_. We use the InputParameters_ instance to provide an initial
 value for each parameter, define labels, and set whether the initial value of a
 parameter is held constant during the fitting process
@@ -108,3 +108,5 @@ parameter is held constant during the fitting process
 .. _here: https://msl-nlf.readthedocs.io/en/latest/index.html
 .. _Model: https://msl-nlf.readthedocs.io/en/latest/_api/msl.nlf.model.html#msl.nlf.model.Model
 .. _InputParameters: https://msl-nlf.readthedocs.io/en/latest/_api/msl.nlf.parameter.html#msl.nlf.parameter.InputParameters
+.. _Result: https://msl-nlf.readthedocs.io/en/latest/_api/msl.nlf.datatypes.html#msl.nlf.datatypes.Result
+.. _models: https://msl-nlf.readthedocs.io/en/latest/_api/msl.nlf.models.html
