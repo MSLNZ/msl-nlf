@@ -325,16 +325,5 @@ once the *with* block is finished, for example,
     # the client-server protocol has shut down
     # you must create a new Model if you want to use it again
 
-It takes approximately 1 second to start the client-server application if you
-choose to load a 32-bit DLL in 64-bit Python. Below shows pseudocode that
-demonstrates the best way to apply fits::
-
-    # Don't do this. Don't create a new model to process each data file.
-    for data in data_files:
-        with LinearModel(dll='nlf32') as model:
-            result = model.fit(data.x, data.y)
-
-    # Do this instead. Create a model once and then fit each data file.
-    with LinearModel(dll='nlf32') as model:
-        for data in data_files:
-            result = model.fit(data.x, data.y)
+Whether you choose to use a :class:`~msl.nlf.model.Model` as a context manager
+is your choice, there is no difference in performance.
