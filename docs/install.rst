@@ -3,6 +3,11 @@
 =======
 Install
 =======
+
+.. note::
+
+    A PyPI release is not available yet. You can install from the main branch for now.
+
 The DLL files have been compiled for use on Windows and therefore only
 Windows is supported.
 
