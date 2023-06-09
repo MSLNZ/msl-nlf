@@ -1,0 +1,19 @@
+Result(
+  calls=3
+  chisq=0.854875600205648
+  correlation=[[ 1.         -0.81341696  0.33998683]
+               [-0.81341696  1.         -0.41807236]
+               [ 0.33998683 -0.41807236  1.        ]]
+  covariance=[[ 4.62857806e-01 -8.76652826e-02  2.75368388e-05]
+              [-8.76652826e-02  2.50946556e-02 -7.88442937e-06]
+              [ 2.75368388e-05 -7.88442937e-06  1.41728236e-08]]
+  dof=1
+  eof=0.32710857899179385
+  iterations=33
+  params=    
+    ResultParameters(
+      ResultParameter(name='a1', value=-0.6101880747640294, uncert=0.6803365385456976, label=None),
+      ResultParameter(name='a2', value=0.8100288869777268, uncert=0.1584129274256673, label=None),
+      ResultParameter(name='a3', value=4.585005881907852e-05, uncert=0.00011904966869376515, label=None)
+    )
+)

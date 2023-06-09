@@ -1,0 +1,45 @@
+Input(
+  correlated=True
+  correlations=    
+    Correlations(
+      data=[    
+        Correlation(
+          coefficients=[[1.  0.8 0.8 0.8]
+                        [0.8 1.  0.8 0.8]
+                        [0.8 0.8 1.  0.8]
+                        [0.8 0.8 0.8 1. ]]
+          path='...\CorrCoeffs X1-X1.txt'
+        ),
+        Correlation(
+          coefficients=[[1.  0.5 0.5 0.5]
+                        [0.5 1.  0.5 0.5]
+                        [0.5 0.5 1.  0.5]
+                        [0.5 0.5 0.5 1. ]]
+          path='...\CorrCoeffs Y-Y.txt'
+        )]
+      is_correlated=[[ True False False]
+                     [False  True False]
+                     [False False False]]
+    )
+  delta=0.1
+  equation='a1+a2*(x1+exp(a3*x1))+x2'
+  fitting_method='Levenberg-Marquardt'
+  max_iterations=999
+  params=    
+    InputParameters(
+      InputParameter(name='a1', value=0.0, constant=False, label=None),
+      InputParameter(name='a2', value=0.9, constant=False, label=None),
+      InputParameter(name='a3', value=0.0, constant=False, label=None)
+    )
+  second_derivs_B=True
+  second_derivs_H=True
+  tolerance=1e-20
+  ux=[[0.01  0.02  0.03  0.04 ]
+      [0.002 0.004 0.006 0.008]]
+  uy=[0.5 0.5 0.5 0.5]
+  uy_weights_only=False
+  weighted=True
+  x=[[1.  2.  3.  4. ]
+     [0.1 0.2 0.3 0.4]]
+  y=[1.1 1.9 3.2 3.7]
+)

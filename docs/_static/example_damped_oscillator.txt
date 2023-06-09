@@ -1,0 +1,7 @@
+ResultParameters(
+  ResultParameter(name='a1', value=2.5363715803861906, uncert=0.04169573418915164, label='amplitude'),
+  ResultParameter(name='a2', value=4.198867381610226, uncert=0.09587708924591319, label='damping_coeff'),
+  ResultParameter(name='a3', value=48.40224313726375, uncert=0.09215096394667356, label='frequency'),
+  ResultParameter(name='a4', value=0.5000821791673462, uncert=0.01500917134060217, label='phase'),
+  ResultParameter(name='a5', value=0.6990641392644857, uncert=0.006913695541840907, label='offset')
+)
