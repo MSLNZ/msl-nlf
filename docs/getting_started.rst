@@ -306,9 +306,9 @@ application starts in the background when a :class:`~msl.nlf.model.Model` is
 created. Similarly, the client-server application should automatically shut down
 when you are done using the :class:`~msl.nlf.model.Model`.
 
-A :class:`~msl.nlf.model.Model` can be used a context manager (see :ref:`with`) which
-will delete the temporary directory (and shut down the client-server application)
-once the *with* block is finished, for example,
+A :class:`~msl.nlf.model.Model` can be used as a context manager (see :ref:`with`)
+which will delete the temporary directory (and shut down the client-server
+application) once the *with* block is finished, for example,
 
 .. code-block:: python
 
@@ -325,5 +325,6 @@ once the *with* block is finished, for example,
     # the client-server protocol has shut down
     # you must create a new Model if you want to use it again
 
-Whether you choose to use a :class:`~msl.nlf.model.Model` as a context manager
-is your choice, there is no difference in performance.
+It is your choice if you want to use a :class:`~msl.nlf.model.Model` as a
+context manager. There is no difference in performance, but the *cleanup*
+steps are more likely to occur when used as a context manager.
