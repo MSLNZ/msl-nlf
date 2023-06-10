@@ -11,7 +11,7 @@ This example requires GTC_ to be installed, to install it run
 
     pip install GTC
 
-As defined in the GUM, the calibration curve is
+As defined in Appendix H3 of the GUM, the calibration curve is
 
 .. math::
 
