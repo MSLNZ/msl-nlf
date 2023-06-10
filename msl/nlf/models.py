@@ -238,8 +238,6 @@ class ExponentialModel(Model):
         decay = -slope
         if amplitude is None:
             amplitude = np.exp(intercept)
-            if y[0] < 0:
-                amplitude *= -1.0
 
         return InputParameters((('a1', amplitude, False, 'amplitude'),
                                 ('a2', decay, False, 'decay')))

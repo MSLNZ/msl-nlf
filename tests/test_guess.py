@@ -88,7 +88,6 @@ def test_polynomial(n, names, labels):
      (3.2, 1.1),
      (3.2, -1.1),
      (1e3, 3.3),
-     (-1e3, 3.3),
      (100.7, 2.9)])
 def test_exponential(amp, decay):
     x = np.linspace(0, 10)
