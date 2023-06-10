@@ -35,7 +35,20 @@ square_matrix = (c_double * NPAR) * NPAR
 
 
 def fit(dll: CDLL, **k) -> dict:
-    """Call the *DoNonlinearFit* function in the DLL."""
+    """Call the *DoNonlinearFit* function in the DLL.
+
+    Parameters
+    ----------
+    dll
+        The instance of the DLL.
+    k
+        Keyword arguments that are required to perform the fit.
+
+    Returns
+    -------
+    dict
+        The fit results of the DLL.
+    """
     calls = 0
     iter_total = 0
     max_iter = k['max_iterations']
