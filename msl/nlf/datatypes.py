@@ -271,14 +271,14 @@ class Result:
 
             >>> intercept, slope = result.to_ureal()
             >>> intercept + 21.5*slope
-            ureal(23.2579622250441...,0.821607058888506...,31.0)
+            ureal(23.257962225044...,0.82160705888850...,31.0)
 
         or a single future indication in response to a given stimulus may also be of
         interest (again, at :math:`x=21.5`)
 
             >>> intercept, slope, future = result.to_ureal(with_future=True)
             >>> intercept + 21.5*slope + future
-            ureal(23.2579622250441...,3.332409257957110...,31.0)
+            ureal(23.257962225044...,3.33240925795711...,31.0)
 
         The value here is the same as above (because the stimulus is the same),
         but the uncertainty is much larger, reflecting the variability of single
