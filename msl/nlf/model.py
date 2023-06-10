@@ -351,7 +351,7 @@ class Model:
                 raise ValueError(f'Invalid {k!r} correlation array shape '
                                  f'[{corr.shape} != ({npts}, {npts})]')
             f = os.path.join(self._tmp_dir, f'CorrCoeffs {k}.txt')
-            np.savetxt(f, corr, delimiter='\t')
+            np.savetxt(f, corr)
 
     @staticmethod
     def create_parameters(parameters: Iterable[InputParameterType] = None) -> InputParameters:
@@ -835,6 +835,8 @@ class Model:
         coefficients are identically equal to the *X2-X1* correlation
         coefficients, so only one of the files *CorrCoeffs X1-X2.txt* or
         *CorrCoeffs X2-X1.txt* needs to be created.
+
+        Whitespace is used to separate the value for each column in a file.
 
         .. warning::
 
