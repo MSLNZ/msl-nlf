@@ -30,6 +30,10 @@ to be either constant or fitted, providing additional flexibility to the fitting
 process. If there are constant parameters, then :math:`M` must be greater than
 or equal to the number of non-constant parameters.
 
+For more details see *Propagation of uncertainty for non-linear calibration*
+*equations with an application in radiation thermometry*, **P. Saunders**,
+`Metrologia 40 93 (2003) <https://doi.org/10.1088/0026-1394/40/2/315>`_.
+
 The non-linear fitting algorithm implements the follow features:
 
 1. perform an unweighted fit or a weighted fit with uncertainties in the :math:`x` and/or :math:`y` data
