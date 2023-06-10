@@ -3,8 +3,8 @@
 =============================
 Damped Oscillator (Composite)
 =============================
-In this example, a composite model is created using built-in models to create
-a model for a `damped oscillator`_ (underdamped case).
+In this example, a composite model is created using built-in :ref:`models <nlf-models>`
+to create a model for a `damped oscillator`_ (underdamped case).
 
 The equation for the underdamped oscillator is
 
@@ -23,8 +23,8 @@ First, simulate some noisy data *(we can also see what the expected results of t
     noise = np.random.normal(scale=0.1, size=x.size)
     y = 2.6 * np.exp(-4.3*x) * np.cos(48.3*x + 0.5) + 0.7 + noise
 
-Next, set up the model by creating a composite model from built-in models,
-create the initial-guess parameters and apply the fit
+Next, set up the model by creating a composite model from built-in
+:ref:`models <nlf-models>`, create the initial-guess parameters and apply the fit
 
 .. code-block:: python
 
