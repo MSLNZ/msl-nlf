@@ -1,5 +1,5 @@
 """
-Predefined models:
+Predefined models
 
 * :class:`.ConstantModel`
 * :class:`.CosineModel`
@@ -24,6 +24,13 @@ __all__ = (
     'GaussianModel', 'ExponentialModel', 'SineModel', 'CosineModel',
     'ConstantModel', 'LinearModel', 'PolynomialModel',
 )
+
+
+def _max_n(array: ArrayLike1D, n: int) -> np.ndarray:
+    """Return the maximum *n* values in *array*."""
+    a = np.asarray(array)
+    indices = np.argpartition(a, -n)[-n:]
+    return a[indices]
 
 
 class GaussianModel(Model):
@@ -191,6 +198,51 @@ class ExponentialModel(Model):
         # must define after calling super()
         self._factor = 'a1'
         self._composite_equation = exp
+
+    def guess(self,
+              x: ArrayLike1D,
+              y: ArrayLike1D,
+              n: int = 3,
+              **kwargs) -> InputParameters:
+        """Linearizes the equation and calls the
+        :func:`~numpy.polynomial.polynomial.polyfit` function.
+
+        Parameters
+        ----------
+        x
+            The independent variable (stimulus) data.
+        y
+            The dependent variable (response) data.
+        n
+            For a cumulative equation, finds the maximum *n*
+            values in *y* and calculates the mean.
+        kwargs
+            All other keyword arguments are ignored.
+
+        Returns
+        -------
+        :class:`.InputParameters`
+            Initial guess for the amplitude and decay factor.
+        """
+        amplitude = None
+        y = np.asarray(y)
+
+        if self._cumulative:
+            amplitude = np.mean(_max_n(y, n))
+            abs_y = np.absolute(1.0-y/amplitude)
+        else:
+            abs_y = np.absolute(y)
+
+        ln_y = np.log(abs_y + 1.e-15)  # make sure ln(0) is not calculated
+        intercept, slope = polyfit(x, ln_y, 1)
+        decay = -slope
+        if amplitude is None:
+            amplitude = np.exp(intercept)
+            if y[0] < 0:
+                amplitude *= -1.0
+
+        return InputParameters((('a1', amplitude, False, 'amplitude'),
+                                ('a2', decay, False, 'decay')))
 
 
 class PolynomialModel(Model):

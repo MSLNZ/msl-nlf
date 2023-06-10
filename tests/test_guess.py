@@ -80,3 +80,37 @@ def test_polynomial(n, names, labels):
     assert params.names() == names
     assert np.array_equal(params.constants(), [False] * (n + 1))
     assert params.labels() == labels
+
+
+@pytest.mark.parametrize(
+    'amp, decay',
+    [(1.2, 0.4),
+     (3.2, 1.1),
+     (3.2, -1.1),
+     (1e3, 3.3),
+     (-1e3, 3.3),
+     (100.7, 2.9)])
+def test_exponential(amp, decay):
+    x = np.linspace(0, 10)
+    y = amp * np.exp(-decay * x)
+    with ExponentialModel() as model:
+        params = model.guess(x, y)
+        assert len(params) == 2
+        assert pytest.approx(amp, rel=1e-4) == params['amplitude'].value
+        assert pytest.approx(decay, rel=1e-4) == params['decay'].value
+
+
+@pytest.mark.parametrize(
+    'amp, decay',
+    [(1.2, 0.4),
+     (3.2, 1.1),
+     (1e3, 3.3),
+     (100.7, 2.9)])
+def test_exponential_cumulative(amp, decay):
+    x = np.linspace(0, 10)
+    y = amp * (1.0 - np.exp(-decay * x))
+    with ExponentialModel(cumulative=True) as model:
+        params = model.guess(x, y)
+        assert len(params) == 2
+        assert pytest.approx(amp, abs=0.025) == params['amplitude'].value
+        assert pytest.approx(decay, abs=0.25) == params['decay'].value
