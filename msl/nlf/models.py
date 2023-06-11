@@ -33,6 +33,13 @@ def _max_n(array: ArrayLike1D, n: int) -> np.ndarray:
     return a[indices]
 
 
+def _min_n(array: ArrayLike1D, n: int) -> np.ndarray:
+    """Return the minimum *n* values in *array*."""
+    a = np.asarray(array)
+    indices = np.argpartition(a, n)[:n]
+    return a[indices]
+
+
 class GaussianModel(Model):
 
     def __init__(self, normalized: bool = False, **kwargs) -> None:

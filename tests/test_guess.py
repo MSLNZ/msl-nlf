@@ -2,6 +2,58 @@ import numpy as np
 import pytest
 
 from msl.nlf import *
+from msl.nlf.models import _max_n  # noqa
+from msl.nlf.models import _min_n  # noqa
+
+
+def test_max_n():
+    a = np.arange(1234)
+    np.random.shuffle(a)
+
+    assert np.array_equal(_max_n(a, 1), [1233])
+
+    out = _max_n(a, 2)
+    assert len(out) == 2
+    assert 1232 in out
+    assert 1233 in out
+
+    out = _max_n(a, 10)
+    assert len(out) == 10
+    assert 1224 in out
+    assert 1225 in out
+    assert 1226 in out
+    assert 1227 in out
+    assert 1228 in out
+    assert 1229 in out
+    assert 1230 in out
+    assert 1231 in out
+    assert 1232 in out
+    assert 1233 in out
+
+
+def test_min_n():
+    a = np.arange(1234)
+    np.random.shuffle(a)
+
+    assert np.array_equal(_min_n(a, 1), [0])
+
+    out = _min_n(a, 2)
+    assert len(out) == 2
+    assert 0 in out
+    assert 1 in out
+
+    out = _min_n(a, 10)
+    assert len(out) == 10
+    assert 0 in out
+    assert 1 in out
+    assert 2 in out
+    assert 3 in out
+    assert 4 in out
+    assert 5 in out
+    assert 6 in out
+    assert 7 in out
+    assert 8 in out
+    assert 9 in out
 
 
 def test_not_implemented():
