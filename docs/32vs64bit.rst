@@ -9,14 +9,14 @@ illustrates the differences between the DLL versions.
     :widths: 50 50
     :align: center
 
-    =========================================================  ==============================================
+    =========================================================  ===============================================
                            32-bit DLL                                              64-bit DLL
-    =========================================================  ==============================================
+    =========================================================  ===============================================
     Can be used in both 32- and 64-bit versions of Python      Can only be used in 64-bit Python
     When used in 64-bit Python, the fit will take longer [#]_  There is no performance overhead
-    Delphi uses 10 bits for the floating-point type            Delphi uses 8 bits for the floating-point type
+    Delphi uses 10 bytes for the floating-point type           Delphi uses 8 bytes for the floating-point type
     Limited to 4GB RAM                                         Can access more than 4GB RAM
-    =========================================================  ==============================================
+    =========================================================  ===============================================
 
 If loading the 32-bit DLL in 64-bit Python, it is important to reduce the number
 of times a :class:`~msl.nlf.model.Model` is created to fit data. In this case,
