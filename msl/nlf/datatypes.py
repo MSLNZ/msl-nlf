@@ -111,12 +111,12 @@ class Input:
     """The input parameters to the fit model."""
 
     second_derivs_B: bool
-    """Whether the second derivatives in the **B** matrix are used in the 
-    fitting process."""
+    """Whether the second derivatives in the **B** matrix are included in
+    the propagation of uncertainty calculations."""
 
     second_derivs_H: bool
-    """Whether the second derivatives in the **H** (Hessian) matrix are
-    used in the fitting process."""
+    """Whether the second derivatives in the curvature matrix, **H** (Hessian),
+    are are included in the propagation of uncertainty calculations."""
 
     tolerance: float
     """The tolerance value to stop the fitting process."""
