@@ -708,7 +708,7 @@ class Model:
             the propagation of uncertainty calculations.
         second_derivs_H
             Whether the second derivatives in the curvature matrix, **H** (Hessian),
-            are are included in the propagation of uncertainty calculations.
+            are included in the propagation of uncertainty calculations.
         tolerance
             The fitting process will stop when the relative change in chi-square
             (or some other appropriate measure) is less than this value.
