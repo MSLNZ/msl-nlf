@@ -84,7 +84,7 @@ def test_set_correlation_dir():
             assert len(c.data) == 1
             assert c.data[0].path == y_x1_file
             assert np.array_equal(c.data[0].coefficients, dummy2)
-            assert np.array_equal(c.is_correlated, [[False, True], [False, False]])
+            assert np.array_equal(c.is_correlated, [[False, True], [True, False]])
 
         # create X1-X1 correlation file (Y-X1 still exists)
         x1_x1_file = save_corr_array(dummy3, 'X1-X1')
@@ -96,7 +96,7 @@ def test_set_correlation_dir():
             assert np.array_equal(c.data[0].coefficients, dummy3)
             assert c.data[1].path == y_x1_file
             assert np.array_equal(c.data[1].coefficients, dummy2)
-            assert np.array_equal(c.is_correlated, [[False, True], [False, True]])
+            assert np.array_equal(c.is_correlated, [[False, True], [True, True]])
 
         # create Y-Y correlation file (X1-X1 and Y-X1 still exist)
         y_y_file = save_corr_array(dummy1, 'Y-Y')
@@ -111,7 +111,7 @@ def test_set_correlation_dir():
             assert np.array_equal(c.data[1].coefficients, dummy2)
             assert c.data[2].path == y_y_file
             assert np.array_equal(c.data[2].coefficients, dummy1)
-            assert np.array_equal(c.is_correlated, [[True, True], [False, True]])
+            assert np.array_equal(c.is_correlated, [[True, True], [True, True]])
 
         # pretend that no correlation files exist
         model.set_correlation_dir(None)
@@ -195,7 +195,7 @@ def test_set_correlation():
             assert c.data[0].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X1.txt')
             assert np.array_equal(c.data[0].coefficients, y_x1_matrix)
             assert np.array_equal(c.is_correlated, [[False, True, False],
-                                                    [False, False, False],
+                                                    [True, False, False],
                                                     [False, False, False]])
 
         # create bad X1-X1 correlation file, must have shape (4, 4)
@@ -215,7 +215,7 @@ def test_set_correlation():
             assert c.data[1].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X1.txt')
             assert np.array_equal(c.data[1].coefficients, y_x1_matrix)
             assert np.array_equal(c.is_correlated, [[False, True, False],
-                                                    [False, True, False],
+                                                    [True, True, False],
                                                     [False, False, False]])
 
         # create Y-Y correlation file (X1-X1 and Y-X1 still exist)
@@ -234,7 +234,7 @@ def test_set_correlation():
                                                                     [3., 3., 1., 3.],
                                                                     [3., 3., 3., 1.]]))
             assert np.array_equal(c.is_correlated, [[True, True, False],
-                                                    [False, True, False],
+                                                    [True, True, False],
                                                     [False, False, False]])
 
         # create X2-Y correlation file (Y-Y, X1-X1 and Y-X1 still exist)
@@ -257,8 +257,8 @@ def test_set_correlation():
                                                                     [3., 1., 3., 3.],
                                                                     [3., 3., 1., 3.],
                                                                     [3., 3., 3., 1.]]))
-            assert np.array_equal(c.is_correlated, [[True, True, False],
-                                                    [False, True, False],
+            assert np.array_equal(c.is_correlated, [[True, True, True],
+                                                    [True, True, False],
                                                     [True, False, False]])
 
         # again, no correlation files exist

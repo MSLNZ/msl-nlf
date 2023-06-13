@@ -339,10 +339,12 @@ class Model:
                 if match:
                     i, j = self._get_corr_indices(*match.groups())
                     self._is_corr_array[i, j] = True
+                    self._is_corr_array[j, i] = True
 
         # update from memory
         for k, v in self._corr_dict.items():
             self._is_corr_array[v['index']] = True
+            self._is_corr_array[v['index'][::-1]] = True
             corr = v['corr']
             if isinstance(corr, float):
                 corr = np.full((npts, npts), corr)
