@@ -681,7 +681,8 @@ class Model:
                 delta: float = 0.1,
                 max_iterations: int = 999,
                 method: Union[FitMethod, str] = FitMethod.LM,
-                second_derivatives: bool = True,
+                second_derivs_B: bool = True,  # noqa
+                second_derivs_H: bool = True,  # noqa
                 tolerance: float = 1e-20,
                 weighted: bool = False,
                 y_uncertainties_only: bool = False) -> None:
@@ -702,9 +703,12 @@ class Model:
         method
             The fitting method to use. Can be a member name or value of the
             :class:`~msl.nlf.datatypes.FitMethod` enum.
-        second_derivatives
-            Whether second-derivative terms (e.g., Hessian) are included in the
-            propagation of uncertainty calculations.
+        second_derivs_B
+            Whether the second derivatives in the **B** matrix are included in
+            the propagation of uncertainty calculations.
+        second_derivs_H
+            Whether the second derivatives in the curvature matrix, **H** (Hessian),
+            are are included in the propagation of uncertainty calculations.
         tolerance
             The fitting process will stop when the relative change in chi-square
             (or some other appropriate measure) is less than this value.
@@ -747,8 +751,8 @@ class Model:
                     f'absolute_res=Absolute\n'  # S='Absolute';
                     f'residual_type=dy v x\n'  # S=one of 'dx v x', 'dy v x', 'dx v y', 'dy v y'
                     f'fitting_method={method.value}\n'  # S=one of FittingMethod values
-                    f'second_derivs_H={bool(second_derivatives)}\n'  # S='True';
-                    f'second_derivs_B={bool(second_derivatives)}\n'  # S='True';
+                    f'second_derivs_H={bool(second_derivs_H)}\n'  # S='True';
+                    f'second_derivs_B={bool(second_derivs_B)}\n'  # S='True';
                     f'uy_weights_only={bool(y_uncertainties_only)}\n'  # S='True';
                     f'show_info_window=False')  # S='True';
 
