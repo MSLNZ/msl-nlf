@@ -65,7 +65,7 @@ def test_line_fit_wtls():
     gtc = type_a.line_fit_wtls(x, y, ux, uy)
 
     with LinearModel() as model:
-        model.options(weighted=True, y_uncertainties_only=False)
+        model.options(weighted=True, uy_weights_only=False)
         params = model.create_parameters([('a1', 5, False, 'intercept'),
                                           ('a2', -1, False, 'slope')])
         nlf = model.fit(x=x, y=y, params=params, uy=uy, ux=ux)

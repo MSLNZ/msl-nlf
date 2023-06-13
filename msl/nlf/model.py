@@ -684,8 +684,8 @@ class Model:
                 second_derivs_B: bool = True,  # noqa
                 second_derivs_H: bool = True,  # noqa
                 tolerance: float = 1e-20,
-                weighted: bool = False,
-                y_uncertainties_only: bool = False) -> None:
+                uy_weights_only: bool = False,
+                weighted: bool = False) -> None:
         """Configure the fitting options.
 
         Parameters
@@ -712,12 +712,12 @@ class Model:
         tolerance
             The fitting process will stop when the relative change in chi-square
             (or some other appropriate measure) is less than this value.
+        uy_weights_only
+            Whether the *y* uncertainties only or a combination of the *x* and *y*
+            uncertainties are used to calculate the weights for a weighted fit.
         weighted
              Whether to include the standard uncertainties in the fitting process
              to perform a weighted fit.
-        y_uncertainties_only
-            Whether the *y* uncertainties only or a combination of the *x* and *y*
-            uncertainties are used to calculate the weights for a weighted fit.
         """
         # For details on how to create the file, see the ReadConfigFile function in
         # https://github.com/MSLNZ/Nonlinear-Fitting/blob/main/NLF%20DLL/NLFDLL.dpr
@@ -753,7 +753,7 @@ class Model:
                     f'fitting_method={method.value}\n'  # S=one of FittingMethod values
                     f'second_derivs_H={bool(second_derivs_H)}\n'  # S='True';
                     f'second_derivs_B={bool(second_derivs_B)}\n'  # S='True';
-                    f'uy_weights_only={bool(y_uncertainties_only)}\n'  # S='True';
+                    f'uy_weights_only={bool(uy_weights_only)}\n'  # S='True';
                     f'show_info_window=False')  # S='True';
 
     def remove_correlations(self) -> None:
