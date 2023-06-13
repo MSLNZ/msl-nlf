@@ -168,11 +168,11 @@ class Input:
                f'  second_derivs_H={self.second_derivs_H}\n' \
                f'  tolerance={self.tolerance}\n' \
                f'  ux={np.array2string(self.ux, prefix="     ")}\n' \
-               f'  uy={self.uy}\n' \
+               f'  uy={np.array2string(self.uy, prefix="     ")}\n' \
                f'  uy_weights_only={self.uy_weights_only}\n' \
                f'  weighted={self.weighted}\n' \
                f'  x={np.array2string(self.x, prefix="    ")}\n' \
-               f'  y={self.y}\n' \
+               f'  y={np.array2string(self.y, prefix="    ")}\n' \
                f')'
 
 
