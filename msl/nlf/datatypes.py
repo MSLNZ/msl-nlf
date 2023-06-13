@@ -136,10 +136,10 @@ class Input:
     process to perform a weighted fit."""
 
     x: np.ndarray[float]
-    """The independent variable(s) (stimulus)."""
+    """The independent variable(s) (stimulus) data."""
 
     y: np.ndarray[float]
-    """The dependent variable (response)."""
+    """The dependent variable (response) data."""
 
     def __repr__(self):
         indent = ' ' * 4
