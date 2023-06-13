@@ -6,6 +6,8 @@ from struct import unpack
 
 import numpy as np
 
+ansi = {'encoding': 'ansi', 'errors': 'replace'}
+
 
 class Loader:
 
@@ -81,7 +83,7 @@ class Loader:
         """
         if length is None:
             length = self.read_integer()
-        return self._read(f'{length}s', length).decode()
+        return self._read(f'{length}s', length).decode(**ansi)
 
     def read_word(self) -> int:
         """Read an unsigned short."""
@@ -114,10 +116,12 @@ def load_graph(loader: Loader) -> dict:
     graph['num_curves'] = loader.read_integer()
     graph['x_axis_scale_to_window'] = loader.read_boolean()
     graph['y_axis_scale_to_window'] = loader.read_boolean()
-    x_axis_length_length = loader.read_byte()
-    graph['x_axis_length'] = loader.read_bytes(20)[:x_axis_length_length]
-    y_axis_length_length = loader.read_byte()
-    graph['y_axis_length'] = loader.read_bytes(20)[:y_axis_length_length]
+    n = loader.read_byte()
+    x_axis_length = loader.read_bytes(20)[:n]
+    graph['x_axis_length'] = x_axis_length.decode(**ansi)
+    n = loader.read_byte()
+    y_axis_length = loader.read_bytes(20)[:n]
+    graph['y_axis_length'] = y_axis_length.decode(**ansi)
     graph['x_min'] = loader.read_extended()
     graph['x_max'] = loader.read_extended()
     graph['y_min'] = loader.read_extended()
@@ -163,30 +167,36 @@ def load_graph(loader: Loader) -> dict:
     else:
         graph['x_title_auto'] = True
         graph['y_title_auto'] = True
-    x_title_length = loader.read_byte()
-    graph['x_title'] = loader.read_bytes(255)[:x_title_length]
-    y_title_length = loader.read_byte()
-    graph['y_title'] = loader.read_bytes(255)[:y_title_length]
+    n = loader.read_byte()
+    x_title = loader.read_bytes(255)[:n]
+    graph['x_title'] = x_title.decode(**ansi)
+    n = loader.read_byte()
+    y_title = loader.read_bytes(255)[:n]
+    graph['y_title'] = y_title.decode(**ansi)
     graph['x_title_font_size'] = loader.read_integer()
     graph['x_title_font_style'] = loader.read_byte()
     graph['x_title_font_pitch'] = loader.read_byte()
-    x_title_font_name_length = loader.read_byte()
-    graph['x_title_font_name'] = loader.read_bytes(255)[:x_title_font_name_length]
+    n = loader.read_byte()
+    x_title_font_name = loader.read_bytes(255)[:n]
+    graph['x_title_font_name'] = x_title_font_name.decode(**ansi)
     graph['y_title_font_size'] = loader.read_integer()
     graph['y_title_font_style'] = loader.read_byte()
     graph['y_title_font_pitch'] = loader.read_byte()
-    y_title_font_name_length = loader.read_byte()
-    graph['y_title_font_name'] = loader.read_bytes(255)[:y_title_font_name_length]
+    n = loader.read_byte()
+    y_title_font_name = loader.read_bytes(255)[:n]
+    graph['y_title_font_name'] = y_title_font_name.decode(**ansi)
     graph['x_number_font_size'] = loader.read_integer()
     graph['x_number_font_style'] = loader.read_byte()
     graph['x_number_font_pitch'] = loader.read_byte()
-    x_number_font_name_length = loader.read_byte()
-    graph['x_number_font_name'] = loader.read_bytes(255)[:x_number_font_name_length]
+    n = loader.read_byte()
+    x_number_font_name = loader.read_bytes(255)[:n]
+    graph['x_number_font_name'] = x_number_font_name.decode(**ansi)
     graph['y_number_font_size'] = loader.read_integer()
     graph['y_number_font_style'] = loader.read_byte()
     graph['y_number_font_pitch'] = loader.read_byte()
-    y_number_font_name_length = loader.read_byte()
-    graph['y_number_font_name'] = loader.read_bytes(255)[:y_number_font_name_length]
+    n = loader.read_byte()
+    y_number_font_name = loader.read_bytes(255)[:n]
+    graph['y_number_font_name'] = y_number_font_name.decode(**ansi)
     plot_types = [None, None]  # MaxCurves = 2
     curve_colour = [None, None]
     num_points = [None, None]
