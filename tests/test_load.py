@@ -10,7 +10,7 @@ def get_path(filename: str) -> str:
     return os.path.join(os.path.dirname(__file__), 'nlf', f'{filename}.nlf')
 
 
-def test_load_3_0():
+def test_3_0():
     loaded = load(get_path('3_0'))
     assert loaded.version() == f'{version_info.major}.{version_info.minor}'
     assert loaded.nlf_version == '3.0'
@@ -166,3 +166,26 @@ def test_5_41():
     assert np.array_equal(loaded.ux, ux)
     assert np.array_equal(loaded.y, y)
     assert np.array_equal(loaded.uy, uy)
+
+
+def test_str():
+    with load(get_path('5_41_empty')) as nlf:
+        got = str(nlf)
+
+    expected = """LoadedModel(
+  comments=''
+  dll=SKIP
+  equation=''
+  nlf_path=SKIP
+  nlf_version='5.41'
+  params=InputParameters()
+  ux=[]
+  uy=[]
+  x=[]
+  y=[]
+)"""
+
+    for g, e in zip(got.splitlines(), expected.splitlines()):
+        if 'SKIP' in e:
+            continue
+        assert g == e

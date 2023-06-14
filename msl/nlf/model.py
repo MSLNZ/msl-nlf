@@ -1006,11 +1006,14 @@ class LoadedModel(Model):
 
     def __repr__(self):
         # add indentation to the parameters
-        indent = ' ' * 4
-        params = [indent]
-        params.extend(str(self.params).splitlines())
-        params[-1] = ')'
-        param_str = f'\n{indent}'.join(params)
+        if not self.params:
+            param_str = 'InputParameters()'
+        else:
+            indent = ' ' * 4
+            params = [indent]
+            params.extend(str(self.params).splitlines())
+            params[-1] = ')'
+            param_str = f'\n{indent}'.join(params)
 
         dirname, basename = os.path.split(self._dll_path)
         if os.path.dirname(__file__) == dirname:
