@@ -1,5 +1,5 @@
 """
-Create a **.nlf** file to be read by the Delphi GUI.
+Save a **.nlf** file to be read by the Delphi GUI.
 """
 import math
 import os
