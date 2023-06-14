@@ -151,10 +151,13 @@ class Input:
         corr_str = f'\n{indent}'.join(corr)
 
         # add indentation to the parameters
-        params = [indent]
-        params.extend(str(self.params).splitlines())
-        params[-1] = ')'
-        param_str = f'\n{indent}'.join(params)
+        if not self.params:
+            param_str = 'InputParameters()'
+        else:
+            params = [indent]
+            params.extend(str(self.params).splitlines())
+            params[-1] = ')'
+            param_str = f'\n{indent}'.join(params)
 
         return f'Input(\n' \
                f'  correlated={self.correlated}\n' \
@@ -210,11 +213,14 @@ class Result:
         cov_str = np.array2string(self.covariance, prefix=' ' * 13)
 
         # add indentation to the parameters
-        indent = ' ' * 4
-        params = [indent]
-        params.extend(str(self.params).splitlines())
-        params[-1] = ')'
-        param_str = f'\n{indent}'.join(params)
+        if not self.params:
+            param_str = 'ResultParameters()'
+        else:
+            indent = ' ' * 4
+            params = [indent]
+            params.extend(str(self.params).splitlines())
+            params[-1] = ')'
+            param_str = f'\n{indent}'.join(params)
 
         return f'Result(\n' \
                f'  calls={self.calls}\n' \
