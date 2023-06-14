@@ -1,8 +1,8 @@
 .. _nlf-damped-oscillator:
 
-=============================
-Damped Oscillator (Composite)
-=============================
+===============
+Composite Model
+===============
 In this example, a composite model is created using built-in :ref:`models <nlf-models>`
 to create a model for a `damped oscillator`_ (underdamped case).
 
