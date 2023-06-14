@@ -102,7 +102,7 @@ def test_5_41():
     assert loaded.equation == 'a1+a2*(x+exp(a3*x))+x2'
     assert loaded.num_variables == 2
     assert loaded.num_parameters == 3
-    assert loaded.comments == 'Correlated and \r\nweighted example'
+    assert loaded.comments == 'Correlated and \nweighted example'
 
     inputs = loaded.fit(loaded.x, loaded.y, params=loaded.params,
                         ux=loaded.ux, uy=loaded.uy, debug=True)

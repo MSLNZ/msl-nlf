@@ -100,9 +100,14 @@ def load(path: str, *, dll: str = None) -> LoadedModel:
     # {\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang5129{\\fonttbl{\\f0\\fnil\\fcharset0 Times New Roman;}}\r\n
     # \\viewkind4\\uc1\\pard\\f0\\fs20 Correlated and \\par\r\nweighted example\\par\r\n}\r\n\x00
     comments = file.get('comments', '')
-    found = re.search(r'\\fs20(?P<comments>[^}]+)', comments)
+    found = re.search(r'\\fs20(?P<comments>.+)', comments, flags=re.DOTALL)
     if found:
-        comments = found['comments'].replace('\\par', '').strip()
+        comments = found['comments'][:-4]  # ignore trailing }\r\n\x00
+        comments = comments.replace('\\par', '')
+        comments = comments.replace('\r\n', '\n')
+        comments = comments.replace('\\{', '{')
+        comments = comments.replace('\\}', '}')
+        comments = comments.strip()
 
     loaded.comments = comments
     loaded.nlf_path = path
