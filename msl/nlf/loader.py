@@ -35,7 +35,7 @@ class Loader:
         return value
 
     def read_boolean(self) -> bool:
-        """Read a bool."""
+        """Read a boolean."""
         return self._read('?', 1)
 
     def read_byte(self) -> int:
@@ -43,7 +43,7 @@ class Loader:
         return self._read('b', 1)
 
     def read_bytes(self, length) -> bytes:
-        """Read a byte."""
+        """Read bytes."""
         return self._read(f'{length}s', length)
 
     def read_extended(self) -> float:
