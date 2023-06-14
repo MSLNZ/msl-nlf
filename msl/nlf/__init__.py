@@ -1,6 +1,8 @@
 import re
 from collections import namedtuple
 
+from .datatypes import FitMethod
+from .model import LoadedModel
 from .model import Model
 from .models import ConstantModel
 from .models import CosineModel
@@ -25,15 +27,88 @@ version_info = namedtuple('version_info', 'major minor micro releaselevel')(int(
 """:obj:`~collections.namedtuple`: Contains the version information as a (major, minor, micro, releaselevel) tuple."""
 
 __all__ = (
+    'load',
     'version_info',
     'InputParameter',
     'InputParameters',
     'Model',
+    'ConstantModel',
     'CosineModel',
     'ExponentialModel',
     'GaussianModel',
     'LinearModel',
-    'ConstantModel',
     'PolynomialModel',
     'SineModel',
 )
+
+
+def load(path: str, *, dll: str = None) -> LoadedModel:
+    """Load a **.nlf** file that was created by the Delphi GUI.
+
+    Parameters
+    ----------
+    path
+        The path to a **.nlf** file.
+    dll
+        Passed to the *dll* keyword argument in :class:`~msl.nlf.model.Model`.
+
+    Returns
+    -------
+    :class:`~msl.nlf.model.LoadedModel`
+        The loaded model.
+    """
+    # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas
+    # TFittingMethod=(LM,AmLS,AmMD,AmMM,PwLS,PwMD,PwMM);
+    methods = {
+        0: Model.FitMethod.LM,
+        1: Model.FitMethod.AMOEBA_LS,
+        2: Model.FitMethod.AMOEBA_MD,
+        3: Model.FitMethod.AMOEBA_MM,
+        4: Model.FitMethod.POWELL_LS,
+        5: Model.FitMethod.POWELL_MD,
+        6: Model.FitMethod.POWELL_MM,
+    }
+
+    from .loader import _load
+    file = _load(path)
+
+    options = dict(
+        correlated=file['correlated_data'],
+        delta=file['delta'],
+        max_iterations=file['max_iterations'],
+        method=methods[file['fitting_method']],
+        second_derivs_B=file['second_derivs_B'],
+        second_derivs_H=file['second_derivs_H'],
+        tolerance=file['tolerance'],
+        uy_weights_only=file['uy_weights_only'],
+        weighted=file['weighted'],
+    )
+
+    loaded = LoadedModel(file['equation'], dll=dll, **options)
+    if file['correlated_data']:
+        import numpy as np
+        for i, j in np.argwhere(file['is_correlated']):
+            matrix = file['corr_coeff'][i, j]
+            n1 = 'Y' if i == 0 else f'X{i}'
+            n2 = 'Y' if j == 0 else f'X{j}'
+            loaded.set_correlation(n1, n2, matrix=matrix)
+
+    for i, (a, c) in enumerate(zip(file['a'], file['constant']), start=1):
+        loaded.params[f'a{i}'] = a, c
+
+    # the comments text contains information about the fonts and has \\par for paragraphs
+    # {\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang5129{\\fonttbl{\\f0\\fnil\\fcharset0 Times New Roman;}}\r\n
+    # \\viewkind4\\uc1\\pard\\f0\\fs20 Correlated and \\par\r\nweighted example\\par\r\n}\r\n\x00
+    comments = file.get('comments', '')
+    found = re.search(r'\\fs20(?P<comments>[^}]+)', comments)
+    if found:
+        comments = found['comments'].replace('\\par', '').strip()
+
+    loaded.comments = comments
+    loaded.nlf_path = path
+    loaded.nlf_version = str(file['version'])
+    loaded.ux = file['ux'] if loaded.num_variables > 1 else file['ux'][0]
+    loaded.uy = file['uy']
+    loaded.x = file['x'] if loaded.num_variables > 1 else file['x'][0]
+    loaded.y = file['y']
+    return loaded

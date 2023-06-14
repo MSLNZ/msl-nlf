@@ -953,3 +953,80 @@ class CompositeModel(Model):
 
         equation = f'({lhs}){op}({rhs})' if rhs else lhs
         super().__init__(equation, **kwargs)
+
+
+class LoadedModel(Model):
+
+    def __init__(self,
+                 equation: str,
+                 *,
+                 dll: str = None,
+                 **options) -> None:
+        """A :class:`.Model` that was loaded from a **.nlf** file (a file
+        created by the Delphi GUI).
+
+        Do not instantiate this class directly. The proper way to load a
+        **.nlf** file is via the :func:`~msl.nlf.load` function.
+
+        Parameters
+        ----------
+        equation
+            The fit equation. See :class:`.Model` for more details.
+        dll
+            The path to a non-linear fit DLL file. See :class:`.Model` for
+            more details.
+        **options
+            All additional keyword arguments are passed to :meth:`~.Model.options`.
+        """
+        super().__init__(equation, dll=dll, **options)
+
+        self.comments: str = ''
+        """Comments that were specified in the Delphi GUI."""
+
+        self.nlf_path: str = ''
+        """The path to the **.nlf** file that was loaded."""
+
+        self.nlf_version: str = ''
+        """The DLL version that created the **.nlf** file."""
+
+        self.params: InputParameters = InputParameters()
+        """Input parameters to the fit model."""
+
+        self.ux: np.ndarray[float] = np.empty(0)
+        """Standard uncertainties in the x (stimulus) data."""
+
+        self.uy: np.ndarray[float] = np.empty(0)
+        """Standard uncertainties in the y (response) data."""
+
+        self.x: np.ndarray[float] = np.empty(0)
+        """The independent variable(s) (stimulus) data."""
+
+        self.y: np.ndarray[float] = np.empty(0)
+        """The dependent variable (response) data."""
+
+    def __repr__(self):
+        # add indentation to the parameters
+        indent = ' ' * 4
+        params = [indent]
+        params.extend(str(self.params).splitlines())
+        params[-1] = ')'
+        param_str = f'\n{indent}'.join(params)
+
+        dirname, basename = os.path.split(self._dll_path)
+        if os.path.dirname(__file__) == dirname:
+            path = basename
+        else:
+            path = self._dll_path
+
+        return f'{self.__class__.__name__}(\n' \
+               f'  comments={self.comments!r}\n' \
+               f'  dll={path!r}\n' \
+               f'  equation={self.equation!r}\n' \
+               f'  nlf_path={self.nlf_path!r}\n' \
+               f'  nlf_version={self.nlf_version!r}\n' \
+               f'  params={param_str}\n' \
+               f'  ux={np.array2string(self.ux, prefix="     ")}\n' \
+               f'  uy={np.array2string(self.uy, prefix="     ")}\n' \
+               f'  x={np.array2string(self.x, prefix="    ")}\n' \
+               f'  y={np.array2string(self.y, prefix="    ")}\n' \
+               f')'
