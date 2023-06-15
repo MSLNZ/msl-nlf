@@ -84,7 +84,7 @@ parameter is held constant during the fitting process
    'a1+a2*x'
    >>> params = model.create_parameters()
    >>> a1 = params.add(name='a1', value=0, constant=True, label='intercept')
-   >>> a2 = params.add('a2', 4, False, 'slope')  # alternative way to add a parameter
+   >>> params['a2'] = 4, False, 'slope'  # alternative way to add a parameter
    >>> result = model.fit(x, y, params=params)
    >>> result.params
    ResultParameters(
