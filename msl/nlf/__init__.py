@@ -29,6 +29,7 @@ version_info = namedtuple('version_info', 'major minor micro releaselevel')(int(
 __all__ = (
     'load',
     'version_info',
+    'FitMethod',
     'InputParameter',
     'InputParameters',
     'Model',
