@@ -114,8 +114,8 @@ def load(path: str, *, dll: str = None) -> LoadedModel:
     loaded.comments = comments
     loaded.nlf_path = path
     loaded.nlf_version = str(file['version'])
-    loaded.ux = file['ux'] if loaded.num_variables > 1 else file['ux'][0]
+    loaded.ux = file['ux']
     loaded.uy = file['uy']
-    loaded.x = file['x'] if loaded.num_variables > 1 else file['x'][0]
+    loaded.x = file['x']
     loaded.y = file['y']
     return loaded
