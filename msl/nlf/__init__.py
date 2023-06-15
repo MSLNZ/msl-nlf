@@ -44,12 +44,13 @@ __all__ = (
 
 
 def load(path: str, *, dll: str = None) -> LoadedModel:
-    """Load a **.nlf** file that was created by the Delphi GUI.
+    """Load a **.nlf** file.
 
     Parameters
     ----------
     path
-        The path to a **.nlf** file.
+        The path to a **.nlf** file. The file could have been created by the
+        Delphi GUI application or by the :meth:`~msl.nlf.model.Model.save` method.
     dll
         Passed to the *dll* keyword argument in :class:`~msl.nlf.model.Model`.
 

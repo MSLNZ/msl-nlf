@@ -991,8 +991,7 @@ class LoadedModel(Model):
                  *,
                  dll: str = None,
                  **options) -> None:
-        """A :class:`.Model` that was loaded from a **.nlf** file (a file
-        created by the Delphi GUI).
+        """A :class:`.Model` that was loaded from a **.nlf** file.
 
         Do not instantiate this class directly. The proper way to load a
         **.nlf** file is via the :func:`~msl.nlf.load` function.
@@ -1010,7 +1009,7 @@ class LoadedModel(Model):
         super().__init__(equation, dll=dll, **options)
 
         self.comments: str = ''
-        """Comments that were specified in the Delphi GUI."""
+        """Comments that were specified."""
 
         self.nlf_path: str = ''
         """The path to the **.nlf** file that was loaded."""

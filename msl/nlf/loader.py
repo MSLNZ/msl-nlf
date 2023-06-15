@@ -1,5 +1,5 @@
 """
-Load a **.nlf** file that was created by the Delphi GUI.
+Load a **.nlf** file.
 """
 import math
 from struct import unpack
