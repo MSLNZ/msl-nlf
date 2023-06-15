@@ -116,7 +116,7 @@ class Input:
 
     second_derivs_H: bool
     """Whether the second derivatives in the curvature matrix, **H** (Hessian),
-    are are included in the propagation of uncertainty calculations."""
+    are included in the propagation of uncertainty calculations."""
 
     tolerance: float
     """The tolerance value to stop the fitting process."""
