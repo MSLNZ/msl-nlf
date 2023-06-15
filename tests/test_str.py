@@ -21,7 +21,7 @@ def test_input_uncorrelated():
     )
   delta=0.1
   equation='a1+a2*x'
-  fitting_method='Levenberg-Marquardt'
+  fit_method=<FitMethod.LM: 'Levenberg-Marquardt'>
   max_iterations=999
   params=    
     InputParameters(
@@ -78,7 +78,7 @@ def test_input_correlated():
     )
   delta=0.1
   equation='a1+a2*(x+exp(a3*x))+x2'
-  fitting_method='Levenberg-Marquardt'
+  fit_method=<FitMethod.LM: 'Levenberg-Marquardt'>
   max_iterations=999
   params=    
     InputParameters(

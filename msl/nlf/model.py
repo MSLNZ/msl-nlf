@@ -121,17 +121,25 @@ class Model:
             All additional keyword arguments are passed to :meth:`.options`.
         """
         self._dll = None
-        self._tmp_dir = mkdtemp(prefix='nlf-')
-        self._cfg_path = os.path.join(self._tmp_dir, 'options.cfg')
-        self._equation = equation
-        self._version = ''
-        self._corr_dir = ''
-        self._corr_dict = {}
-        self._weighted = False
-        self._correlated = False
-        self._max_iterations = 0
-        self._dll_path = dll
-        self._show_warnings = True
+        self._tmp_dir: str = mkdtemp(prefix='nlf-')
+        self._cfg_path: str = os.path.join(self._tmp_dir, 'options.cfg')
+        self._equation: str = equation
+        self._version: str = ''
+        self._corr_dir: str = ''
+        self._corr_dict: dict = {}
+        self._dll_path: str = dll
+        self._show_warnings: bool = True
+
+        # fit options
+        self._correlated: bool = False
+        self._delta: float = 0.1
+        self._max_iterations: int = 999
+        self._fit_method: FitMethod = FitMethod.LM
+        self._second_derivs_B: bool = True
+        self._second_derivs_H: bool = True
+        self._tolerance: float = 1e-20
+        self._uy_weights_only: bool = False
+        self._weighted: bool = False
 
         # these are re-defined in Model subclasses and are
         # used when creating a CompositeModel
@@ -312,8 +320,10 @@ class Model:
                     continue
                 try:
                     options[k] = eval(v)
-                except NameError:
+                except (NameError, SyntaxError):
                     options[k] = v.rstrip()
+                if k == 'fit_method':
+                    options[k] = FitMethod(options[k])
         return options
 
     @staticmethod
@@ -677,15 +687,15 @@ class Model:
 
     def options(self,
                 *,
-                correlated: bool = False,
-                delta: float = 0.1,
-                max_iterations: int = 999,
-                method: Union[FitMethod, str] = FitMethod.LM,
-                second_derivs_B: bool = True,  # noqa
-                second_derivs_H: bool = True,  # noqa
-                tolerance: float = 1e-20,
-                uy_weights_only: bool = False,
-                weighted: bool = False) -> None:
+                correlated: bool = None,
+                delta: float = None,
+                max_iterations: int = None,
+                fit_method: Union[FitMethod, str] = None,
+                second_derivs_B: bool = None,  # noqa
+                second_derivs_H: bool = None,  # noqa
+                tolerance: float = None,
+                uy_weights_only: bool = None,
+                weighted: bool = None) -> None:
         """Configure the fitting options.
 
         Parameters
@@ -696,28 +706,33 @@ class Model:
             in which case the fit becomes a generalised least-squares fit. The
             correlations between the correlated variables can be set by calling
             :meth:`.set_correlation` or :meth:`.set_correlation_dir`.
+            Default: False.
         delta
-            Only used for Amoeba fitting.
+            Only used for Amoeba fitting. Default: 0.1.
         max_iterations
-            The maximum number of fit iterations allowed.
-        method
+            The maximum number of fit iterations allowed. Default: 999.
+        fit_method
             The fitting method to use. Can be a member name or value of the
             :class:`~msl.nlf.datatypes.FitMethod` enum.
+            Default: Levenberg-Marquardt.
         second_derivs_B
             Whether the second derivatives in the **B** matrix are included in
-            the propagation of uncertainty calculations.
+            the propagation of uncertainty calculations. Default: True.
         second_derivs_H
-            Whether the second derivatives in the curvature matrix, **H** (Hessian),
-            are included in the propagation of uncertainty calculations.
+            Whether the second derivatives in the curvature matrix, **H**
+            (Hessian), are included in the propagation of uncertainty calculations.
+            Default: True.
         tolerance
             The fitting process will stop when the relative change in chi-square
             (or some other appropriate measure) is less than this value.
+            Default: 1e-20.
         uy_weights_only
             Whether the *y* uncertainties only or a combination of the *x* and *y*
             uncertainties are used to calculate the weights for a weighted fit.
+            Default: False.
         weighted
              Whether to include the standard uncertainties in the fitting process
-             to perform a weighted fit.
+             to perform a weighted fit. Default: False.
         """
         # For details on how to create the file, see the ReadConfigFile function in
         # https://github.com/MSLNZ/Nonlinear-Fitting/blob/main/NLF%20DLL/NLFDLL.dpr
@@ -729,31 +744,45 @@ class Model:
         #
         # ShowInfoWindow is not a kwarg because the popup Window flashes to quickly
         # to be useful.
-        self._weighted = bool(weighted)
-        self._correlated = bool(correlated)
-        self._max_iterations = max_iterations
-
-        if not isinstance(method, FitMethod):
-            try:
-                method = FitMethod(method)
-            except ValueError:
+        if correlated is not None:
+            self._correlated = bool(correlated)
+        if delta is not None:
+            self._delta = float(delta)
+        if max_iterations is not None:
+            self._max_iterations = int(max_iterations)
+        if second_derivs_B is not None:
+            self._second_derivs_B = bool(second_derivs_B)
+        if second_derivs_H is not None:
+            self._second_derivs_H = bool(second_derivs_H)
+        if tolerance is not None:
+            self._tolerance = float(tolerance)
+        if uy_weights_only is not None:
+            self._uy_weights_only = bool(uy_weights_only)
+        if weighted is not None:
+            self._weighted = bool(weighted)
+        if fit_method is not None:
+            if not isinstance(fit_method, FitMethod):
                 try:
-                    method = FitMethod[method]
-                except KeyError:
-                    raise ValueError(f'{method!r} is not a valid FitMethod '
-                                     f'enum member name or value') from None
+                    fit_method = FitMethod(fit_method)
+                except ValueError:
+                    try:
+                        fit_method = FitMethod[fit_method]
+                    except KeyError:
+                        raise ValueError(f'{fit_method!r} is not a valid FitMethod '
+                                         f'enum member name or value') from None
+            self._fit_method = fit_method
 
         with open(self._cfg_path, mode='wt') as f:
-            f.write(f'weighted={bool(weighted)}\n'  # S='True';
-                    f'max_iterations={max_iterations}\n'  # StrToInt(S);
-                    f'tolerance={tolerance}\n'  # StrToFloat(S);
-                    f'delta={delta}\n'  # StrToFloat(S);
+            f.write(f'weighted={self._weighted}\n'  # S='True';
+                    f'max_iterations={self._max_iterations}\n'  # StrToInt(S);
+                    f'tolerance={self._tolerance}\n'  # StrToFloat(S);
+                    f'delta={self._delta}\n'  # StrToFloat(S);
                     f'absolute_res=Absolute\n'  # S='Absolute';
                     f'residual_type=dy v x\n'  # S=one of 'dx v x', 'dy v x', 'dx v y', 'dy v y'
-                    f'fitting_method={method.value}\n'  # S=one of FittingMethod values
-                    f'second_derivs_H={bool(second_derivs_H)}\n'  # S='True';
-                    f'second_derivs_B={bool(second_derivs_B)}\n'  # S='True';
-                    f'uy_weights_only={bool(uy_weights_only)}\n'  # S='True';
+                    f'fit_method={self._fit_method.value}\n'  # S=one of FitMethod values
+                    f'second_derivs_H={self._second_derivs_H}\n'  # S='True';
+                    f'second_derivs_B={self._second_derivs_B}\n'  # S='True';
+                    f'uy_weights_only={self._uy_weights_only}\n'  # S='True';
                     f'show_info_window=False')  # S='True';
 
     def remove_correlations(self) -> None:

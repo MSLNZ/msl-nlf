@@ -101,8 +101,8 @@ class Input:
     equation: str
     """The equation of the fit model."""
 
-    fitting_method: str
-    """The fitting method that is used. See :class:`.FitMethod`."""
+    fit_method: FitMethod
+    """The method that is used for the fit."""
 
     max_iterations: int
     """The maximum number of fit iterations allowed."""
@@ -164,7 +164,7 @@ class Input:
                f'  correlations={corr_str}\n' \
                f'  delta={self.delta}\n' \
                f'  equation={self.equation!r}\n' \
-               f'  fitting_method={self.fitting_method!r}\n' \
+               f'  fit_method={self.fit_method!r}\n' \
                f'  max_iterations={self.max_iterations}\n' \
                f'  params={param_str}\n' \
                f'  second_derivs_B={self.second_derivs_B}\n' \

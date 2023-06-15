@@ -201,8 +201,8 @@ to the fit function in the DLL
     >>> info = model.fit(x, y, params=[1, 1], debug=True)
     >>> info.weighted
     False
-    >>> info.fitting_method
-    'Levenberg-Marquardt'
+    >>> info.fit_method
+    <FitMethod.LM: 'Levenberg-Marquardt'>
     >>> info.x
     array([[1.6, 3.2, 5.5, 7.8, 9.4]])
 
@@ -219,7 +219,7 @@ You can display a summary of the input information
         )
       delta=0.1
       equation='a1+a2*x'
-      fitting_method='Levenberg-Marquardt'
+      fit_method=<FitMethod.LM: 'Levenberg-Marquardt'>
       max_iterations=999
       params=
         InputParameters(

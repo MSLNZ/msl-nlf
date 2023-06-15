@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 
+from msl.nlf import FitMethod
 from msl.nlf import load
 from msl.nlf import version_info
 
@@ -27,7 +28,7 @@ def test_3_0():
     assert inputs.max_iterations == 999
     assert inputs.tolerance == 1E-20
     assert inputs.delta == 0.1
-    assert inputs.fitting_method == 'Levenberg-Marquardt'
+    assert inputs.fit_method == FitMethod.LM
     assert inputs.second_derivs_H is True
     assert inputs.second_derivs_B is True
     assert inputs.uy_weights_only is False
@@ -111,7 +112,7 @@ def test_5_41():
     assert inputs.max_iterations == 987
     assert inputs.tolerance == 1.4e-19
     assert inputs.delta == 0.12
-    assert inputs.fitting_method == 'Levenberg-Marquardt'
+    assert inputs.fit_method == FitMethod.LM
     assert inputs.second_derivs_H is True
     assert inputs.second_derivs_B is False
     assert inputs.uy_weights_only is True
