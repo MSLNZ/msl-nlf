@@ -47,6 +47,7 @@ def test_set_correlation_dir():
 
     # the Model type is irrelevant
     with LinearModel() as model:
+        model.show_warnings = False
 
         # no correlation files exist
         model.set_correlation_dir(os.path.dirname(__file__))
@@ -153,6 +154,7 @@ def test_set_correlation():
 
     # the Model type is irrelevant
     with Model('a1+a2*(x+exp(a3*x))+x2') as model:
+        model.show_warnings = False
 
         # no correlations exist
         for boolean in (False, True):

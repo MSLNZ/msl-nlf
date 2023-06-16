@@ -578,9 +578,15 @@ class Model:
         self._update_correlations(nvars, npts)
 
         if self._show_warnings:
-            if not self._weighted and (ux is not None or uy is not None):
+            if (not self._weighted) and (ux is not None or uy is not None):
                 warnings.warn(
                     'uncertainties are specified but the fit option is set to unweighted',
+                    UserWarning,
+                    stacklevel=2
+                )
+            if (not self._correlated) and np.any(self._is_corr_array):
+                warnings.warn(
+                    'correlations are specified but the fit option is set to uncorrelated',
                     UserWarning,
                     stacklevel=2
                 )
@@ -897,7 +903,12 @@ class Model:
 
     @property
     def show_warnings(self) -> bool:
-        """Whether warning messages are shown."""
+        """Whether warning messages are shown.
+
+        Warnings are shown if correlations are defined and the fit option is
+        set to be uncorrelated, or if *ux* or *uy* are specified and the fit
+        option is unweighted.
+        """
         return self._show_warnings
 
     @show_warnings.setter
