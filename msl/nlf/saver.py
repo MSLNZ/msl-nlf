@@ -57,16 +57,6 @@ class Saver:
         """
         self._buffer.extend(pack('b', value))
 
-    def write_bytes(self, value: bytes) -> None:
-        """Write bytes.
-
-        Parameters
-        ----------
-        value
-            Write `value` to the buffer.
-        """
-        self._buffer.extend(pack(f'{len(value)}s', value))
-
     def write_extended(self, value: float) -> None:
         """Write a Delphi 10-byte extended float.
 
