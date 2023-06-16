@@ -21,11 +21,9 @@ class Loader:
         """
         with open(path, mode='rb') as fp:
             self._data = fp.read()
+        self._offset = 0
         self._view = memoryview(self._data)
-
-        self._offset = 11
-        length, buf = unpack('B10s', self._view[:self._offset])
-        self.version = float(buf[:length])
+        self.version = float(self.read_string_padded(10))
 
     def _read(self, fmt: str, size: int):
         i = self._offset
@@ -41,10 +39,6 @@ class Loader:
     def read_byte(self) -> int:
         """Read a byte."""
         return self._read('b', 1)
-
-    def read_bytes(self, length) -> bytes:
-        """Read bytes."""
-        return self._read(f'{length}s', length)
 
     def read_extended(self) -> float:
         """Read a Delphi 10-byte extended float."""
@@ -85,6 +79,18 @@ class Loader:
             length = self.read_integer()
         return self._read(f'{length}s', length).decode(**ansi)
 
+    def read_string_padded(self, length: int) -> str:
+        """Read a string that is null padded.
+
+        Parameters
+        ----------
+        length
+            The total length of the null-padded string.
+        """
+        n = self.read_byte()
+        buffer = self._read(f'{length}s', length)
+        return buffer[:n].decode(**ansi)
+
     def read_word(self) -> int:
         """Read an unsigned short."""
         return self._read('H', 2)
@@ -116,12 +122,8 @@ def load_graph(loader: Loader) -> dict:
     graph['num_curves'] = loader.read_integer()
     graph['x_axis_scale_to_window'] = loader.read_boolean()
     graph['y_axis_scale_to_window'] = loader.read_boolean()
-    n = loader.read_byte()
-    x_axis_length = loader.read_bytes(20)[:n]
-    graph['x_axis_length'] = x_axis_length.decode(**ansi)
-    n = loader.read_byte()
-    y_axis_length = loader.read_bytes(20)[:n]
-    graph['y_axis_length'] = y_axis_length.decode(**ansi)
+    graph['x_axis_length'] = loader.read_string_padded(20)
+    graph['y_axis_length'] = loader.read_string_padded(20)
     graph['x_min'] = loader.read_extended()
     graph['x_max'] = loader.read_extended()
     graph['y_min'] = loader.read_extended()
@@ -167,36 +169,24 @@ def load_graph(loader: Loader) -> dict:
     else:
         graph['x_title_auto'] = True
         graph['y_title_auto'] = True
-    n = loader.read_byte()
-    x_title = loader.read_bytes(255)[:n]
-    graph['x_title'] = x_title.decode(**ansi)
-    n = loader.read_byte()
-    y_title = loader.read_bytes(255)[:n]
-    graph['y_title'] = y_title.decode(**ansi)
+    graph['x_title'] = loader.read_string_padded(255)
+    graph['y_title'] = loader.read_string_padded(255)
     graph['x_title_font_size'] = loader.read_integer()
     graph['x_title_font_style'] = loader.read_byte()
     graph['x_title_font_pitch'] = loader.read_byte()
-    n = loader.read_byte()
-    x_title_font_name = loader.read_bytes(255)[:n]
-    graph['x_title_font_name'] = x_title_font_name.decode(**ansi)
+    graph['x_title_font_name'] = loader.read_string_padded(255)
     graph['y_title_font_size'] = loader.read_integer()
     graph['y_title_font_style'] = loader.read_byte()
     graph['y_title_font_pitch'] = loader.read_byte()
-    n = loader.read_byte()
-    y_title_font_name = loader.read_bytes(255)[:n]
-    graph['y_title_font_name'] = y_title_font_name.decode(**ansi)
+    graph['y_title_font_name'] = loader.read_string_padded(255)
     graph['x_number_font_size'] = loader.read_integer()
     graph['x_number_font_style'] = loader.read_byte()
     graph['x_number_font_pitch'] = loader.read_byte()
-    n = loader.read_byte()
-    x_number_font_name = loader.read_bytes(255)[:n]
-    graph['x_number_font_name'] = x_number_font_name.decode(**ansi)
+    graph['x_number_font_name'] = loader.read_string_padded(255)
     graph['y_number_font_size'] = loader.read_integer()
     graph['y_number_font_style'] = loader.read_byte()
     graph['y_number_font_pitch'] = loader.read_byte()
-    n = loader.read_byte()
-    y_number_font_name = loader.read_bytes(255)[:n]
-    graph['y_number_font_name'] = y_number_font_name.decode(**ansi)
+    graph['y_number_font_name'] = loader.read_string_padded(255)
     plot_types = [None, None]  # MaxCurves = 2
     curve_colour = [None, None]
     num_points = [None, None]
