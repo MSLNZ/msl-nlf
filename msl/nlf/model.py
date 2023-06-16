@@ -35,6 +35,7 @@ from .dll import fit
 from .dll import version
 from .parameter import InputParameterType
 from .parameter import InputParameters
+from .saver import save
 
 _n_params_regex = re.compile(r'a\d+')
 _n_vars_regex = re.compile(r'(?<!e)(x\d*)')
@@ -806,6 +807,48 @@ class Model:
             match = _corr_file_regex.match(filename)
             if match:
                 os.remove(os.path.join(self._tmp_dir, filename))
+
+    def save(self,
+             *,
+             path: str,
+             x: ArrayLike,
+             y: ArrayLike1D,
+             params: Union[ArrayLike1D, InputParameters],
+             ux: ArrayLike = None,
+             uy: ArrayLike1D = None,
+             comments: str = '',
+             overwrite: bool = False) -> None:
+        """Save a **.nlf** file.
+
+        The file can be opened in the Delphi GUI application or loaded via
+        the :func:`~msl.nlf.load` function.
+
+        Parameters
+        ----------
+        path
+            The **.nlf** file path.
+        x
+            The independent variable (stimulus) data.
+        y
+            The dependent variable (response) data.
+        params
+            Fit parameters.
+        ux
+            Standard uncertainties in the x data.
+        uy
+            Standard uncertainties in the y data.
+        comments
+            Additional comments to add to the file. This text will appear in
+            the *Comments* window in the Delphi GUI application.
+        overwrite
+            Whether to overwrite the file if it already exists. If the file
+            exists, and this value is :data:`False` then an error is raised.
+        """
+        from . import version_info
+        ver = f'{version_info.major}.{version_info.minor}'
+        data = self.fit(x, y, params=params, ux=ux, uy=uy, debug=True)
+        save(path=path, comments=comments, overwrite=overwrite,
+             data=data, version=ver)
 
     def set_correlation(self,
                         n1: str,
