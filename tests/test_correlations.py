@@ -193,8 +193,10 @@ def test_set_correlation():
         for boolean in (False, True):
             data = model.fit(correlated=boolean, **kwargs)
             c = data.correlations
-            assert len(c.data) == 1
-            assert c.data[0].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X1.txt')
+            assert len(c.data) == 2
+            assert c.data[0].path == os.path.join(model._corr_dir, 'CorrCoeffs X1-Y.txt')
+            assert c.data[1].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X1.txt')
+            assert np.array_equal(c.data[1].coefficients, y_x1_matrix)
             assert np.array_equal(c.data[0].coefficients, y_x1_matrix)
             assert np.array_equal(c.is_correlated, [[False, True, False],
                                                     [True, False, False],
@@ -211,11 +213,13 @@ def test_set_correlation():
         for boolean in (False, True):
             data = model.fit(correlated=boolean, **kwargs)
             c = data.correlations
-            assert len(c.data) == 2
+            assert len(c.data) == 3
             assert c.data[0].path == os.path.join(model._corr_dir, 'CorrCoeffs X1-X1.txt')
+            assert c.data[1].path == os.path.join(model._corr_dir, 'CorrCoeffs X1-Y.txt')
+            assert c.data[2].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X1.txt')
             assert np.array_equal(c.data[0].coefficients, x1_x1_matrix)
-            assert c.data[1].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X1.txt')
             assert np.array_equal(c.data[1].coefficients, y_x1_matrix)
+            assert np.array_equal(c.data[2].coefficients, y_x1_matrix)
             assert np.array_equal(c.is_correlated, [[False, True, False],
                                                     [True, True, False],
                                                     [False, False, False]])
@@ -225,13 +229,15 @@ def test_set_correlation():
         for boolean in (False, True):
             data = model.fit(correlated=boolean, **kwargs)
             c = data.correlations
-            assert len(c.data) == 3
+            assert len(c.data) == 4
             assert c.data[0].path == os.path.join(model._corr_dir, 'CorrCoeffs X1-X1.txt')
+            assert c.data[1].path == os.path.join(model._corr_dir, 'CorrCoeffs X1-Y.txt')
+            assert c.data[2].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X1.txt')
+            assert c.data[3].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-Y.txt')
             assert np.array_equal(c.data[0].coefficients, x1_x1_matrix)
-            assert c.data[1].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X1.txt')
             assert np.array_equal(c.data[1].coefficients, y_x1_matrix)
-            assert c.data[2].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-Y.txt')
-            assert np.array_equal(c.data[2].coefficients, np.array([[1., 3., 3., 3.],
+            assert np.array_equal(c.data[2].coefficients, y_x1_matrix)
+            assert np.array_equal(c.data[3].coefficients, np.array([[1., 3., 3., 3.],
                                                                     [3., 1., 3., 3.],
                                                                     [3., 3., 1., 3.],
                                                                     [3., 3., 3., 1.]]))
@@ -244,18 +250,25 @@ def test_set_correlation():
         for boolean in (False, True):
             data = model.fit(correlated=boolean, **kwargs)
             c = data.correlations
-            assert len(c.data) == 4
+            assert len(c.data) == 6
             assert c.data[0].path == os.path.join(model._corr_dir, 'CorrCoeffs X1-X1.txt')
+            assert c.data[1].path == os.path.join(model._corr_dir, 'CorrCoeffs X1-Y.txt')
+            assert c.data[2].path == os.path.join(model._corr_dir, 'CorrCoeffs X2-Y.txt')
+            assert c.data[3].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X1.txt')
+            assert c.data[4].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X2.txt')
+            assert c.data[5].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-Y.txt')
             assert np.array_equal(c.data[0].coefficients, x1_x1_matrix)
-            assert c.data[1].path == os.path.join(model._corr_dir, 'CorrCoeffs X2-Y.txt')
-            assert np.array_equal(c.data[1].coefficients, np.array([[1., 5., 5., 5.],
+            assert np.array_equal(c.data[1].coefficients, y_x1_matrix)
+            assert np.array_equal(c.data[2].coefficients, np.array([[1., 5., 5., 5.],
                                                                     [5., 1., 5., 5.],
                                                                     [5., 5., 1., 5.],
                                                                     [5., 5., 5., 1.]]))
-            assert c.data[2].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-X1.txt')
-            assert np.array_equal(c.data[2].coefficients, y_x1_matrix)
-            assert c.data[3].path == os.path.join(model._corr_dir, 'CorrCoeffs Y-Y.txt')
-            assert np.array_equal(c.data[3].coefficients, np.array([[1., 3., 3., 3.],
+            assert np.array_equal(c.data[3].coefficients, y_x1_matrix)
+            assert np.array_equal(c.data[4].coefficients, np.array([[1., 5., 5., 5.],
+                                                                    [5., 1., 5., 5.],
+                                                                    [5., 5., 1., 5.],
+                                                                    [5., 5., 5., 1.]]))
+            assert np.array_equal(c.data[5].coefficients, np.array([[1., 3., 3., 3.],
                                                                     [3., 1., 3., 3.],
                                                                     [3., 3., 1., 3.],
                                                                     [3., 3., 3., 1.]]))

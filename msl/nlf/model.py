@@ -353,17 +353,23 @@ class Model:
 
         # update from memory
         for k, v in self._corr_dict.items():
-            self._is_corr_array[v['index']] = True
-            self._is_corr_array[v['index'][::-1]] = True
+            i, j = k
+            self._is_corr_array[i, j] = True
+            self._is_corr_array[j, i] = True
             corr = v['corr']
             if isinstance(corr, float):
                 corr = np.full((npts, npts), corr)
                 np.fill_diagonal(corr, 1.0)
             elif corr.shape != (npts, npts):
-                raise ValueError(f'Invalid {k!r} correlation array shape '
+                names = '-'.join(v['names'])
+                raise ValueError(f'Invalid {names!r} correlation array shape '
                                  f'[{corr.shape} != ({npts}, {npts})]')
-            f = os.path.join(self._tmp_dir, f'CorrCoeffs {k}.txt')
+            n1, n2 = v['names']
+            f = os.path.join(self._tmp_dir, f'CorrCoeffs {n1}-{n2}.txt')
             np.savetxt(f, corr)
+            if n1 != n2:
+                f = os.path.join(self._tmp_dir, f'CorrCoeffs {n2}-{n1}.txt')
+                np.savetxt(f, corr)
 
     @staticmethod
     def create_parameters(parameters: Iterable[InputParameterType] = None) -> InputParameters:
@@ -864,7 +870,7 @@ class Model:
                                  f'[{corr.ndim} != 2]')
 
         i, j = self._get_corr_indices(s1, s2)
-        self._corr_dict[f'{s1}-{s2}'] = {'index': (i, j), 'corr': corr}
+        self._corr_dict[(i, j)] = {'corr': corr, 'names': (s1, s2)}
         self._corr_dir = self._tmp_dir
 
     def set_correlation_dir(self, directory: Union[str, None]) -> None:
