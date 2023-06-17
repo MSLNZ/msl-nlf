@@ -376,6 +376,12 @@ def save(*,
     if not overwrite and os.path.isfile(path):
         raise FileExistsError(f'Will not overwrite {path!r}')
 
+    _, extn = os.path.splitext(path)
+    if extn.lower() != '.nlf':
+        # the Delphi GUI filters files based on a .nlf extension
+        # msl-nlf does not care what the extension is
+        raise ValueError('The file extension must be .nlf')
+
     from . import version_info
     version = f'{version_info.major}.{version_info.minor}'
 

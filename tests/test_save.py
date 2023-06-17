@@ -32,6 +32,12 @@ def test_must_specify():
             model.save('', x=[1, 2], y=[1, 2])
 
 
+def test_bad_extension():
+    with LinearModel() as model:
+        with pytest.raises(ValueError, match=r'\.nlf'):
+            model.save('filename.msl', x=[1, 2], y=[3, 4], params=[1, 1])
+
+
 def test_overwrite():
     path = os.path.join(TMP_DIR, 'overwrite.nlf')
     with LinearModel() as model:
