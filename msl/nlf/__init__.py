@@ -74,7 +74,7 @@ def load(path: str, *, dll: str = None) -> LoadedModel:
         >>> from msl.nlf import LinearModel
         >>> m = LinearModel()
         >>> results = m.fit([1, 2, 3], [0.07, 0.27, 0.33])
-        >>> model.save('samples.nlf', overwrite=True)
+        >>> m.save('samples.nlf', overwrite=True)
 
     >>> from msl.nlf import load
     >>> loaded = load('samples.nlf')
