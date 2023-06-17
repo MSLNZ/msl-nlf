@@ -290,6 +290,44 @@ the residuals can be calculated
     >>> y - model.evaluate(x, result)
     array([ 0.22663415,  4.47570732, -7.16      , -0.99570732,  3.45336585])
 
+.. _nlf-save-load:
+
+Save and Load .nlf Files
+------------------------
+A :class:`~msl.nlf.model.Model` can be saved to a file and loaded from a file.
+The file that is created with **msl-nlf** can also be opened in the Delphi
+GUI application and a **.nlf** file that is created in the Delphi GUI application
+can be loaded in **msl-nlf**. See the :meth:`~.msl.nlf.model.Model.save` method
+and the :func:`~msl.nlf.load` function for more details.
+
+.. invisible-code-block: pycon
+
+    >>> import os
+    >>> if os.path.isfile('samples.nlf'): os.remove('samples.nlf')
+
+.. code-block:: python
+
+    # Create a model
+    from msl.nlf import LinearModel
+    model = LinearModel()
+    model.fit([1, 2, 3], [0.07, 0.27, 0.33])
+
+    # Save the model to a file.
+    # The results of the fit are not written to the file, so if you are
+    # opening 'samples.nlf' in the Delphi GUI, click the Calculate button
+    # and the Results table and the Graphs will be updated.
+    model.save('samples.nlf')
+
+
+    # At a later date, load the file and perform the fit
+    from msl.nlf import load
+    loaded = load('samples.nlf')
+    results = loaded.fit(loaded.x, loaded.y, params=loaded.params)
+
+.. invisible-code-block: pycon
+
+    >>> os.remove('samples.nlf')
+
 .. _nlf-context-manager:
 
 A Model as a Context Manager

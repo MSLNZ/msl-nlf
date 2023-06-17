@@ -41,3 +41,6 @@ junit.xml
 coverage.xml
 .pytest_cache/
 condatests.ini
+
+# files that are created during the doctests
+samples.nlf
