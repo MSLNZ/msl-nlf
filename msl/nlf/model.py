@@ -573,7 +573,10 @@ class Model:
 
         ux = _fill_array(self._ux, ux)
         if (ux is not None) and (x.shape != ux.shape):
-            raise ValueError(f'x.shape != ux.shape [{x.shape} != {ux.shape}]')
+            # allow a 1D ux array provided that nvars=1
+            # for example, if x.shape=(1, 3) and ux.shape=(3,) then it is ok
+            if not (nvars == 1 and npts == ux.shape[0]):
+                raise ValueError(f'x.shape != ux.shape [{x.shape} != {ux.shape}]')
 
         uy = _fill_array(self._uy, uy)
         if (uy is not None) and (len(y) != len(uy)):

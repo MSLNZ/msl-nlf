@@ -157,6 +157,13 @@ def test_ux():
     with pytest.raises(ValueError, match=r'An array of shape \(1, 1, 2\)'):
         model.fit(x=[1, 2], y=[1, 2], params=[1, 2], ux=[[[1, 2]]])
 
+    # x.shape=(1, 2) with ux.shape=(2,) is okay
+    model.fit(x=[[1, 2]], y=[1, 2], params=[1, 1], ux=[0.1, 0.2],
+              weighted=True, debug=True)
+    # x.shape=(1, 2) with ux.shape=(3,) is not okay
+    with pytest.raises(ValueError, match=r'x.shape != ux.shape'):
+        model.fit(x=[[1, 2]], y=[1, 2], params=[1, 1], ux=[0.1, 0.2, 0.3])
+
 
 def test_uy():
     model = LinearModel()
