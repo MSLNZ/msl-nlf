@@ -46,6 +46,14 @@ __all__ = (
 def load(path: str, *, dll: str = None) -> LoadedModel:
     """Load a **.nlf** file.
 
+    No information about the fit results are read from the file. The fit
+    equation, the fit options and the correlation coefficients have been
+    set in the :class:`~msl.nlf.model.LoadedModel` that is returned, but
+    you must specify the *x*, *y*, *params*, *ux* and/or *uy* attributes
+    of the :class:`~msl.nlf.model.LoadedModel` to the
+    :meth:`~msl.nlf.model.Model.fit` method (or specify different data
+    to the :meth:`~msl.nlf.model.Model.fit` method).
+
     Parameters
     ----------
     path
@@ -58,6 +66,25 @@ def load(path: str, *, dll: str = None) -> LoadedModel:
     -------
     :class:`~msl.nlf.model.LoadedModel`
         The loaded model.
+
+    Examples
+    --------
+    .. invisible-code-block: pycon
+
+        >>> from msl.nlf import LinearModel
+        >>> m = LinearModel()
+        >>> results = m.fit([1, 2, 3], [0.07, 0.27, 0.33])
+        >>> model.save('samples.nlf', overwrite=True)
+
+    >>> from msl.nlf import load
+    >>> loaded = load('samples.nlf')
+    >>> results = loaded.fit(loaded.x, loaded.y, params=loaded.params)
+
+    .. invisible-code-block: pycon
+
+        >>> import os
+        >>> if os.path.isfile('samples.nlf'): os.remove('samples.nlf')
+
     """
     # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas
     # TFittingMethod=(LM,AmLS,AmMD,AmMM,PwLS,PwMD,PwMM);
@@ -86,17 +113,17 @@ def load(path: str, *, dll: str = None) -> LoadedModel:
         weighted=file['weighted'],
     )
 
-    loaded = LoadedModel(file['equation'], dll=dll, **options)
+    mod = LoadedModel(file['equation'], dll=dll, **options)
     if file['correlated_data']:
         import numpy as np
         for i, j in np.argwhere(file['is_correlated']):
             matrix = file['corr_coeff'][i, j]
             n1 = 'Y' if i == 0 else f'X{i}'
             n2 = 'Y' if j == 0 else f'X{j}'
-            loaded.set_correlation(n1, n2, matrix=matrix)
+            mod.set_correlation(n1, n2, matrix=matrix)
 
     for i, (a, c) in enumerate(zip(file['a'], file['constant']), start=1):
-        loaded.params[f'a{i}'] = a, c
+        mod.params[f'a{i}'] = a, c
 
     # the comments text contains information about the fonts and has \\par for paragraphs
     # {\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang5129{\\fonttbl{\\f0\\fnil\\fcharset0 Times New Roman;}}\r\n
@@ -111,11 +138,11 @@ def load(path: str, *, dll: str = None) -> LoadedModel:
         comments = comments.replace('\\}', '}')
         comments = comments.strip()
 
-    loaded.comments = comments
-    loaded.nlf_path = path
-    loaded.nlf_version = str(file['version'])
-    loaded.ux = file['ux']
-    loaded.uy = file['uy']
-    loaded.x = file['x']
-    loaded.y = file['y']
-    return loaded
+    mod.comments = comments
+    mod.nlf_path = path
+    mod.nlf_version = str(file['version'])
+    mod.ux = file['ux']
+    mod.uy = file['uy']
+    mod.x = file['x']
+    mod.y = file['y']
+    return mod
