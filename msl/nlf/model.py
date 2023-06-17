@@ -830,10 +830,14 @@ class Model:
         The file can be opened in the Delphi GUI application or loaded via
         the :func:`~msl.nlf.load` function.
 
+        No information about the fit results are written to the file. If you
+        are opening the file in the Delphi GUI, you must click the *Calculate*
+        button to perform the fit and create the graphs.
+
         Parameters
         ----------
         path
-            The **.nlf** file path.
+            The path to save the file to. The file extension must be **.nlf**.
         x
             The independent variable (stimulus) data. If not specified, the
             data that was most recently passed to :meth:`.fit` or a previous
@@ -845,7 +849,7 @@ class Model:
         params
             Fit parameters. If not specified, the parameters that were
             most recently passed to :meth:`.fit` or a previous
-            call to :meth:`.save` is used. Since the Delphi GUI application
+            call to :meth:`.save` are used. Since the Delphi GUI application
             does not use the :attr:`~msl.nlf.parameter.InputParameter.label`
             attribute, the *labels* are not saved and will be :data:`None`
             when the file is reloaded.
