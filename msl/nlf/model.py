@@ -130,6 +130,8 @@ class Model:
         self._corr_dict: dict = {}
         self._dll_path: str = dll
         self._show_warnings: bool = True
+        self._parameters: InputParameters = InputParameters()
+        self._npts: int = -1
 
         # fit options
         self._correlated: bool = False
@@ -565,6 +567,8 @@ class Model:
             for i, value in enumerate(params, start=1):
                 parameters[f'a{i}'] = value
 
+        self._npts = npts
+        self._parameters = parameters
         _fill_array(self._a, parameters.values())
         _fill_array(self._constant, parameters.constants())
         if nparams != self._num_params:
@@ -812,14 +816,14 @@ class Model:
                 os.remove(os.path.join(self._tmp_dir, filename))
 
     def save(self,
-             *,
              path: str,
-             x: ArrayLike,
-             y: ArrayLike1D,
-             params: Union[ArrayLike1D, InputParameters],
+             *,
+             x: ArrayLike = None,
+             y: ArrayLike1D = None,
+             params: Union[ArrayLike1D, InputParameters] = None,
              ux: ArrayLike = None,
              uy: ArrayLike1D = None,
-             comments: str = '',
+             comments: str = None,
              overwrite: bool = False) -> None:
         """Save a **.nlf** file.
 
@@ -831,15 +835,26 @@ class Model:
         path
             The **.nlf** file path.
         x
-            The independent variable (stimulus) data.
+            The independent variable (stimulus) data. If not specified, the
+            data that was most recently passed to :meth:`.fit` or a previous
+            call to :meth:`.save` is used.
         y
-            The dependent variable (response) data.
+            The dependent variable (response) data. If not specified, the
+            data that was most recently passed to :meth:`.fit` or a previous
+            call to :meth:`.save` is used.
         params
-            Fit parameters.
+            Fit parameters. If not specified, the parameters that were
+            most recently passed to :meth:`.fit` or a previous
+            call to :meth:`.save` is used. Since the Delphi GUI application
+            does not use the :attr:`~msl.nlf.parameter.InputParameter.label`
+            attribute, the *labels* are not saved and will be :data:`None`
+            when the file is reloaded.
         ux
-            Standard uncertainties in the x data.
+            Standard uncertainties in the x data. If not specified, the
+            data that was most recently passed to :meth:`.fit` is used.
         uy
-            Standard uncertainties in the y data.
+            Standard uncertainties in the y data. If not specified, the
+            data that was most recently passed to :meth:`.fit` is used.
         comments
             Additional comments to add to the file. This text will appear in
             the *Comments* window in the Delphi GUI application.
@@ -847,11 +862,26 @@ class Model:
             Whether to overwrite the file if it already exists. If the file
             exists, and this value is :data:`False` then an error is raised.
         """
-        from . import version_info
-        ver = f'{version_info.major}.{version_info.minor}'
+        nvars, npts = self._num_vars, self._npts
+
+        if x is None:
+            if npts < 0:
+                raise ValueError('Must specify x data before saving')
+            x = self._x[:nvars, :npts]
+
+        if y is None:
+            if npts < 0:
+                raise ValueError('Must specify y data before saving')
+            y = self._y[:npts]
+
+        if params is None:
+            if not self._parameters:
+                raise ValueError('Must specify params before saving')
+            params = self._parameters
+
+        c = comments or ''
         data = self.fit(x, y, params=params, ux=ux, uy=uy, debug=True)
-        save(path=path, comments=comments, overwrite=overwrite,
-             data=data, version=ver)
+        save(path=path, comments=c, overwrite=overwrite, data=data)
 
     def set_correlation(self,
                         n1: str,

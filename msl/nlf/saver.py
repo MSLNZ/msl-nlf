@@ -354,8 +354,7 @@ def save(*,
          path: str,
          comments: str,
          overwrite: bool,
-         data: Input,
-         version: str) -> None:
+         data: Input) -> None:
     """Save a **.nlf** file.
 
     The file can be opened in the Delphi GUI application or loaded via
@@ -373,11 +372,12 @@ def save(*,
         exists, and this value is :data:`False`, then an error is raised.
     data
         The input data to the fit model.
-    version
-        The DLL version number.
     """
     if not overwrite and os.path.isfile(path):
         raise FileExistsError(f'Will not overwrite {path!r}')
+
+    from . import version_info
+    version = f'{version_info.major}.{version_info.minor}'
 
     # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas
     # TFittingMethod=(LM,AmLS,AmMD,AmMM,PwLS,PwMD,PwMM);
