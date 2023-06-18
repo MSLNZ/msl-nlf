@@ -216,3 +216,16 @@ def test_multiple_variables(equation):
 
     y_fit = model.evaluate(x, result)
     assert pytest.approx(result.chisq) == np.sum((y - y_fit)**2)
+
+
+@pytest.mark.parametrize(
+    'equation',
+    ['a1+a2*x',     # use x instead of x1
+     'a1+a2*x1'])   # use x1 instead of x
+def test_1d_x_x1(equation):
+    x = np.array([1, 2, 3, 4])
+    y = np.array([1, 2, 3, 4])
+    with Model(equation) as model:
+        result = model.fit(x, y, params=[0, 1])
+        y_fit = model.evaluate(x, result)
+        assert pytest.approx(result.chisq) == np.sum((y - y_fit)**2)

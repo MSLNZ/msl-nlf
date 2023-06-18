@@ -459,6 +459,7 @@ class Model:
 
         if nvars == 1:
             namespace['x'] = x
+            namespace['x1'] = x  # x can also be written as x1
         else:
             namespace['x'] = x[0]  # x1 can also be written as x
             for i, row in enumerate(x, start=1):
