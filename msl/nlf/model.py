@@ -409,13 +409,6 @@ class Model:
                  result: Union[Result, Dict[str, float]]) -> np.ndarray[float]:
         """Evaluate the model to get the *y* (response) values.
 
-        .. attention::
-
-           This method calls the built-in :func:`eval` function which, in a
-           malicious environment, can be used to execute arbitrary code. If
-           you trust the :attr:`.equation` of this :class:`.Model`, there
-           is no reason to be concerned.
-
         Parameters
         ----------
         x
@@ -465,7 +458,7 @@ class Model:
             for i, row in enumerate(x, start=1):
                 namespace[f'x{i}'] = row
 
-        return eval(equation, {}, namespace)
+        return eval(equation, {'__builtins__': {}}, namespace)
 
     @overload
     def fit(self,

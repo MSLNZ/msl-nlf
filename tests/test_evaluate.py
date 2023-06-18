@@ -229,3 +229,27 @@ def test_1d_x_x1(equation):
         result = model.fit(x, y, params=[0, 1])
         y_fit = model.evaluate(x, result)
         assert pytest.approx(result.chisq) == np.sum((y - y_fit)**2)
+
+
+@pytest.mark.parametrize(
+    'code',
+    ['__name__',
+     '__doc__',
+     '__package__',
+     '__loader__',
+     '__spec__',
+     '__build_class__',
+     '__import__',
+     'abs(-1)',
+     'all([0, 1, 0])',
+     'compile("import os", "<string>", "exec")',
+     'compile("import sys", "<string>", "exec")',
+     f'open({__file__!r})'])
+def test_builtins_removed(code):
+    x = np.array([1, 2, 3, 4])
+    y = np.array([1, 2, 3, 4])
+    with LinearModel() as model:
+        result = model.fit(x, y, params=[0, 1])
+        model._equation = code
+        with pytest.raises(NameError):
+            model.evaluate(x, result)
