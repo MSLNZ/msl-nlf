@@ -1,8 +1,6 @@
 """
 Wrapper around the DLL functions.
 """
-from __future__ import annotations
-
 from ctypes import CDLL
 from ctypes import POINTER
 from ctypes import c_bool

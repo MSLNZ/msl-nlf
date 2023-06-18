@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import List
 
 import numpy as np
 
@@ -43,7 +42,7 @@ class Correlation:
     coefficients: np.ndarray[float]
     """The correlation coefficients."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # add indentation to the numpy array
         coeff_str = np.array2string(self.coefficients, prefix=' ' * 15)
 
@@ -57,14 +56,14 @@ class Correlation:
 class Correlations:
     """Information about the correlations for a fit model."""
 
-    data: List[Correlation]
+    data: list[Correlation]
     """A :class:`list` of :class:`.Correlation` objects."""
 
     is_correlated: np.ndarray[bool]
     """Indicates which variables are correlated. The index 0 corresponds
     to the `y`-variable, the index 1 to `x1`, 2 to `x2`, etc."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # add indentation to the data
         data_str = ''
         if len(self.data) > 0:
@@ -141,7 +140,7 @@ class Input:
     y: np.ndarray[float]
     """The dependent variable (response) data."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         indent = ' ' * 4
 
         # add indentation to the correlations
@@ -207,7 +206,7 @@ class Result:
     params: ResultParameters
     """The result parameters from the fit model."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # add indentation to the numpy arrays
         cor_str = np.array2string(self.correlation, prefix=' ' * 14)
         cov_str = np.array2string(self.covariance, prefix=' ' * 13)
@@ -236,7 +235,7 @@ class Result:
     def to_ureal(self,
                  *,
                  with_future: bool = False,
-                 label: str = 'future') -> List[UncertainReal]:
+                 label: str = 'future') -> list[UncertainReal]:
         r"""Convert the result to a correlated ensemble of
         :ref:`uncertain real numbers <uncertain_real_number>`.
 

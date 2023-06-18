@@ -21,7 +21,7 @@ from .dll import NPAR
 _name_regex = re.compile(r'^a(?P<i>\d+)$')
 
 
-def _check_name(name: str) -> Tuple[str, int]:
+def _check_name(name: str) -> tuple[str, int]:
     """Make sure that the parameter name is valid."""
     match = _name_regex.match(name)
     if not match:
@@ -249,12 +249,12 @@ class Parameters(Generic[T]):
         params = ',\n  '.join(f'{p}' for p in self)
         return f'{self.__class__.__name__}(\n  {params}\n)'
 
-    def labels(self) -> List[Union[str, None]]:
+    def labels(self) -> list[str | None]:
         """Returns the :attr:`~msl.nlf.parameter.Parameter.label`
         of each parameter."""
         return [p.label for p in self]
 
-    def names(self) -> List[str]:
+    def names(self) -> list[str]:
         """Returns the :attr:`~msl.nlf.parameter.Parameter.name`
         of each parameter."""
         return [p.name for p in self]

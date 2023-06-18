@@ -8,11 +8,9 @@ import re
 import warnings
 from shutil import rmtree
 from tempfile import mkdtemp
-from typing import Dict
 from typing import Iterable
 from typing import Literal
 from typing import Sequence
-from typing import Tuple
 from typing import Union
 from typing import overload
 
@@ -146,9 +144,9 @@ class Model:
 
         # these are re-defined in Model subclasses and are
         # used when creating a CompositeModel
-        self._factor = ''
-        self._offset = ''
-        self._composite_equation = ''
+        self._factor: str = ''
+        self._offset: str = ''
+        self._composite_equation: str = ''
 
         variables = set(_n_vars_regex.findall(equation))
         if 'x' in variables and 'x1' in variables:
@@ -156,7 +154,7 @@ class Model:
         if 'x0' in variables:
             raise ValueError("Cannot use 'x0' in equation")
 
-        self._num_vars = len(variables)
+        self._num_vars: int = len(variables)
         if self._num_vars > self.MAX_VARIABLES:
             raise ValueError(f'Too many x variables in equation '
                              f'[{self._num_vars} > {self.MAX_VARIABLES}]')
@@ -165,7 +163,7 @@ class Model:
         if 'a0' in params:
             raise ValueError("Cannot use 'a0' in equation")
 
-        self._num_params = len(params)
+        self._num_params: int = len(params)
         if self._num_params > self.MAX_PARAMETERS:
             raise ValueError(f'Too many fitting parameters in equation '
                              f'[{self._num_params} > {self.MAX_PARAMETERS}]')
@@ -191,7 +189,7 @@ class Model:
                 raise ValueError('Cannot load a 64-bit DLL in 32-bit Python')
             dll = os.path.join(here, 'nlf64.dll')
 
-        self._dll_path = dll
+        self._dll_path: str = dll
 
         try:
             self._dll = LoadLibrary(dll, libtype='cdll')
@@ -207,7 +205,7 @@ class Model:
             self._ua = np.zeros(self.MAX_PARAMETERS)
             define_fit_fcn(self._dll.lib, False)
 
-    def __add__(self, rhs):
+    def __add__(self, rhs: Model | float | int) -> Model:
         op = '+'
         if isinstance(rhs, Model):
             return CompositeModel(op, self, rhs, dll=self._dll_path)
@@ -216,14 +214,14 @@ class Model:
         raise TypeError(f'unsupported operand type(s) for {op}: '
                         f'{type(self).__name__!r} and {type(rhs).__name__!r}')
 
-    def __radd__(self, lhs):
+    def __radd__(self, lhs: float | int) -> Model:
         op = '+'
         if isinstance(lhs, (float, int)):
             return Model(f'{lhs}{op}{self._equation}', dll=self._dll_path)
         raise TypeError(f'unsupported operand type(s) for {op}: '
                         f'{type(lhs).__name__!r} and {type(self).__name__!r}')
 
-    def __sub__(self, rhs):
+    def __sub__(self, rhs: Model | float | int) -> Model:
         op = '-'
         if isinstance(rhs, Model):
             return CompositeModel(op, self, rhs, dll=self._dll_path)
@@ -232,14 +230,14 @@ class Model:
         raise TypeError(f'unsupported operand type(s) for {op}: '
                         f'{type(self).__name__!r} and {type(rhs).__name__!r}')
 
-    def __rsub__(self, lhs):
+    def __rsub__(self, lhs: float | int) -> Model:
         op = '-'
         if isinstance(lhs, (float, int)):
             return Model(f'{lhs}{op}{self._equation}', dll=self._dll_path)
         raise TypeError(f'unsupported operand type(s) for {op}: '
                         f'{type(lhs).__name__!r} and {type(self).__name__!r}')
 
-    def __mul__(self, rhs):
+    def __mul__(self, rhs: Model | float | int) -> Model:
         op = '*'
         if isinstance(rhs, Model):
             return CompositeModel(op, self, rhs, dll=self._dll_path)
@@ -248,14 +246,14 @@ class Model:
         raise TypeError(f'unsupported operand type(s) for {op}: '
                         f'{type(self).__name__!r} and {type(rhs).__name__!r}')
 
-    def __rmul__(self, lhs):
+    def __rmul__(self, lhs: float | int) -> Model:
         op = '*'
         if isinstance(lhs, (float, int)):
             return Model(f'{lhs}{op}({self._equation})', dll=self._dll_path)
         raise TypeError(f'unsupported operand type(s) for {op}: '
                         f'{type(lhs).__name__!r} and {type(self).__name__!r}')
 
-    def __truediv__(self, rhs):
+    def __truediv__(self, rhs: Model | float | int) -> Model:
         op = '/'
         if isinstance(rhs, Model):
             return CompositeModel(op, self, rhs, dll=self._dll_path)
@@ -264,26 +262,26 @@ class Model:
         raise TypeError(f'unsupported operand type(s) for {op}: '
                         f'{type(self).__name__!r} and {type(rhs).__name__!r}')
 
-    def __rtruediv__(self, lhs):
+    def __rtruediv__(self, lhs: float | int) -> Model:
         op = '/'
         if isinstance(lhs, (float, int)):
             return Model(f'{lhs}{op}({self._equation})', dll=self._dll_path)
         raise TypeError(f'unsupported operand type(s) for {op}: '
                         f'{type(lhs).__name__!r} and {type(self).__name__!r}')
 
-    def __del__(self):
+    def __del__(self) -> None:
         try:
             self._cleanup()
         except AttributeError:
             pass
 
-    def __enter__(self):
+    def __enter__(self) -> Model:
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self._cleanup()
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         dirname, basename = os.path.split(self._dll_path)
         if os.path.dirname(__file__) == dirname:
             path = basename
@@ -330,7 +328,7 @@ class Model:
         return options
 
     @staticmethod
-    def _get_corr_indices(s1: str, s2: str) -> Tuple[int, int]:
+    def _get_corr_indices(s1: str, s2: str) -> tuple[int, int]:
         # s1 and s2 are one of 'Y', 'X1', 'X2', 'X3', ...
         i = 0 if s1 == 'Y' else int(s1[1:])
         j = 0 if s2 == 'Y' else int(s2[1:])
@@ -406,7 +404,7 @@ class Model:
 
     def evaluate(self,
                  x: ArrayLike,
-                 result: Union[Result, Dict[str, float]]) -> np.ndarray[float]:
+                 result: Result | dict[str, float]) -> np.ndarray[float]:
         """Evaluate the model to get the *y* (response) values.
 
         Parameters
@@ -465,7 +463,7 @@ class Model:
             x: ArrayLike,
             y: ArrayLike1D,
             *,
-            params: Union[ArrayLike1D, InputParameters] = None,
+            params: ArrayLike1D | InputParameters = None,
             ux: ArrayLike = None,
             uy: ArrayLike1D = None,
             debug: Literal[False] = False,
@@ -477,7 +475,7 @@ class Model:
             x: ArrayLike,
             y: ArrayLike1D,
             *,
-            params: Union[ArrayLike1D, InputParameters] = None,
+            params: ArrayLike1D | InputParameters = None,
             ux: ArrayLike = None,
             uy: ArrayLike1D = None,
             debug: Literal[True],
@@ -488,7 +486,7 @@ class Model:
             x: ArrayLike,
             y: ArrayLike1D,
             *,
-            params: Union[ArrayLike1D, InputParameters] = None,
+            params: ArrayLike1D | InputParameters = None,
             ux: ArrayLike = None,
             uy: ArrayLike1D = None,
             debug: bool = False,
@@ -704,7 +702,7 @@ class Model:
                 correlated: bool = None,
                 delta: float = None,
                 max_iterations: int = None,
-                fit_method: Union[FitMethod, str] = None,
+                fit_method: FitMethod | str = None,
                 second_derivs_B: bool = None,  # noqa
                 second_derivs_H: bool = None,  # noqa
                 tolerance: float = None,
@@ -814,7 +812,7 @@ class Model:
              *,
              x: ArrayLike = None,
              y: ArrayLike1D = None,
-             params: Union[ArrayLike1D, InputParameters] = None,
+             params: ArrayLike1D | InputParameters = None,
              ux: ArrayLike = None,
              uy: ArrayLike1D = None,
              comments: str = None,
@@ -947,7 +945,7 @@ class Model:
         self._corr_dict[(i, j)] = {'corr': corr, 'names': (s1, s2)}
         self._corr_dir = self._tmp_dir
 
-    def set_correlation_dir(self, directory: Union[str, None]) -> None:
+    def set_correlation_dir(self, directory: str | None) -> None:
         """Set the directory where the correlation coefficients are located.
 
         The directory should contain correlation-coefficient files that must
@@ -1123,7 +1121,7 @@ class LoadedModel(Model):
         self.y: np.ndarray[float] = np.empty(0)
         """The dependent variable (response) data."""
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         # add indentation to the parameters
         if not self.params:
             param_str = 'InputParameters()'
