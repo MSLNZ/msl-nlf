@@ -101,6 +101,6 @@ class ClientNLF(Client64):
         # Convert a list back into a numpy ndarray
         for k, v in result.items():
             if isinstance(v, list):
-                result[k] = np.asarray(v)
+                result[k] = np.array(v)
 
         return result
