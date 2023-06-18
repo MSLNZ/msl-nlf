@@ -53,7 +53,7 @@ def _fill_array(a, b):
     if b is None:
         return
 
-    b = np.asarray(b)
+    b = np.asanyarray(b)
     if b.ndim == 1:
         if a.ndim == 1:
             a[:b.size] = b
@@ -436,7 +436,7 @@ class Model:
 
         namespace.update(**self._np_map)
 
-        x = np.asarray(x)
+        x = np.asanyarray(x)
         if x.ndim == 1:
             nvars, npts = (1, x.size)
         elif x.ndim == 2:
@@ -936,7 +936,7 @@ class Model:
         if value is not None:
             corr = float(value)
         else:
-            corr = np.asarray(matrix)  # noqa: matrix cannot be None
+            corr = np.asanyarray(matrix)  # noqa: matrix cannot be None
             if corr.ndim != 2:
                 raise ValueError(f'Invalid correlation matrix dimension '
                                  f'[{corr.ndim} != 2]')
