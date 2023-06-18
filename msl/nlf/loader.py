@@ -67,16 +67,9 @@ class Loader:
         """Read an unsigned integer."""
         return self._read('I', 4)
 
-    def read_string(self, length: int = None) -> str:
-        """Read a string.
-
-        Parameters
-        ----------
-        length
-            The length of the string.
-        """
-        if length is None:
-            length = self.read_integer()
+    def read_string(self) -> str:
+        """Read a string."""
+        length = self.read_integer()
         return self._read(f'{length}s', length).decode(**ansi)
 
     def read_string_padded(self, length: int) -> str:
