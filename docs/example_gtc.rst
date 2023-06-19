@@ -28,7 +28,8 @@ This translates to the following equation that is passed to a
 
 The *intercept* (:math:`a_1`) and *slope* (:math:`a_2`) result parameters
 are converted to a correlated ensemble of
-:ref:`uncertain real numbers <uncertain_real_number>` which are
+:ref:`uncertain real numbers <uncertain_real_number>` (via the
+:meth:`~msl.nlf.datatypes.Result.to_ureal` method) which are
 used to calculate the response at a chosen stimulus.
 
 .. code-block:: python
