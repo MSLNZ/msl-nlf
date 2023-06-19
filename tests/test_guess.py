@@ -174,3 +174,18 @@ def test_gaussian_normalized(area, mu, sigma):
         assert pytest.approx(area) == params['area'].value
         assert pytest.approx(mu) == params['mu'].value
         assert pytest.approx(sigma) == params['sigma'].value
+
+
+@pytest.mark.parametrize(
+    'amplitude, omega, phase',
+    [(10, 25, 0.23),
+     (1, 50, 3.86)])
+def test_sin(amplitude, omega, phase):
+    x = np.linspace(-1, 1, 100)
+    y = amplitude * np.sin(omega*x + phase)
+    with SineModel() as model:
+        params = model.guess(x, y)
+        assert len(params) == 3
+        assert pytest.approx(amplitude, rel=1e-2) == params['amplitude'].value
+        assert pytest.approx(omega, rel=1e-2) == params['omega'].value
+        assert pytest.approx(phase, abs=2*math.pi/11) == params['phase'].value
