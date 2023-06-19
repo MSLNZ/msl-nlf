@@ -5,7 +5,6 @@ from .datatypes import FitMethod
 from .model import LoadedModel
 from .model import Model
 from .models import ConstantModel
-from .models import CosineModel
 from .models import ExponentialModel
 from .models import GaussianModel
 from .models import LinearModel
@@ -34,7 +33,6 @@ __all__ = (
     'InputParameters',
     'Model',
     'ConstantModel',
-    'CosineModel',
     'ExponentialModel',
     'GaussianModel',
     'LinearModel',

@@ -50,7 +50,7 @@ def test_cos():
         return a1 * np.cos(a2 * t + a3)
 
     x = np.linspace(0, 1, 100)
-    with CosineModel() as model:
+    with Model('a1*cos(a2*x+a3)') as model:
         y = model.evaluate(x, {'a1': a1, 'a2': a2, 'a3': a3})
 
     assert np.allclose(cos(x), y)

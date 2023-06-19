@@ -71,11 +71,6 @@ def test_sine():
         assert m.equation == 'a1*sin(a2*x+a3)'
 
 
-def test_cosine():
-    with CosineModel() as m:
-        assert m.equation == 'a1*cos(a2*x+a3)'
-
-
 def test_gaussian():
     with GaussianModel(normalized=True) as m:
         assert m.equation == f'a1/(a3*{sq2pi})*exp(-0.5*((x-a2)/a3)^2)'
@@ -205,14 +200,6 @@ def test_sine_offset():
 
     m = ConstantModel() - SineModel()
     assert m.equation == f'(a1)-(a2*sin(a3*x+a4))'
-
-
-def test_cosine_offset():
-    m = CosineModel() + ConstantModel()
-    assert m.equation == f'(a1*cos(a2*x+a3))+(a4)'
-
-    m = ConstantModel() - CosineModel()
-    assert m.equation == f'(a1)-(a2*cos(a3*x+a4))'
 
 
 def test_exponential_offset():

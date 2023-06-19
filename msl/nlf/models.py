@@ -2,14 +2,13 @@
 Predefined models
 
 * :class:`.ConstantModel`
-* :class:`.CosineModel`
 * :class:`.ExponentialModel`
 * :class:`.GaussianModel`
 * :class:`.LinearModel`
 * :class:`.PolynomialModel`
 * :class:`.SineModel`
 """
-from __future__ import annotations
+from __future__ import annotations  # to render ArrayLike1D in docs
 
 import math
 import warnings
@@ -22,8 +21,8 @@ from .model import Model
 from .parameter import InputParameters
 
 __all__ = (
-    'GaussianModel', 'ExponentialModel', 'SineModel', 'CosineModel',
-    'ConstantModel', 'LinearModel', 'PolynomialModel',
+    'ConstantModel', 'ExponentialModel', 'GaussianModel', 'LinearModel',
+    'PolynomialModel', 'SineModel',
 )
 
 
@@ -84,6 +83,7 @@ class GaussianModel(Model):
     def guess(self,
               x: ArrayLike1D,
               y: ArrayLike1D,
+              *,
               n: int = 3) -> InputParameters:
         """Converts the data to a quadratic and calls the
         :func:`~numpy.polynomial.polynomial.polyfit` function.
@@ -179,7 +179,7 @@ class LinearModel(Model):
         Returns
         -------
         :class:`.InputParameters`
-            Initial guess for the slope and intercept.
+            Initial guess for the intercept and slope.
         """
         a1, a2 = polyfit(x, y, 1)
         return InputParameters((('a1', a1, False, 'intercept'),
@@ -209,29 +209,49 @@ class SineModel(Model):
         self._factor = 'a1'
         self._composite_equation = sin
 
-
-class CosineModel(Model):
-
-    def __init__(self, **kwargs) -> None:
-        """A model based on a cosine function.
-
-        The function is defined as
-
-        .. math::
-
-            f(x; a) = a_1 cos(a_2 x + a_3)
+    def guess(self,
+              x: ArrayLike1D,
+              y: ArrayLike1D,
+              *,
+              uniform: bool = True,
+              n: int = 11) -> InputParameters:
+        """Uses an FFT to determine the amplitude and angular frequency.
 
         Parameters
         ----------
-        **kwargs
-            All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
-        """
-        cos = 'cos(a2*x+a3)'
-        super().__init__(f'a1*{cos}', **kwargs)
+        x
+            The independent variable (stimulus) data. The *x* data
+            must be sorted.
+        y
+            The dependent variable (response) data.
+        uniform
+            Whether the *x* data has uniform spacing between each value.
+        n
+            The number of sub-intervals to break up [0, :math:`2\\pi`) to
+            determine the phase guess.
 
-        # must define after calling super()
-        self._factor = 'a1'
-        self._composite_equation = cos
+        Returns
+        -------
+        :class:`.InputParameters`
+            Initial guess for the amplitude, angular frequency and phase.
+        """
+        x, y = np.asanyarray(x), np.asanyarray(y)
+        dx = abs(x[1] - x[0]) if uniform else np.mean(np.abs(np.diff(x)))
+        y -= np.mean(y)
+        two_pi = 2 * np.pi
+
+        frequencies = np.fft.fftfreq(len(x), dx)
+        amplitudes = np.absolute(np.fft.fft(y))
+        argmax = np.argmax(amplitudes)
+        a1 = 2.0 * amplitudes[argmax] / len(amplitudes)
+        a2 = two_pi * abs(frequencies[argmax])
+        phases = np.linspace(0, two_pi, n, endpoint=False)
+        norms = [np.linalg.norm(y - a1*np.sin(a2*x+p)) for p in phases]
+        a3 = phases[np.argmin(norms)]
+        return InputParameters((
+            ('a1', a1, False, 'amplitude'),
+            ('a2', a2, False, 'omega'),
+            ('a3', a3, False, 'phase')))
 
 
 class ExponentialModel(Model):
@@ -269,6 +289,7 @@ class ExponentialModel(Model):
     def guess(self,
               x: ArrayLike1D,
               y: ArrayLike1D,
+              *,
               n: int = 3) -> InputParameters:
         """Linearizes the equation and calls the
         :func:`~numpy.polynomial.polynomial.polyfit` function.
@@ -280,8 +301,9 @@ class ExponentialModel(Model):
         y
             The dependent variable (response) data.
         n
-            For a cumulative equation, finds the maximum *n*
-            values in *y* and calculates the mean.
+            For a cumulative equation, uses the maximum *n*
+            values in *y* to calculate the mean and assigns
+            the mean value as the amplitude guess.
 
         Returns
         -------

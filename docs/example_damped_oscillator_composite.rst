@@ -10,7 +10,7 @@ The equation for the underdamped oscillator is
 
 .. math::
 
-    f(x; a) = a_1 e^{-a_2 x} cos(a_3 x + a_4) + a_5
+    f(x; a) = a_1 e^{-a_2 x} sin(a_3 x + a_4) + a_5
 
 First, simulate some noisy data *(we can also see what the expected results of the*
 :math:`a_i` *parameters are)*
@@ -20,30 +20,30 @@ First, simulate some noisy data *(we can also see what the expected results of t
     import numpy as np
 
     x = np.linspace(0, 1, num=200)
-    noise = np.random.normal(scale=0.1, size=x.size)
-    y = 2.6 * np.exp(-4.3*x) * np.cos(48.3*x + 0.5) + 0.7 + noise
+    noise = np.random.normal(scale=0.15, size=x.size)
+    y = 2.6 * np.exp(-4.3*x) * np.sin(48.3*x + 0.5) + 0.7 + noise
 
 Next, set up the model by creating a composite model from built-in
 :ref:`models <nlf-models>`, create the initial-guess parameters and apply the fit
 
 .. code-block:: python
 
-    from msl.nlf import ExponentialModel, CosineModel, ConstantModel
+    from msl.nlf import ExponentialModel, SineModel, ConstantModel
 
     # Create the composite model
-    model = ExponentialModel() * CosineModel() + ConstantModel()
+    model = ExponentialModel() * SineModel() + ConstantModel()
 
     # Equivalently, without using the built-in models, one could have explicitly written the equation
-    # model = Model('a1*exp(-a2*x)*cos(a3*x+a4)+a5')
+    # model = Model('a1*exp(-a2*x)*sin(a3*x+a4)+a5')
 
     # Create the initial-guess parameters. All are allowed to vary during the
     # fitting process and assign helpful labels
     params = model.create_parameters()
-    params.add('a1', 1, False, 'amplitude')
-    params.add('a2', 1, False, 'damping_coeff')
-    params.add('a3', 20, False, 'frequency')
-    params.add('a4', 0, False, 'phase')
-    params.add('a5', 0, False, 'offset')
+    params['a1'] = 1, False, 'amplitude'
+    params['a2'] = 1, False, 'damping'
+    params['a3'] = 10, False, 'omega'
+    params['a4'] = 0, False, 'phase'
+    params['a5'] = 0, False, 'offset'
 
     # Apply the fit
     result = model.fit(x, y, params=params)
