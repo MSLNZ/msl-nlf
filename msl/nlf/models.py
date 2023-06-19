@@ -9,7 +9,10 @@ Predefined models
 * :class:`.PolynomialModel`
 * :class:`.SineModel`
 """
+from __future__ import annotations
+
 import math
+import warnings
 
 import numpy as np
 from numpy.polynomial.polynomial import polyfit
@@ -24,18 +27,18 @@ __all__ = (
 )
 
 
-def _max_n(array: ArrayLike1D, n: int) -> np.ndarray:
-    """Return the maximum *n* values in *array*."""
+def _mean_max_n(array: ArrayLike1D, n: int) -> float:
+    """Return the mean of the maximum *n* values in *array*."""
     a = np.asanyarray(array)
     indices = np.argpartition(a, -n)[-n:]
-    return a[indices]
+    return float(np.mean(a[indices]))
 
 
-def _min_n(array: ArrayLike1D, n: int) -> np.ndarray:
-    """Return the minimum *n* values in *array*."""
+def _mean_min_n(array: ArrayLike1D, n: int) -> float:
+    """Return the mean of the minimum *n* values in *array*."""
     a = np.asanyarray(array)
     indices = np.argpartition(a, n)[:n]
-    return a[indices]
+    return float(np.mean(a[indices]))
 
 
 class GaussianModel(Model):
@@ -43,7 +46,7 @@ class GaussianModel(Model):
     def __init__(self, normalized: bool = False, **kwargs) -> None:
         r"""A model based on a Gaussian function or a normal distribution.
 
-        The un-normalized function is defined as
+        The non-normalized function is defined as
 
         .. math::
 
@@ -77,6 +80,65 @@ class GaussianModel(Model):
             self._composite_equation = f'1/a3*{exp}'
         else:
             self._composite_equation = exp
+
+    def guess(self,
+              x: ArrayLike1D,
+              y: ArrayLike1D,
+              n: int = 3) -> InputParameters:
+        """Converts the data to a quadratic and calls the
+        :func:`~numpy.polynomial.polynomial.polyfit` function.
+
+        Parameters
+        ----------
+        x
+            The independent variable (stimulus) data.
+        y
+            The dependent variable (response) data.
+        n
+            Uses the *n* maximum and the *n* minimum values in *y* to
+            determine the region where the peak/dip is located.
+
+        Returns
+        -------
+        :class:`.InputParameters`
+            Initial guess for the amplitude (area), :math:`\\mu` and
+            :math:`\\sigma` parameters.
+        """
+        y = np.asanyarray(y)
+        y_min = _mean_min_n(y, n)
+        y_max = _mean_max_n(y, n)
+        inverted = abs(y_min) > abs(y_max)
+
+        # only use the points near the peak/dip for the polyfit
+        if inverted:
+            indices = y < 0.368 * y_min  # 0.368=1/e
+        else:
+            indices = y > 0.368 * y_max
+
+        x, y = x[indices], y[indices]
+        ln_y = np.log(np.absolute(y) + 1e-15)
+        with warnings.catch_warnings():
+            # ignore "RankWarning: The fit may be poorly conditioned"
+            warnings.simplefilter('ignore')
+            a, b, c = polyfit(x, ln_y, 2)  # noqa
+
+        sigma = np.sqrt(abs(1/(2*c)))
+        mu = -b / (2*c)
+        amplitude = np.exp(a - b**2/(4*c))
+        if inverted:
+            amplitude *= -1
+
+        if self._normalized:
+            a1_label = 'area'
+            a1 = amplitude * sigma * math.sqrt(2.0 * math.pi)
+        else:
+            a1_label = 'amplitude'
+            a1 = amplitude
+
+        return InputParameters((
+            ('a1', a1, False, a1_label),
+            ('a2', mu, False, 'mu'),
+            ('a3', sigma, False, 'sigma'),))
 
 
 class LinearModel(Model):
@@ -207,8 +269,7 @@ class ExponentialModel(Model):
     def guess(self,
               x: ArrayLike1D,
               y: ArrayLike1D,
-              n: int = 3,
-              **kwargs) -> InputParameters:
+              n: int = 3) -> InputParameters:
         """Linearizes the equation and calls the
         :func:`~numpy.polynomial.polynomial.polyfit` function.
 
@@ -221,8 +282,6 @@ class ExponentialModel(Model):
         n
             For a cumulative equation, finds the maximum *n*
             values in *y* and calculates the mean.
-        kwargs
-            All other keyword arguments are ignored.
 
         Returns
         -------
@@ -230,10 +289,9 @@ class ExponentialModel(Model):
             Initial guess for the amplitude and decay factor.
         """
         amplitude = None
-        y = np.asarray(y)
-
+        y = np.asanyarray(y)
         if self._cumulative:
-            amplitude = np.mean(_max_n(y, n))
+            amplitude = _mean_max_n(y, n)
             abs_y = np.absolute(1.0-y/amplitude)
         else:
             abs_y = np.absolute(y)

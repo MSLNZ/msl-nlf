@@ -1,59 +1,28 @@
+import math
+
 import numpy as np
 import pytest
 
 from msl.nlf import *
-from msl.nlf.models import _max_n  # noqa
-from msl.nlf.models import _min_n  # noqa
+from msl.nlf.models import _mean_max_n  # noqa
+from msl.nlf.models import _mean_min_n  # noqa
 
 
-def test_max_n():
+def test_mean_max_n():
     a = np.arange(1234)
     np.random.shuffle(a)
-
-    assert np.array_equal(_max_n(a, 1), [1233])
-
-    out = _max_n(a, 2)
-    assert len(out) == 2
-    assert 1232 in out
-    assert 1233 in out
-
-    out = _max_n(a, 10)
-    assert len(out) == 10
-    assert 1224 in out
-    assert 1225 in out
-    assert 1226 in out
-    assert 1227 in out
-    assert 1228 in out
-    assert 1229 in out
-    assert 1230 in out
-    assert 1231 in out
-    assert 1232 in out
-    assert 1233 in out
+    assert _mean_max_n(a, 1) == 1233.
+    assert _mean_max_n(a, 2) == sum([1232, 1233]) / 2.0
+    assert _mean_max_n(a, 10) == sum([1224, 1225, 1226, 1227, 1228,
+                                      1229, 1230, 1231, 1232, 1233])/10.0
 
 
-def test_min_n():
+def test_mean_min_n():
     a = np.arange(1234)
     np.random.shuffle(a)
-
-    assert np.array_equal(_min_n(a, 1), [0])
-
-    out = _min_n(a, 2)
-    assert len(out) == 2
-    assert 0 in out
-    assert 1 in out
-
-    out = _min_n(a, 10)
-    assert len(out) == 10
-    assert 0 in out
-    assert 1 in out
-    assert 2 in out
-    assert 3 in out
-    assert 4 in out
-    assert 5 in out
-    assert 6 in out
-    assert 7 in out
-    assert 8 in out
-    assert 9 in out
+    assert _mean_min_n(a, 1) == 0.0
+    assert _mean_min_n(a, 2) == sum([0, 1]) / 2.0
+    assert _mean_min_n(a, 10) == sum([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]) / 10.0
 
 
 def test_not_implemented():
@@ -165,3 +134,43 @@ def test_exponential_cumulative(amp, decay):
         assert len(params) == 2
         assert pytest.approx(amp, abs=0.025) == params['amplitude'].value
         assert pytest.approx(decay, abs=0.25) == params['decay'].value
+
+
+@pytest.mark.parametrize(
+    'amplitude, mu, sigma',
+    [(123, 3.3, 0.8),
+     (123, -3.3, 0.8),
+     (123, -3.3, 2.8),
+     (-123, -3.3, 2.8),
+     (-123, -9.3, 1.0),
+     (1, 9.3, 0.5),
+     (10, 0, 10)])
+def test_gaussian(amplitude, mu, sigma):
+    x = np.linspace(-10, 10)
+    y = amplitude * np.exp(-0.5 * ((x-mu)/sigma)**2)
+    with GaussianModel() as model:
+        params = model.guess(x, y)
+        assert len(params) == 3
+        assert pytest.approx(amplitude) == params['amplitude'].value
+        assert pytest.approx(mu) == params['mu'].value
+        assert pytest.approx(sigma) == params['sigma'].value
+
+
+@pytest.mark.parametrize(
+    'area, mu, sigma',
+    [(123, 3.3, 0.8),
+     (123, -3.3, 0.8),
+     (123, -3.3, 2.8),
+     (-123, -3.3, 2.8),
+     (-123, -9.3, 1.0),
+     (1, 9.3, 0.5),
+     (10, 0, 10)])
+def test_gaussian_normalized(area, mu, sigma):
+    x = np.linspace(-10, 10)
+    y = area / (sigma * math.sqrt(2.0 * math.pi)) * np.exp(-0.5 * ((x-mu)/sigma)**2)
+    with GaussianModel(normalized=True) as model:
+        params = model.guess(x, y)
+        assert len(params) == 3
+        assert pytest.approx(area) == params['area'].value
+        assert pytest.approx(mu) == params['mu'].value
+        assert pytest.approx(sigma) == params['sigma'].value
