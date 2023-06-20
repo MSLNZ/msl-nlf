@@ -649,6 +649,14 @@ class Model:
         corr[result['covariance'] == 0] = 0
         result['correlation'] = corr
 
+        if self._show_warnings:
+            if result['iterations'] >= self._max_iterations:
+                warnings.warn(
+                    f'maximum number of fit iterations exceeded [{result["iterations"]}]',
+                    UserWarning,
+                    stacklevel=2
+                )
+
         return Result(**result)
 
     def guess(self, x: ArrayLike, y: ArrayLike1D, **kwargs) -> InputParameters:
@@ -985,7 +993,8 @@ class Model:
 
         Warnings are shown if correlations are defined and the fit option is
         set to be uncorrelated, or if *ux* or *uy* are specified and the fit
-        option is unweighted.
+        option is unweighted, or if the maximum number of fit iterations
+        has been exceeded.
         """
         return self._show_warnings
 
