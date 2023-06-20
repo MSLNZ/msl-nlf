@@ -49,9 +49,6 @@ class NIST:
         with open(path) as fp:
             lines = [line.strip() for line in fp.readlines()]
 
-        # whether log(y) must be taken before applying the fit
-        self.log_y = name == 'Nelson'
-
         self.equation, num_params = datasets[name]
         if name in ('ENSO', 'Roszman1'):
             # defined in Roszman1, used in ENSO and Roszman1
@@ -83,21 +80,23 @@ class NIST:
         self.npts = int(lines[44 + num_params][29:])
 
         # read the data
-        row = 59
-        assert lines[row].startswith('Data:')
+        skiprows = 60
+        assert lines[skiprows-1].startswith('Data:')
         if name == 'Nelson':
             dtype = [('y', float), ('x1', float), ('x2', float)]
         else:
             dtype = [('y', float), ('x', float)]
-        data = np.loadtxt(path, skiprows=row+1, dtype=dtype)
-        self.y = data['y']
-        assert len(self.y) == self.npts
+        data = np.loadtxt(path, skiprows=skiprows, dtype=dtype)
+
         if name == 'Nelson':
+            self.y = np.log(data['y'])
             self.x = np.vstack((data['x1'], data['x2']))
             assert self.x.shape == (2, self.npts)
         else:
+            self.y = data['y']
             self.x = data['x']
             assert len(self.x) == self.npts
+        assert len(self.y) == self.npts
 
 
 def download():

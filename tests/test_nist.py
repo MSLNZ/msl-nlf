@@ -1,102 +1,115 @@
-import numpy as np
 import pytest
 
 from NIST_datasets._nist import NIST  # noqa
 from msl.nlf import Model
 
 
-def check_nist(
+def assert_nist(
         dataset: str,
-        rel: float = None,
-        abs: float = None,  # noqa
-        abs_chisqr: float = None,
-        abs_eof: float = None,
-        skip_guess1: bool = False,
+        *,
+        relative: float = 1e-6,
+        show_warnings: bool = True,
         **options) -> None:
-    """Assert that the NLF result is equivalent to the certified NIST result."""
+    """Assert that the NLF result is equivalent to the NIST result.
+
+    Parameters
+    ----------
+    dataset
+        The name of a NIST dataset.
+    relative
+        The relative tolerance between the NFL result and the NIST result.
+    show_warnings
+        Whether warnings from the Model should be suppressed.
+    **options
+        All other keyword arguments are passed to the Model.
+    """
     nist = NIST(dataset)
     with Model(nist.equation, **options) as model:
+        model.show_warnings = show_warnings
         for guess in (nist.guess1, nist.guess2):
-            if skip_guess1 and guess is nist.guess1:
-                continue
-            y = np.log(nist.y) if nist.log_y else nist.y
-            result = model.fit(nist.x, y, params=guess)
+            result = model.fit(nist.x, nist.y, params=guess)
             assert nist.dof == result.dof
-            assert pytest.approx(nist.chisqr, abs=abs_chisqr) == result.chisq
-            assert pytest.approx(nist.eof, abs=abs_eof) == result.eof
+            assert pytest.approx(nist.chisqr) == result.chisq
+            assert pytest.approx(nist.eof) == result.eof
             assert len(result.params) == len(nist.certified)
             for p in result.params:
                 c = nist.certified[p.name]
-                assert pytest.approx(p.value, rel=rel, abs=abs) == c['value']
-                assert pytest.approx(p.uncert, rel=rel, abs=abs) == c['uncert']
+                assert pytest.approx(c['value'], rel=relative) == p.value
+                assert pytest.approx(c['uncert'], rel=relative) == p.uncert
 
 
 def test_Misra1a():  # noqa
-    check_nist('Misra1a')
+    assert_nist('Misra1a')
 
 
 def test_Chwirut2():  # noqa
-    check_nist('Chwirut2')
+    assert_nist('Chwirut2')
 
 
 def test_Chwirut1():  # noqa
-    check_nist('Chwirut1')
+    assert_nist('Chwirut1')
 
 
 def test_Lanczos3():  # noqa
-    check_nist('Lanczos3', max_iterations=1500)
+    assert_nist('Lanczos3',
+                max_iterations=1500)
 
 
 def test_Gauss1():  # noqa
-    check_nist('Gauss1')
+    assert_nist('Gauss1')
 
 
 def test_Gauss2():  # noqa
-    check_nist('Gauss2')
+    assert_nist('Gauss2')
 
 
 def test_DanWood():  # noqa
-    check_nist('DanWood')
+    assert_nist('DanWood')
 
 
 def test_Misra1b():  # noqa
-    check_nist('Misra1b')
+    assert_nist('Misra1b')
 
 
 def test_Kirby2():  # noqa
-    check_nist('Kirby2')
+    assert_nist('Kirby2')
 
 
 def test_Hahn1():  # noqa
-    check_nist('Hahn1')
+    assert_nist('Hahn1')
 
 
 def test_Nelson():  # noqa
-    check_nist('Nelson')
+    assert_nist('Nelson')
 
 
-# def test_MGH17():  # noqa
-#     check_nist('MGH17')
+def test_MGH17():  # noqa
+    assert_nist('MGH17',
+                fit_method=Model.FitMethod.POWELL_LS,
+                max_iterations=2200,
+                relative=2e-4)
 
 
 def test_Lanczos1():  # noqa
-    check_nist('Lanczos1', max_iterations=1500)
+    assert_nist('Lanczos1',
+                max_iterations=1500)
 
 
 def test_Lanczos2():  # noqa
-    check_nist('Lanczos2', max_iterations=1500)
+    assert_nist('Lanczos2',
+                max_iterations=1500)
 
 
 def test_Gauss3():  # noqa
-    check_nist('Gauss3')
+    assert_nist('Gauss3')
 
 
 def test_Misra1c():  # noqa
-    check_nist('Misra1c')
+    assert_nist('Misra1c')
 
 
 def test_Misra1d():  # noqa
-    check_nist('Misra1d')
+    assert_nist('Misra1d')
 
 
 def test_Roszman1():  # noqa
@@ -108,43 +121,45 @@ def test_Roszman1():  # noqa
 
 
 def test_ENSO():  # noqa
-    check_nist('ENSO')
+    assert_nist('ENSO')
 
 
-# def test_MGH09():  # noqa
-#     check_nist('MGH09')
+def test_MGH09():  # noqa
+    assert_nist('MGH09',
+                max_iterations=1900)
 
 
 def test_Thurber():  # noqa
-    check_nist('Thurber')
+    assert_nist('Thurber')
 
 
 def test_BoxBOD():  # noqa
-    # for guess1, get the following error
-    #  RuntimeError: Error in Gauss-Jordan elimination routine - singular matrix.
-    check_nist('BoxBOD', skip_guess1=True)
+    assert_nist('BoxBOD',
+                fit_method=Model.FitMethod.POWELL_LS)
 
 
 def test_Rat42():  # noqa
-    check_nist('Rat42')
+    assert_nist('Rat42')
 
 
-# def test_MGH10():  # noqa
-#     check_nist('MGH10')
+def test_MGH10():  # noqa
+    assert_nist('MGH10',
+                fit_method=Model.FitMethod.AMOEBA_LS,
+                max_iterations=2600,
+                show_warnings=False)
 
 
 def test_Eckerle4():  # noqa
-    check_nist('Eckerle4')
+    assert_nist('Eckerle4')
 
 
 def test_Rat43():  # noqa
-    check_nist('Rat43')
+    assert_nist('Rat43')
 
 
-# def test_Bennett5():  # noqa
-#     check_nist('Bennett5',
-#                fit_method=Model.FitMethod.AMOEBA_LS,
-#                rel=1e-4,
-#                abs_chisqr=1e-8,
-#                abs_eof=1e-8,
-#                max_iterations=2000)
+def test_Bennett5():  # noqa
+    assert_nist('Bennett5',
+                fit_method=Model.FitMethod.AMOEBA_LS,
+                max_iterations=6000,
+                relative=2e-6,
+                show_warnings=False)
