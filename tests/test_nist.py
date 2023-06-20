@@ -17,9 +17,9 @@ def assert_nist(
     dataset
         The name of a NIST dataset.
     relative
-        The relative tolerance between the NFL result and the NIST result.
+        The relative tolerance between the NLF result and the NIST result.
     show_warnings
-        Whether warnings from the Model should be suppressed.
+        Whether warnings from the Model should be shown.
     **options
         All other keyword arguments are passed to the Model.
     """
