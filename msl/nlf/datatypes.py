@@ -22,7 +22,20 @@ from .parameter import ResultParameters
 
 
 class FitMethod(Enum):
-    """Fitting methods."""
+    """Fitting methods.
+
+    Least squares (LS) minimises the sum of the squares of the vertical distances
+    between each point and the fitted curve. The algorithm that is implemented
+    for Levenberg Marquardt, Amoeba and Powell is described in
+    `Numerical Recipes <http://numerical.recipes/>`_.
+
+    Minimum distance (MD) minimises the sum of the distances (in two dimensions)
+    between each point and the fitted curve. This type of fit is not available
+    as a correlated fit.
+
+    MiniMax (MM) minimises the value of the maximum absolute y-residual. This
+    type of fit is not available as a correlated fit.
+    """
     LM = 'Levenberg-Marquardt'
     AMOEBA_LS = 'Amoeba least squares'
     AMOEBA_MD = 'Amoeba minimum distance'
