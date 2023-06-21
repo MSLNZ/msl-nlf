@@ -14,7 +14,6 @@ illustrates the differences between the DLL versions.
     =========================================================  ===============================================
     Can be used in both 32- and 64-bit versions of Python      Can only be used in 64-bit Python
     When used in 64-bit Python, the fit will take longer [#]_  There is no performance overhead
-    Delphi uses 10 bytes for the floating-point type           Delphi uses 8 bytes for the floating-point type
     Limited to 4GB RAM                                         Can access more than 4GB RAM
     =========================================================  ===============================================
 
