@@ -1,6 +1,6 @@
 """
-The word "demo" in this test script filename refers to the example script that
-somebody at MSL wrote to illustrate how to interact with the DLL. This test
+The word "demo" in this test script filename refers to the example Python script
+that P. Saunders wrote to illustrate how to interact with the DLL. This test
 verifies that the same results are obtained.
 """
 import numpy as np
