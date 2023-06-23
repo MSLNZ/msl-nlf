@@ -88,7 +88,7 @@ parameter is held constant during the fitting process
    >>> result = model.fit(x, y, params=params)
    >>> result.params
    ResultParameters(
-      ResultParameter(name='a1', value=0.0, uncert=5.1324181499..., label='intercept'),
+      ResultParameter(name='a1', value=0.0, uncert=0.0, label='intercept'),
       ResultParameter(name='a2', value=4.4815604681..., uncert=0.3315980376..., label='slope')
    )
 

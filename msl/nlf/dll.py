@@ -77,12 +77,22 @@ def fit(dll: CDLL, **k) -> dict:
     n, c = k['nparams'], k['covar']
     if hasattr(c, 'dtype'):
         covar = c[:n, :n]
+
+        # In the Delphi code, the software doesn't attempt to calculate a value
+        # for ua[i] and it puts a blank cell into the Results spreadsheet. But
+        # if a fit had previously been carried out with a[i] varying, then ua[i]
+        # will have the previous value because that part of the covariance matrix
+        # doesn't get overwritten.
+        k['ua'][k['constant']] = 0.0
+        ua = k['ua'][:n]
     else:
         covar = [[c[i][j] for i in range(n)] for j in range(n)]
+        constant = k['constant'].contents
+        ua = [0.0 if constant[i] else u for i, u in enumerate(k['ua'][:n])]
 
     return {
         'a': k['a'][:n],
-        'ua': k['ua'][:n],
+        'ua': ua,
         'covariance': covar,
         'chisq': chisq.value,
         'eof': eof.value,
