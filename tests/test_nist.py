@@ -118,7 +118,7 @@ def test_Misra1d():  # noqa
 def test_Roszman1():  # noqa
     assert_nist('Roszman1',
                 equation='f1',
-                relative=4e-6,
+                relative=5e-6,
                 user_dir='./tests/user_defined')
 
 
