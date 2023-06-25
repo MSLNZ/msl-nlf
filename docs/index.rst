@@ -55,6 +55,7 @@ Contents
    getting_started
    examples
    32-bit vs 64-bit DLL <32vs64bit>
+   user_defined
    API <api>
    License <license>
    Authors <authors>

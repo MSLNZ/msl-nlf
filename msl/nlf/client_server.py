@@ -1,5 +1,5 @@
 """
-Call functions in a 32-bit version of the DLL from 64-bit Python.
+Call functions in a 32-bit version of a DLL from 64-bit Python.
 """
 from array import array
 from ctypes import POINTER
@@ -12,8 +12,11 @@ from msl.loadlib import Server32
 
 if Server32.is_interpreter():
     from dll import *
+    class np:  # noqa: mimics type hinting on the Server
+        ndarray = dict
 else:
     import numpy as np
+    from .dll import UserDefined
 
 
 class ServerNLF(Server32):
@@ -33,11 +36,29 @@ class ServerNLF(Server32):
         super().__init__(path, 'cdll', host, port)
         self._ua = real_param_data()
         self._covar = square_matrix()
+        self._user_function = None
         define_fit_fcn(self.lib, True)
 
     def dll_version(self) -> str:
         """Get the version number from the DLL."""
         return version(self.lib)
+
+    def evaluate(self, x: list[list[float]], a: list[float]) -> list[float]:
+        """Evaluate the user-defined function.
+
+        Parameters
+        ----------
+        x
+            Independent variable (stimulus) data.
+        a
+            Parameter values.
+
+        Returns
+        -------
+        :class:`list` [ :class:`float` ]
+            Dependent variable (response) data.
+        """
+        return evaluate(self._user_function, x, a)
 
     def fit(self, **kwargs) -> dict:
         """Fit the model to the data using the supplied keyword arguments."""
@@ -63,6 +84,40 @@ class ServerNLF(Server32):
 
         return result
 
+    @staticmethod
+    def get_user_defined(directory: str) -> dict:
+        """Get all user-defined functions.
+
+        Parameters
+        ----------
+        directory
+            The directory to look for the user-defined functions.
+
+        Returns
+        -------
+        :class:`dict`
+            The user-defined functions.
+        """
+        new = {}
+        for k, v in get_user_defined(directory).items():
+            new[k] = v.to_dict()
+        return new
+
+    def load_user_defined(self, equation: str, directory: str) -> None:
+        """Load a user-defined function in a custom DLL.
+
+        Parameters
+        ----------
+        equation
+            The equation to load.
+        directory
+            The directory to look for the user-defined function.
+        """
+        for v in get_user_defined(directory).values():
+            if v.equation == equation:
+                self._user_function = v.function
+                break
+
 
 class ClientNLF(Client64):
 
@@ -80,6 +135,23 @@ class ClientNLF(Client64):
     def dll_version(self) -> str:
         """Get the version number from the DLL."""
         return self.request32('dll_version')
+
+    def evaluate(self, x: np.ndarray[float], a: np.ndarray[float]) -> np.ndarray[float]:
+        """Evaluate the user-defined function.
+
+        Parameters
+        ----------
+        x
+            Independent variable (stimulus) data.
+        a
+            Parameter values.
+
+        Returns
+        -------
+        :class:`~numpy.ndarray` [ :class:`float` ]
+            Dependent variable (response) data.
+        """
+        return np.array(self.request32('evaluate', x.tolist(), a.tolist()))
 
     def fit(self, **kwargs) -> dict:
         """Fit the model to the data using the supplied keyword arguments."""
@@ -104,3 +176,33 @@ class ClientNLF(Client64):
                 result[k] = np.array(v)
 
         return result
+
+    def get_user_defined(self, directory: str) -> dict[str, UserDefined]:
+        """Get all user-defined functions.
+
+        Parameters
+        ----------
+        directory
+            The directory to look for the user-defined functions.
+
+        Returns
+        -------
+        :class:`dict` [ :class:`str`, :class:`.UserDefined` ]
+            The keys are the filenames and the values are :class:`.UserDefined`.
+        """
+        functions = {}
+        for k, v in self.request32('get_user_defined', directory).items():
+            functions[k] = UserDefined(**v)
+        return functions
+
+    def load_user_defined(self, equation: str, directory: str) -> None:
+        """Load a user-defined function in a custom DLL.
+
+        Parameters
+        ----------
+        equation
+            The equation to load.
+        directory
+            The directory to look for the user-defined function.
+        """
+        self.request32('load_user_defined', equation, directory)

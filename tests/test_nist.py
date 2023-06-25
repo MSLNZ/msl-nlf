@@ -7,6 +7,7 @@ from msl.nlf import Model
 def assert_nist(
         dataset: str,
         *,
+        equation: str = None,
         relative: float = 1e-6,
         show_warnings: bool = True,
         **options) -> None:
@@ -16,6 +17,8 @@ def assert_nist(
     ----------
     dataset
         The name of a NIST dataset.
+    equation
+        The equation to use. Only used by Roszman1.
     relative
         The relative tolerance between the NLF result and the NIST result.
     show_warnings
@@ -24,7 +27,7 @@ def assert_nist(
         All other keyword arguments are passed to the Model.
     """
     nist = NIST(dataset)
-    with Model(nist.equation, **options) as model:
+    with Model(equation or nist.equation, **options) as model:
         model.show_warnings = show_warnings
         for guess in (nist.guess1, nist.guess2):
             result = model.fit(nist.x, nist.y, params=guess)
@@ -113,11 +116,10 @@ def test_Misra1d():  # noqa
 
 
 def test_Roszman1():  # noqa
-    # Roszman1 requires arctan, which is not supported by the DLL
-    nist = NIST('Roszman1')
-    with Model(nist.equation) as model:
-        with pytest.raises(RuntimeError, match='Invalid Equation'):
-            model.fit(nist.x, nist.y, params=nist.guess1)
+    assert_nist('Roszman1',
+                equation='f1',
+                relative=4e-6,
+                user_dir='./tests/user_defined')
 
 
 def test_ENSO():  # noqa

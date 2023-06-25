@@ -9,13 +9,14 @@ illustrates the differences between the DLL versions.
     :widths: 50 50
     :align: center
 
-    =========================================================  ===============================================
+    =========================================================  ================================================
                            32-bit DLL                                              64-bit DLL
-    =========================================================  ===============================================
+    =========================================================  ================================================
     Can be used in both 32- and 64-bit versions of Python      Can only be used in 64-bit Python
-    When used in 64-bit Python, the fit will take longer [#]_  There is no performance overhead
+    When used in 64-bit Python, the fit will take longer [1]_  There is no performance overhead
     Limited to 4GB RAM                                         Can access more than 4GB RAM
-    =========================================================  ===============================================
+    Can load a 32-bit user-defined DLL function [2]_           Can load a 64-bit user-defined DLL function [2]_
+    =========================================================  ================================================
 
 If loading the 32-bit DLL in 64-bit Python, it is important to reduce the number
 of times a :class:`~msl.nlf.model.Model` is created to fit data. In this case,
@@ -41,7 +42,10 @@ for more details about the use of the *with* statement::
             result = model.fit(data.x, data.y)
 
 
-.. [#]
+.. [1]
     This is not due to the 32-bit Delphi code, but due to an overhead on the
     Python side to exchange data between 64-bit Python and a 32-bit DLL.
     When the 32-bit DLL is used in 32-bit Python, there is no overhead.
+
+.. [2]
+    See :ref:`nlf-user-defined-function`

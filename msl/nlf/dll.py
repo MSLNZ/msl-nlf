@@ -1,17 +1,26 @@
 """
 Wrapper around the DLL functions.
 """
+from __future__ import annotations
+
+import os
 from ctypes import CDLL
 from ctypes import POINTER
+from ctypes import byref
 from ctypes import c_bool
 from ctypes import c_double
 from ctypes import c_int
 from ctypes import c_wchar_p
+from ctypes import create_string_buffer
 from ctypes import create_unicode_buffer
+from dataclasses import dataclass
+from typing import Callable
+from typing import Sequence
 
 __all__ = ('NPTS', 'NPAR', 'NVAR',
            'fit', 'version', 'define_fit_fcn',
-           'real_param_data', 'square_matrix')
+           'real_param_data', 'square_matrix',
+           'UserDefined', 'get_user_defined', 'evaluate')
 
 NPTS = 100001  # max points
 NPAR = 99  # max parameters
@@ -177,3 +186,131 @@ def define_fit_fcn(dll: CDLL, as_ctypes: bool) -> None:
         POINTER(c_bool),    # var Error:Boolean
         c_wchar_p           # ErrorStr:PChar
     ]
+
+
+@dataclass
+class UserDefined:
+    """A user-defined function that has been compiled to a DLL."""
+
+    equation: str
+    """The value to use as the *equation* for a :class:`~msl.nlf.model.Model`."""
+
+    function: Callable
+    """A reference to the *GetFunctionValue* function."""
+
+    name: str
+    """The name returned by the *GetFunctionName* function."""
+
+    num_parameters: int
+    """The value returned by the *GetNumParameters* function."""
+
+    num_variables: int
+    """The value returned by the *GetNumVariables* function."""
+
+    def to_dict(self) -> dict:
+        """Convert this object to be a pickleable :class:`dict`.
+
+        The value of :attr:`.function` becomes :data:`None`.
+        """
+        return {
+            'equation': self.equation,
+            'function': None,
+            'name': self.name,
+            'num_parameters': self.num_parameters,
+            'num_variables': self.num_variables,
+        }
+
+
+def get_user_defined(directory: str) -> dict[str, UserDefined]:
+    """Get all user-defined functions.
+
+    Parameters
+    ----------
+    directory
+        The directory to look for the user-defined functions.
+
+    Returns
+    -------
+    :class:`dict` [ :class:`str`, :class:`.UserDefined` ]
+        The keys are the filenames and the values are :class:`.UserDefined`.
+    """
+    functions = {}
+    n = c_int()
+    buffer = create_string_buffer(255)
+    for filename in os.listdir(directory):
+        _, ext = os.path.splitext(filename)
+        if ext.lower() != '.dll':
+            continue
+
+        try:
+            dll = CDLL(os.path.join(directory, filename))
+        except OSError:
+            # perhaps loading a DLL of the wrong bitness
+            continue
+
+        try:
+            dll.GetFunctionName(buffer)
+        except AttributeError:
+            continue
+
+        try:
+            dll.GetNumParameters(byref(n))
+        except AttributeError:
+            continue
+        else:
+            num_par = n.value
+
+        try:
+            dll.GetNumVariables(byref(n))
+        except AttributeError:
+            continue
+        else:
+            num_var = n.value
+
+        try:
+            dll.GetFunctionValue
+        except AttributeError:
+            continue
+
+        name = buffer.value.decode(encoding='ansi', errors='replace')
+        equation, *rest = name.split(':')
+
+        functions[filename] = UserDefined(
+            equation=equation,
+            function=dll.GetFunctionValue,
+            name=name,
+            num_parameters=num_par,
+            num_variables=num_var
+        )
+
+    return functions
+
+
+def evaluate(fcn: Callable, x: Sequence[Sequence[float]], a: Sequence[float]) -> list[float]:
+    """Call *GetFunctionValue* in the user-defined DLL.
+
+    Parameters
+    ----------
+    fcn
+        Reference to *GetFunctionValue*.
+    x
+        Independent variable (stimulus) data.
+    a
+        Parameter values.
+
+    Returns
+    -------
+    :class:`list` [ :class:`float` ]
+        Dependent variable (response) data.
+    """
+    # make global variables local variables to improve the for loop
+    _byref, _double = byref, c_double
+    nvars, npts = len(x), len(x[0])
+    y = [0.0] * npts
+    y_val = _double()
+    a = (len(a) * _double)(*a)
+    for i in range(npts):
+        values = (nvars * _double)(*tuple(x[j][i] for j in range(nvars)))
+        fcn(_byref(values), _byref(a), _byref(y_val))
+        y[i] = y_val.value
+    return y

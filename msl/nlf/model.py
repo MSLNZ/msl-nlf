@@ -29,7 +29,9 @@ from .dll import NPAR
 from .dll import NPTS
 from .dll import NVAR
 from .dll import define_fit_fcn
+from .dll import evaluate
 from .dll import fit
+from .dll import get_user_defined
 from .dll import version
 from .parameter import InputParameterType
 from .parameter import InputParameters
@@ -39,6 +41,9 @@ _n_params_regex = re.compile(r'a\d+')
 _n_vars_regex = re.compile(r'(?<!e)(x\d*)')
 _corr_var_regex = re.compile(r'^(Y|X\d{1,2})$')
 _corr_file_regex = re.compile(r'^CorrCoeffs (Y|X\d{1,2})-(Y|X\d{1,2})\.txt$')
+_user_fcn_regex = re.compile(r'^\s*f\d+\s*$')
+
+_winreg_user_dir: str = ''
 
 # array-like types
 ArrayLike1D = Sequence[float]
@@ -68,6 +73,43 @@ def _fill_array(a, b):
     return b
 
 
+def _get_user_dir() -> str:
+    """Reads the Windows Registry to get the value of the
+    "User-defined function DLL directory" that is set by the Delphi GUI.
+
+    If the Registry value does not exist, the current working directory
+    is returned.
+    """
+    global _winreg_user_dir
+    if _winreg_user_dir:
+        return _winreg_user_dir
+
+    import winreg
+    _winreg_user_dir = os.getcwd()  # backup in case no Registry item exists
+    try:
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r'SOFTWARE\Measurement Standards Laboratory\Nonlinear Fitting\File Directories')
+    except OSError:
+        pass
+    else:
+        index = 0
+        while True:
+            try:
+                name, value, _ = winreg.EnumValue(key, index)
+            except OSError:
+                # No more data is available, didn't find
+                # "User-defined function DLL directory"
+                break
+            else:
+                if name.startswith('User-defined'):
+                    _winreg_user_dir = value.rstrip('\\')
+                    break
+                index += 1
+        winreg.CloseKey(key)
+    return _winreg_user_dir
+
+
 class Model:
 
     _np_map = {'sin': np.sin, 'cos': np.cos, 'tan': np.tan,
@@ -90,6 +132,7 @@ class Model:
                  equation: str,
                  *,
                  dll: str = None,
+                 user_dir: str = None,
                  **options) -> None:
         """A model for the non-linear fitting software of P. Saunders, MSL.
 
@@ -109,6 +152,13 @@ class Model:
             equation one would use ``a1+a2*x+a3*x^2``. The **sqrt** function
             can be written as **^0.5**, for example, **sqrt(2*x)** would be
             expressed as **(2*x)^0.5** in the equation.
+
+            |
+
+            If using a user-defined function that has been compiled to a DLL,
+            the equation must be equal to *f* followed by a positive integer,
+            for example, ``f1``. The *user_dir* keyword argument may also need
+            to be set. See :ref:`nlf-user-defined-function`.
         dll
             The path to a non-linear fit DLL file. A default DLL is chosen
             based on the bitness of the Python interpreter. If you want to
@@ -116,6 +166,12 @@ class Model:
             See :ref:`nlf-32vs64` for reasons why you may want to use a
             different DLL bitness. You may also specify a path to a DLL that
             is located in a particular directory of your computer.
+        user_dir
+            Directory where the user-defined functions are located. The default
+            directory is the directory that the Delphi GUI is has set. If the
+            Delphi GUI has not set a directory (because the GUI has not been
+            used) the default directory is the current working directory.
+            See :ref:`nlf-user-defined-function`.
         **options
             All additional keyword arguments are passed to :meth:`.options`.
         """
@@ -147,6 +203,10 @@ class Model:
         self._factor: str = ''
         self._offset: str = ''
         self._composite_equation: str = ''
+
+        self._user_dir: str = user_dir or _get_user_dir()
+        self._user_function: None
+        self._is_user_function: bool = _user_fcn_regex.match(equation) is not None
 
         variables = set(_n_vars_regex.findall(equation))
         if 'x' in variables and 'x1' in variables:
@@ -204,6 +264,11 @@ class Model:
             self._covar = np.zeros((self.MAX_PARAMETERS, self.MAX_PARAMETERS))
             self._ua = np.zeros(self.MAX_PARAMETERS)
             define_fit_fcn(self._dll.lib, False)
+
+        if self._is_user_function:
+            # this must come at the end since self._dll must not be None
+            # and self._num_vars, self._num_params get overwritten
+            self._load_user_defined()
 
     def __add__(self, rhs: Model | float | int) -> Model:
         op = '+'
@@ -314,10 +379,12 @@ class Model:
     def _load_options(self) -> dict:
         # load the options.cfg file
         options = {}
+        ignore = ('absolute_res', 'residual_type',
+                  'show_info_window', 'user_dir')
         with open(self._cfg_path) as f:
             for line in f:
                 k, v = line.split('=')
-                if k in ('absolute_res', 'residual_type', 'show_info_window'):
+                if k in ignore:
                     continue
                 try:
                     options[k] = eval(v)
@@ -326,6 +393,46 @@ class Model:
                 if k == 'fit_method':
                     options[k] = FitMethod(options[k])
         return options
+
+    def _load_user_defined(self) -> None:
+        # load the user-defined functions
+        if self._dll is None:
+            return
+
+        if isinstance(self._dll, ClientNLF):
+            functions = self._dll.get_user_defined(self._user_dir)
+        else:
+            functions = get_user_defined(self._user_dir)
+
+        # find all user-defined DLLs that have the expected equation
+        ud_matches = [ud for ud in functions.values()
+                      if ud.equation == self._equation]
+
+        if not ud_matches:
+            e = f'No user-defined function named {self._equation!r} ' \
+                f'is in {self._user_dir!r}'
+            if functions:
+                names = '\n  '.join(set(v.name for v in functions.values()))
+                e += f'\nThe functions available are:\n  {names}'
+            else:
+                e += '\nThere are no valid functions in this directory.'
+            e += '\nMake sure that the bitness of the user-defined DLL ' \
+                 'and the bitness of the NLF DLL are the same.'
+            raise ValueError(e)
+        elif len(ud_matches) > 1:
+            names = '\n  '.join(filename for filename in sorted(functions))
+            e = f'Multiple user-defined functions named {self._equation!r} ' \
+                f'were found in {self._user_dir!r}\n  {names}'
+            raise ValueError(e)
+
+        ud = ud_matches[0]
+        self._num_params = ud.num_parameters
+        self._num_vars = ud.num_variables
+
+        if isinstance(self._dll, ClientNLF):
+            self._dll.load_user_defined(self._equation, self._user_dir)
+        else:
+            self._user_function = ud.function
 
     @staticmethod
     def _get_corr_indices(s1: str, s2: str) -> tuple[int, int]:
@@ -427,6 +534,20 @@ class Model:
         :class:`~numpy.ndarray`
             The *y* (response) values.
         """
+        x = np.asanyarray(x)
+        if self._is_user_function:
+            try:
+                a = result.params.values()
+            except AttributeError:
+                a = np.array(list(result.values()))
+
+            if x.ndim == 1:
+                x = np.asarray([x])
+
+            if isinstance(self._dll, ClientNLF):
+                return self._dll.evaluate(x, a)
+            return np.array(evaluate(self._user_function, x, a))
+
         equation = self._equation.replace('^', '**')
 
         try:
@@ -436,7 +557,6 @@ class Model:
 
         namespace.update(**self._np_map)
 
-        x = np.asanyarray(x)
         if x.ndim == 1:
             nvars, npts = (1, x.size)
         elif x.ndim == 2:
@@ -541,6 +661,8 @@ class Model:
         x = _fill_array(self._x, x)
         nvars, npts = (1, x.size) if x.ndim == 1 else x.shape
         if nvars != self._num_vars:
+            if self._num_vars == 0:
+                raise ValueError(f'Invalid equation {self._equation!r}')
             raise ValueError(f'Unexpected number of x (stimulus) variables '
                              f'[{nvars} != {self._num_vars}]')
 
@@ -803,7 +925,8 @@ class Model:
                     f'second_derivs_H={self._second_derivs_H}\n'  # S='True';
                     f'second_derivs_B={self._second_derivs_B}\n'  # S='True';
                     f'uy_weights_only={self._uy_weights_only}\n'  # S='True';
-                    f'show_info_window=False')  # S='True';
+                    f'show_info_window=False\n'  # S='True';
+                    f'user_dir={self._user_dir}\\')
 
     def remove_correlations(self) -> None:
         """Set all variables to be uncorrelated."""
