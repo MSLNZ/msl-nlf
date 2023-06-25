@@ -14,10 +14,10 @@ four functions with the following names:
 
 How to define these four functions is best shown with examples.
 
-.. _nlf-user-defined-cpp:
+.. _nlf-user-defined-cpp1:
 
-C++ Example
------------
+C++ Example (1D)
+----------------
 A user-defined function is created in C++ in order to fit the Roszman1_ dataset
 that is provided by NIST. This fit equation requires the *arctan* function,
 which is not one of the built-in functions that are currently supported by the
@@ -33,12 +33,38 @@ and the source file is
 .. literalinclude:: _static/Roszman1.cpp
    :language: c++
 
-To compile the C++ source code to a DLL, one could use `Visual Studio C++`_.
-For example,
+To compile the C++ source code to a DLL, one could use `Visual Studio C++`_,
 
 .. code-block:: console
 
     cl.exe /LD Roszman1.cpp
+
+
+.. _nlf-user-defined-cpp2:
+
+C++ Example (2D)
+----------------
+A user-defined function is created in C++ in order to fit the Nelson_ dataset
+that is provided by NIST. This fit equation, **a1-a2*x1*exp(-a3*x2)**, could
+have been passed directly to a :class:`~msl.nlf.model.Model` since all
+arithmetic operations and functions are supported; however, this example
+illustrates how to handle situations when there are multiple :math:`x` variables
+
+The header file is
+
+.. literalinclude:: _static/Nelson.h
+   :language: c++
+
+and the source file is
+
+.. literalinclude:: _static/Nelson.cpp
+   :language: c++
+
+To compile the C++ source code to a DLL, one could use `Visual Studio C++`_,
+
+.. code-block:: console
+
+    cl.exe /LD Nelson.cpp
 
 .. _nlf-user-defined-delphi:
 
@@ -71,4 +97,5 @@ Below, the C++ function, *f1*, is used as the custom function
 
 
 .. _Roszman1: https://www.itl.nist.gov/div898/strd/nls/data/LINKS/DATA/Roszman1.dat
+.. _Nelson: https://www.itl.nist.gov/div898/strd/nls/data/LINKS/DATA/Nelson.dat
 .. _Visual Studio C++: https://visualstudio.microsoft.com/vs/features/cplusplus/

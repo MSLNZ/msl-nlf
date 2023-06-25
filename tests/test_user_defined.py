@@ -11,10 +11,14 @@ else:
     dlls = ['nlf32']
 
 
-def test_valid():
-    with Model('f1', user_dir='./tests/user_defined') as model:
-        assert model.equation == 'f1'
-        assert model.user_function_name == 'f1: Roszman1 f1=a1-a2*x-arctan(a3/(x-a4))/pi'
+@pytest.mark.parametrize(
+    'equation, name',
+    [('f1', 'f1: Roszman1 f1=a1-a2*x-arctan(a3/(x-a4))/pi'),
+     ('f2', 'f2: Nelson log(f2)=a1-a2*x1*exp(-a3*x2)')])
+def test_valid(equation, name):
+    with Model(equation, user_dir='./tests/user_defined') as model:
+        assert model.equation == equation
+        assert model.user_function_name == name
 
 
 @pytest.mark.parametrize('equation', ['f 1', 'f1 0', 'f1:'])
@@ -58,19 +62,26 @@ def test_get_user_defined():
     assert get_user_defined('./tests') == {}
 
     functions = get_user_defined('./tests/user_defined')
-    assert len(functions) == 1
+    assert len(functions) == 2
     for ud in functions.values():
         if ud.equation == 'f1':
             assert ud.name == 'f1: Roszman1 f1=a1-a2*x-arctan(a3/(x-a4))/pi'
             assert ud.function is not None
             assert ud.num_parameters == 4
             assert ud.num_variables == 1
+        elif ud.equation == 'f2':
+            assert ud.name == 'f2: Nelson log(f2)=a1-a2*x1*exp(-a3*x2)'
+            assert ud.function is not None
+            assert ud.num_parameters == 3
+            assert ud.num_variables == 2
         else:
             raise ValueError('Unexpected equation value')
 
 
 @pytest.mark.parametrize('dll', dlls)
 def test_roszman1(dll):
+    # See NIST_datasets/Roszman1.dat for the numerical values
+
     x = [-4868.68, -4868.09, -4867.41, -3375.19, -3373.14, -3372.03,
          -2473.74, -2472.35, -2469.45, -1894.65, -1893.40, -1497.24,
          -1495.85, -1493.41, -1208.68, -1206.18, -1206.04, -997.92,
@@ -85,12 +96,77 @@ def test_roszman1(dll):
 
     params = [0.1, -1e-5, 1e3, -1e2]
 
-    # See NIST_datasets/Roszman1.dat for the numerical values
     chisq_expected = 4.9484847331E-04
     eof_expected = 4.8542984060E-03
 
     with Model('f1', dll=dll, user_dir='./tests/user_defined') as model:
         assert model.equation == 'f1'
+        result = model.fit(x, y, params=params)
+
+        # use the Result object
+        residuals = y - model.evaluate(x, result)
+        chisq = np.sum(np.square(residuals))
+        eof = np.sqrt(chisq / (len(y) - len(params)))
+        assert pytest.approx(chisq_expected) == chisq
+        assert pytest.approx(eof_expected) == eof
+
+        # use a mapping
+        r = dict((p.name, p.value) for p in result.params)
+        residuals = y - model.evaluate(x, r)
+        chisq = np.sum(np.square(residuals))
+        eof = np.sqrt(chisq / (len(y) - len(params)))
+        assert pytest.approx(chisq_expected) == chisq
+        assert pytest.approx(eof_expected) == eof
+
+
+@pytest.mark.parametrize('dll', dlls)
+def test_nelson(dll):
+    # See NIST_datasets/Nelson.dat for the numerical values
+
+    x = [[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+          1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0,
+          2.0, 2.0, 2.0, 2.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0,
+          4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0,
+          8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 8.0, 16.0, 16.0, 16.0, 16.0, 16.0,
+          16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 16.0, 32.0,
+          32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0, 32.0,
+          32.0, 32.0, 32.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0,
+          48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 64.0, 64.0, 64.0, 64.0, 64.0,
+          64.0, 64.0, 64.0, 64.0, 64.0, 64.0, 64.0, 64.0, 64.0, 64.0, 64.0],
+         [180.0, 180.0, 180.0, 180.0, 225.0, 225.0, 225.0, 225.0, 250.0, 250.0,
+          250.0, 250.0, 275.0, 275.0, 275.0, 275.0, 180.0, 180.0, 180.0, 180.0,
+          225.0, 225.0, 225.0, 225.0, 250.0, 250.0, 250.0, 250.0, 275.0, 275.0,
+          275.0, 275.0, 180.0, 180.0, 180.0, 180.0, 225.0, 225.0, 225.0, 225.0,
+          250.0, 250.0, 250.0, 250.0, 275.0, 275.0, 275.0, 275.0, 180.0, 180.0,
+          180.0, 180.0, 225.0, 225.0, 225.0, 225.0, 250.0, 250.0, 250.0, 250.0,
+          275.0, 275.0, 275.0, 275.0, 180.0, 180.0, 180.0, 180.0, 225.0, 225.0,
+          225.0, 225.0, 250.0, 250.0, 250.0, 250.0, 275.0, 275.0, 275.0, 275.0,
+          180.0, 180.0, 180.0, 180.0, 225.0, 225.0, 225.0, 225.0, 250.0, 250.0,
+          250.0, 250.0, 275.0, 275.0, 275.0, 275.0, 180.0, 180.0, 180.0, 180.0,
+          225.0, 225.0, 225.0, 225.0, 250.0, 250.0, 250.0, 250.0, 275.0, 275.0,
+          275.0, 275.0, 180.0, 180.0, 180.0, 180.0, 225.0, 225.0, 225.0, 225.0,
+          250.0, 250.0, 250.0, 250.0, 275.0, 275.0, 275.0, 275.0]]
+
+    y = np.log([15.0, 17.0, 15.5, 16.5, 15.5, 15.0, 16.0, 14.5, 15.0, 14.5,
+                12.5, 11.0, 14.0, 13.0, 14.0, 11.5, 14.0, 16.0, 13.0, 13.5,
+                13.0, 13.5, 12.5, 12.5, 12.5, 12.0, 11.5, 12.0, 13.0, 11.5,
+                13.0, 12.5, 13.5, 17.5, 17.5, 13.5, 12.5, 12.5, 15.0, 13.0,
+                12.0, 13.0, 12.0, 13.5, 10.0, 11.5, 11.0, 9.5, 15.0, 15.0,
+                15.5, 16.0, 13.0, 10.5, 13.5, 14.0, 12.5, 12.0, 11.5, 11.5,
+                6.5, 5.5, 6.0, 6.0, 18.5, 17.0, 15.3, 16.0, 13.0, 14.0, 12.5,
+                11.0, 12.0, 12.0, 11.5, 12.0, 6.0, 6.0, 5.0, 5.5, 12.5, 13.0,
+                16.0, 12.0, 11.0, 9.5, 11.0, 11.0, 11.0, 10.0, 10.5, 10.5, 2.7,
+                2.7, 2.5, 2.4, 13.0, 13.5, 16.5, 13.6, 11.5, 10.5, 13.5, 12.0,
+                7.0, 6.9, 8.8, 7.9, 1.2, 1.5, 1.0, 1.5, 13.0, 12.5, 16.5, 16.0,
+                11.0, 11.5, 10.5, 10.0, 7.27, 7.5, 6.7, 7.6, 1.5, 1.0, 1.2, 1.2])
+
+    params = [2.0, 0.0001, -0.01]
+
+    chisq_expected = 3.7976833176E+00
+    eof_expected = 1.7430280130E-01
+
+    with Model('f2', dll=dll, user_dir='./tests/user_defined') as model:
+        assert model.equation == 'f2'
         result = model.fit(x, y, params=params)
 
         # use the Result object

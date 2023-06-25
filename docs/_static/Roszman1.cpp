@@ -17,7 +17,7 @@ void GetFunctionName(char* name) {
 
 void GetFunctionValue(double* x, double* a, double* y) {
     // Receives the x value, the fit parameters and a pointer to the y value.
-    // C++ array indices are zero based (i.e., a1=a[0])
+    // C++ array indices are zero based (i.e., a1=a[0] and x=x[0])
     *y = a[0] - a[1] * x[0] - atan(a[2] / (x[0] - a[3])) / pi;
 }
 
