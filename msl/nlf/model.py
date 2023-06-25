@@ -168,7 +168,7 @@ class Model:
             is located in a particular directory of your computer.
         user_dir
             Directory where the user-defined functions are located. The default
-            directory is the directory that the Delphi GUI is has set. If the
+            directory is the directory that the Delphi GUI has set. If the
             Delphi GUI has not set a directory (because the GUI has not been
             used) the default directory is the current working directory.
             See :ref:`nlf-user-defined-function`.
