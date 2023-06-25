@@ -416,7 +416,11 @@ class ConstantModel(Model):
         self._offset = 'a1'
         self._composite_equation = ''
 
-    def guess(self, x: ArrayLike1D, y: ArrayLike1D, n: int = None) -> InputParameters:
+    def guess(self,
+              x: ArrayLike1D,
+              y: ArrayLike1D,
+              *,
+              n: int = None) -> InputParameters:
         """Calculates the mean value of *y*.
 
         Parameters
