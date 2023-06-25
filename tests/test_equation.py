@@ -52,6 +52,8 @@ def test_npar_nvar(equation, np, nv):
     m = Model(equation)
     assert m.num_parameters == np
     assert m.num_variables == nv
+    assert m.equation == equation
+    assert m.user_function_name == ''
 
 
 def test_property():

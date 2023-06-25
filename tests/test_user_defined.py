@@ -14,6 +14,7 @@ else:
 def test_valid():
     with Model('f1', user_dir='./tests/user_defined') as model:
         assert model.equation == 'f1'
+        assert model.user_function_name == 'f1: Roszman1 f1=a1-a2*x-arctan(a3/(x-a4))/pi'
 
 
 @pytest.mark.parametrize('equation', ['f 1', 'f1 0', 'f1:'])

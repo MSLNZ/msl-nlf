@@ -206,6 +206,7 @@ class Model:
 
         self._user_dir: str = user_dir or _get_user_dir()
         self._user_function: None
+        self._user_function_name: str = ''
         self._is_user_function: bool = _user_fcn_regex.match(equation) is not None
 
         variables = set(_n_vars_regex.findall(equation))
@@ -426,6 +427,7 @@ class Model:
             raise ValueError(e)
 
         ud = ud_matches[0]
+        self._user_function_name = ud.name
         self._num_params = ud.num_parameters
         self._num_vars = ud.num_variables
 
@@ -1124,6 +1126,16 @@ class Model:
     @show_warnings.setter
     def show_warnings(self, show):
         self._show_warnings = bool(show)
+
+    @property
+    def user_function_name(self) -> str:
+        """Returns the name of the user-defined function.
+
+        This is the value that *GetFunctionName* returns. If a user-defined
+        function is not used, an empty string is returned.
+        See :ref:`nlf-user-defined-function`.
+        """
+        return self._user_function_name
 
     def version(self) -> str:
         """Get the version number from the DLL.
