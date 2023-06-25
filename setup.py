@@ -154,10 +154,6 @@ tests_require = ['pytest', 'pytest-cov', 'GTC', 'matplotlib', 'sybil']
 docs_require = ['sphinx', 'sphinx-rtd-theme']
 
 testing = {'test', 'tests'}.intersection(sys.argv)
-pytest_runner = ['pytest-runner'] if testing else []
-
-needs_sphinx = {'doc', 'docs', 'apidoc', 'apidocs'}.intersection(sys.argv)
-sphinx = docs_require + install_requires if needs_sphinx else []
 
 init_original = 'msl/nlf/__init__.py'
 init_backup = init_original + '.backup'
@@ -189,7 +185,6 @@ setup(
         'Topic :: Scientific/Engineering',
     ],
     python_requires='>=3.8',
-    setup_requires=sphinx + pytest_runner,
     tests_require=tests_require,
     install_requires=install_requires,
     extras_require={
