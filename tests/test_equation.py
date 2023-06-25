@@ -290,3 +290,14 @@ def test_linear_linear():
 def test_numeric_exponential_linear_polynomial():
     m = (1-ExponentialModel()) * LinearModel() / (2.1345*PolynomialModel(2)+273.15)
     assert m.equation == '((1-a1*exp(-a2*x))*(a3+a4*x))/(2.1345*(a5+a6*x+a7*x^2)+273.15)'
+
+
+def test_dll_raises():
+    # arctan and pi are not supported
+    x = [-4868.68, -4868.09, -4867.41, -3375.19, -3373.14, -3372.03]
+    y = [0.252429, 0.252141, 0.251809, 0.297989, 0.296257, 0.295319]
+    with Model('a1 - a2*x - arctan(a3/(x-a4))/pi') as model:
+        assert model.num_variables == 1
+        assert model.num_parameters == 4
+        with pytest.raises(RuntimeError, match='Invalid Equation'):
+            model.fit(x, y, params=[0.1, -1e-5, 1e3, -1e2])
