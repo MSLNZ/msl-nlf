@@ -1,6 +1,8 @@
 """
 Call functions in a 32-bit version of a DLL from 64-bit Python.
 """
+from __future__ import annotations
+
 from array import array
 from ctypes import POINTER
 from ctypes import c_bool
