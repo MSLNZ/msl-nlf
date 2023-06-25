@@ -985,7 +985,7 @@ class Model:
 
         if not os.path.isdir(directory):
             raise OSError(f'{directory!r} is not a valid directory')
-        self._corr_dir = directory
+        self._corr_dir = os.path.abspath(directory)
 
     @property
     def show_warnings(self) -> bool:
