@@ -102,7 +102,7 @@ def test_polynomial(n, expected):
         assert m.equation == expected
 
 
-def test_gaussian_offset():
+def test_gaussian_constant():
     m = GaussianModel(normalized=True) + ConstantModel()
     assert m.equation == f'(a1/(a3*{sq2pi})*exp(-0.5*((x-a2)/a3)^2))+(a4)'
 
@@ -196,7 +196,7 @@ def test_gaussian_numeric_truediv():
         2j / GaussianModel()
 
 
-def test_sine_offset():
+def test_sine_constant():
     m = SineModel() + ConstantModel()
     assert m.equation == f'(a1*sin(a2*x+a3))+(a4)'
 
@@ -204,7 +204,7 @@ def test_sine_offset():
     assert m.equation == f'(a1)-(a2*sin(a3*x+a4))'
 
 
-def test_exponential_offset():
+def test_exponential_constant():
     m = ExponentialModel() + ConstantModel()
     assert m.equation == f'(a1*exp(-a2*x))+(a3)'
 
@@ -264,7 +264,7 @@ def test_polynomial_custom():
                          '(a14 * x + a17 * arcsin( a16 * x - a15 ))'
 
 
-def test_polynomial_offset():
+def test_polynomial_constant():
     m = PolynomialModel(1) - Model('')
     assert m.equation == 'a1+a2*x'
 
@@ -279,7 +279,7 @@ def test_polynomial_offset():
     assert m.equation == '(a1+a2*x+a3*x^2)*(a4)'
 
 
-def test_sine_offset_exponential():
+def test_sine_constant_exponential():
     m = ExponentialModel() * (SineModel() + ConstantModel())
     assert m.equation == '(a1*exp(-a2*x))*((a3*sin(a4*x+a5))+(a6))'
 

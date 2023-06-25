@@ -31,31 +31,31 @@ def test_not_implemented():
             model.guess([1, 2], [3, 4])
 
 
-def test_offset():
+def test_constant():
     y = np.array([0.691818, 0.887067, 0.048726, 0.010144, 0.336313,
                   0.396944, 0.118929, 0.795026, 0.864225, 0.811257])
 
     with ConstantModel() as model:
         params = model.guess([], y)  # x is not used
-        offset = params['constant']
-        assert offset.name == 'a1'
-        assert pytest.approx(offset.value) == 0.4960449
-        assert offset.constant is False
-        assert offset.label == 'constant'
+        c = params['constant']
+        assert c.name == 'a1'
+        assert pytest.approx(c.value) == 0.4960449
+        assert c.constant is False
+        assert c.label == 'constant'
 
         params = model.guess([], y, n=3)  # x is not used
-        offset = params['constant']
-        assert offset.name == 'a1'
-        assert pytest.approx(offset.value) == 0.542537
-        assert offset.constant is False
-        assert offset.label == 'constant'
+        c = params['constant']
+        assert c.name == 'a1'
+        assert pytest.approx(c.value) == 0.542537
+        assert c.constant is False
+        assert c.label == 'constant'
 
         params = model.guess([], y, n=-2)  # x is not used
-        offset = params['constant']
-        assert offset.name == 'a1'
-        assert pytest.approx(offset.value) == 0.837741
-        assert offset.constant is False
-        assert offset.label == 'constant'
+        c = params['constant']
+        assert c.name == 'a1'
+        assert pytest.approx(c.value) == 0.837741
+        assert c.constant is False
+        assert c.label == 'constant'
 
 
 def test_linear():
