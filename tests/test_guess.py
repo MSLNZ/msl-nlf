@@ -37,12 +37,25 @@ def test_offset():
 
     with ConstantModel() as model:
         params = model.guess([], y)  # x is not used
+        offset = params['constant']
+        assert offset.name == 'a1'
+        assert pytest.approx(offset.value) == 0.4960449
+        assert offset.constant is False
+        assert offset.label == 'constant'
 
-    offset = params['constant']
-    assert offset.name == 'a1'
-    assert pytest.approx(offset.value) == 0.4960449
-    assert offset.constant is False
-    assert offset.label == 'constant'
+        params = model.guess([], y, n=3)  # x is not used
+        offset = params['constant']
+        assert offset.name == 'a1'
+        assert pytest.approx(offset.value) == 0.542537
+        assert offset.constant is False
+        assert offset.label == 'constant'
+
+        params = model.guess([], y, n=-2)  # x is not used
+        offset = params['constant']
+        assert offset.name == 'a1'
+        assert pytest.approx(offset.value) == 0.837741
+        assert offset.constant is False
+        assert offset.label == 'constant'
 
 
 def test_linear():

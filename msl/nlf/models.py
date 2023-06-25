@@ -416,7 +416,7 @@ class ConstantModel(Model):
         self._offset = 'a1'
         self._composite_equation = ''
 
-    def guess(self, x: ArrayLike1D, y: ArrayLike1D, **kwargs) -> InputParameters:
+    def guess(self, x: ArrayLike1D, y: ArrayLike1D, n: int = None) -> InputParameters:
         """Calculates the mean value of *y*.
 
         Parameters
@@ -425,12 +425,20 @@ class ConstantModel(Model):
             The independent variable (stimulus) data. The data is not used.
         y
             The dependent variable (response) data.
-        **kwargs
-            No keyword arguments are used.
+        n
+            The number of values in *y* to use to calculate the mean. If not
+            specified, all values are used. If a positive integer then the first
+            *n* values are used. Otherwise, the last *n* values are used.
 
         Returns
         -------
         :class:`.InputParameters`
             Initial guess for the constant.
         """
-        return InputParameters([('a1', float(np.mean(y)), False, 'constant')])
+        if n is None:
+            mean = np.mean(y)
+        elif n >= 0:
+            mean = np.mean(y[:n])
+        else:
+            mean = np.mean(y[n:])
+        return InputParameters([('a1', float(mean), False, 'constant')])
