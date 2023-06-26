@@ -28,7 +28,7 @@ procedure GetFunctionName(var Name:PAnsiChar); cdecl;
 begin
     {The name must begin with f followed by a positive integer followed by a colon.
     The remainder of the string is for information for the user.}
-    StrCopy(Name, 'f2: Beta Distribution (f2=a3/(a5-a4)*Gamma(a1+a2)/(Gamma(a1)*Gamma(a2))*((x-a4)/(a5-a4))^(a1-1)*((a5-x)/(a5-a4))^(a2-1))');
+    StrCopy(Name, 'f3: Beta Distribution (f3=a3/(a5-a4)*Gamma(a1+a2)/(Gamma(a1)*Gamma(a2))*((x-a4)/(a5-a4))^(a1-1)*((a5-x)/(a5-a4))^(a2-1))');
 end;
 
 procedure GetFunctionValue(x,a:PArray; var y:Double); cdecl;
