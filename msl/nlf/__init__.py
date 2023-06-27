@@ -2,6 +2,7 @@ import re
 from collections import namedtuple
 
 from .datatypes import FitMethod
+from .datatypes import ResidualType
 from .model import LoadedModel
 from .model import Model
 from .models import ConstantModel
@@ -26,18 +27,19 @@ version_info = namedtuple('version_info', 'major minor micro releaselevel')(int(
 """:obj:`~collections.namedtuple`: Contains the version information as a (major, minor, micro, releaselevel) tuple."""
 
 __all__ = (
-    'load',
-    'version_info',
-    'FitMethod',
-    'InputParameter',
-    'InputParameters',
-    'Model',
     'ConstantModel',
     'ExponentialModel',
+    'FitMethod',
     'GaussianModel',
+    'InputParameter',
+    'InputParameters',
     'LinearModel',
+    'Model',
     'PolynomialModel',
+    'ResidualType',
     'SineModel',
+    'load',
+    'version_info'
 )
 
 
@@ -96,14 +98,25 @@ def load(path: str, *, dll: str = None) -> LoadedModel:
         6: Model.FitMethod.POWELL_MM,
     }
 
+    # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas
+    # TResidualType=(dxVx,dyVx,dxVy,dyVy);
+    res_types = {
+        0: ResidualType.DX_X,
+        1: ResidualType.DY_X,
+        2: ResidualType.DX_Y,
+        3: ResidualType.DY_Y,
+    }
+
     from .loader import _load
     file = _load(path)
 
     options = dict(
+        absolute_residuals=file['absolute_res'],
         correlated=file['correlated_data'],
         delta=file['delta'],
         max_iterations=file['max_iterations'],
         fit_method=methods[file['fitting_method']],
+        residual_type=res_types[file['residual_type']],
         second_derivs_B=file['second_derivs_B'],
         second_derivs_H=file['second_derivs_H'],
         tolerance=file['tolerance'],

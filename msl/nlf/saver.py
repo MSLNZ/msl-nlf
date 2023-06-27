@@ -9,6 +9,7 @@ import numpy as np
 
 from .datatypes import FitMethod
 from .datatypes import Input
+from .datatypes import ResidualType
 
 ansi = {'encoding': 'ansi'}
 
@@ -397,6 +398,15 @@ def save(*,
         FitMethod.POWELL_MM: 6,
     }
 
+    # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas
+    # TResidualType=(dxVx,dyVx,dxVy,dyVy);
+    res_types = {
+        ResidualType.DX_X: 0,
+        ResidualType.DY_X: 1,
+        ResidualType.DX_Y: 2,
+        ResidualType.DY_Y: 3,
+    }
+
     nvars, npts = data.x.shape
 
     saver = Saver(version)
@@ -409,8 +419,8 @@ def save(*,
     saver.write_boolean(False)  # plot_uncert_curve
     saver.write_byte(2)  # TCalcCurveType (ccXData:0, ccXFitData:1, ccEvenData:2)
     saver.write_integer(201)  # num_calc_points
-    saver.write_boolean(True)  # absolute_res
-    saver.write_byte(1)  # residual_type (dxVx:0, dyVx:1, dxVy:2, dyVy:3)
+    saver.write_boolean(data.absolute_residuals)  # absolute_res
+    saver.write_byte(res_types[data.residual_type])  # residual_type
     saver.write_byte(methods[data.fit_method])  # fitting_method
     saver.write_integer(data.max_iterations)  # max_iterations
     saver.write_integer(17)  # num_param_sig_figs

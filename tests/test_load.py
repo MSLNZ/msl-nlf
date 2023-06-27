@@ -23,12 +23,14 @@ def test_3_0():
 
     inputs = loaded.fit(loaded.x, loaded.y, params=loaded.params,
                         ux=loaded.ux, uy=loaded.uy, debug=True)
+    assert inputs.absolute_residuals is True
     assert inputs.correlated is False
     assert inputs.weighted is True
     assert inputs.max_iterations == 999
     assert inputs.tolerance == 1E-20
     assert inputs.delta == 0.1
     assert inputs.fit_method == FitMethod.LM
+    assert inputs.residual_type == loaded.ResidualType.DX_X
     assert inputs.second_derivs_H is True
     assert inputs.second_derivs_B is True
     assert inputs.uy_weights_only is False
@@ -107,12 +109,14 @@ def test_5_41():
 
     inputs = loaded.fit(loaded.x, loaded.y, params=loaded.params,
                         ux=loaded.ux, uy=loaded.uy, debug=True)
+    assert inputs.absolute_residuals is True
     assert inputs.correlated is True
     assert inputs.weighted is True
     assert inputs.max_iterations == 987
     assert inputs.tolerance == 1.4e-19
     assert inputs.delta == 0.12
     assert inputs.fit_method == FitMethod.LM
+    assert inputs.residual_type == loaded.ResidualType.DY_X
     assert inputs.second_derivs_H is True
     assert inputs.second_derivs_B is False
     assert inputs.uy_weights_only is True

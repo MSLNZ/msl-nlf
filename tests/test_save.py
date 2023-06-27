@@ -238,10 +238,12 @@ def test_save_demo():
 
     data = loaded.fit(loaded.x, loaded.y, params=loaded.params, ux=loaded.ux, uy=loaded.uy, debug=True)
 
+    assert data.absolute_residuals is True
     assert data.correlated is True
     assert data.delta == 0.01
     assert data.equation == 'a1+a2*(x+exp(a3*x))+x2'
     assert data.fit_method == model.FitMethod.LM
+    assert data.residual_type == model.ResidualType.DY_X
     assert data.max_iterations == 200
     assert np.array_equal(data.params.values(), a)
     assert np.array_equal(data.params.constants(), [False, False, False])
@@ -275,3 +277,43 @@ def test_save_demo():
     result2 = loaded.fit(loaded.x, loaded.y, params=loaded.params, ux=loaded.ux, uy=loaded.uy)
     assert np.array_equal(result1.params.values(), result2.params.values())
     assert np.array_equal(result1.params.uncerts(), result2.params.uncerts())
+
+
+def test_options():
+    path = os.path.join(TMP_DIR, 'options.nlf')
+    with LinearModel() as model:
+        model.options(absolute_residuals=False)
+        model.options(correlated=True)
+        model.options(delta=3.2)
+        model.options(max_iterations=9876)
+        model.options(fit_method=model.FitMethod.POWELL_MM)
+        model.options(residual_type=model.ResidualType.DY_Y)
+        model.options(second_derivs_B=True)
+        model.options(second_derivs_H=False)
+        model.options(tolerance=5.4321e-6)
+        model.options(uy_weights_only=True)
+        model.options(weighted=True)
+        model.save(path, x=[1, 2, 3], y=[1, 2, 3], params=[1, 1])
+        loaded = load(path)
+        assert loaded.equation == 'a1+a2*x'
+        data = loaded.fit(loaded.x, loaded.y, params=loaded.params, debug=True)
+        assert data.absolute_residuals is False
+        assert data.correlated is True
+        assert data.delta == 3.2
+        assert data.max_iterations == 9876
+        assert data.fit_method == model.FitMethod.POWELL_MM
+        assert data.residual_type == model.ResidualType.DY_Y
+        assert data.second_derivs_B is True
+        assert data.second_derivs_H is False
+        assert data.tolerance == 5.4321e-6
+        assert data.uy_weights_only is True
+        assert data.weighted is True
+        assert data.equation == 'a1+a2*x'
+        assert data.params.names() == ['a1', 'a2']
+        assert data.params.labels() == [None, None]
+        assert np.array_equal(data.params.values(), [1., 1.])
+        assert np.array_equal(data.params.constants(), [False, False])
+        assert np.array_equal(data.ux, [[0., 0., 0.]])
+        assert np.array_equal(data.uy, [0., 0., 0.])
+        assert np.array_equal(data.x, [[1., 2., 3.]])
+        assert np.array_equal(data.y, [1., 2., 3.])
