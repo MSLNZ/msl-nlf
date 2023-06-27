@@ -29,6 +29,7 @@ def test_input_uncorrelated():
       InputParameter(name='a1', value=5.0, constant=False, label='intercept'),
       InputParameter(name='a2', value=10.0, constant=False, label='slope')
     )
+  residual_type=<ResidualType.DY_X: 'dy v x'>
   second_derivs_B=True
   second_derivs_H=True
   tolerance=1e-20
@@ -88,6 +89,7 @@ def test_input_correlated():
       InputParameter(name='a2', value=0.9, constant=False, label=None),
       InputParameter(name='a3', value=0.0, constant=False, label=None)
     )
+  residual_type=<ResidualType.DY_X: 'dy v x'>
   second_derivs_B=True
   second_derivs_H=True
   tolerance=1e-20

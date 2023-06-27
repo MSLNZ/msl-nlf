@@ -45,6 +45,22 @@ class FitMethod(Enum):
     POWELL_MM = 'Powell minimax'
 
 
+class ResidualType(Enum):
+    """Residual Type that is used to evaluate the :attr:`~.Result.eof`."""
+
+    DX_X = 'dx v x'
+    """Uncertainty in :math:`x` versus :math:`x`."""
+
+    DX_Y = 'dx v y'
+    """Uncertainty in :math:`x` versus :math:`y`."""
+
+    DY_X = 'dy v x'
+    """Uncertainty in :math:`y` versus :math:`x`."""
+
+    DY_Y = 'dy v y'
+    """Uncertainty in :math:`y` versus :math:`y`."""
+
+
 @dataclass(eq=False, order=False, frozen=True)
 class Correlation:
     """Information about correlation coefficients."""
@@ -126,6 +142,9 @@ class Input:
     params: InputParameters
     """The input parameters to the fit model."""
 
+    residual_type: ResidualType
+    """Residual Type that is used to evaluate the :attr:`~.Result.eof`."""
+
     second_derivs_B: bool
     """Whether the second derivatives in the **B** matrix are included in
     the propagation of uncertainty calculations."""
@@ -184,6 +203,7 @@ class Input:
                f'  fit_method={self.fit_method!r}\n' \
                f'  max_iterations={self.max_iterations}\n' \
                f'  params={param_str}\n' \
+               f'  residual_type={self.residual_type!r}\n' \
                f'  second_derivs_B={self.second_derivs_B}\n' \
                f'  second_derivs_H={self.second_derivs_H}\n' \
                f'  tolerance={self.tolerance}\n' \
@@ -216,7 +236,11 @@ class Result:
     """The number of degrees of freedom."""
 
     eof: float
-    """The error-of-fit value (the standard deviation of the residuals)."""
+    """The error-of-fit value (the standard deviation of the residuals).
+    
+    For a MiniMax fit, this value is the maximum absolute residual or the
+    maximum absolute relative residual.
+    """
 
     iterations: int
     """The total number of fit iterations."""

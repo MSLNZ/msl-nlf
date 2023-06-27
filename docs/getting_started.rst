@@ -227,6 +227,7 @@ You can display a summary of the input information
           InputParameter(name='a1', value=1.0, constant=False, label=None),
           InputParameter(name='a2', value=1.0, constant=False, label=None)
         )
+      residual_type=<ResidualType.DY_X: 'dy v x'>
       second_derivs_B=True
       second_derivs_H=True
       tolerance=1e-20

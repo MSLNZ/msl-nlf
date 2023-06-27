@@ -23,6 +23,7 @@ from .datatypes import Correlation
 from .datatypes import Correlations
 from .datatypes import FitMethod
 from .datatypes import Input
+from .datatypes import ResidualType
 from .datatypes import Result
 from .datatypes import ResultParameters
 from .dll import NPAR
@@ -128,6 +129,9 @@ class Model:
     FitMethod = FitMethod
     """Fitting methods."""
 
+    ResidualType = ResidualType
+    """Residual Type that is used to evaluate the :attr:`~.Result.eof`."""
+
     def __init__(self,
                  equation: str,
                  *,
@@ -193,6 +197,7 @@ class Model:
         self._delta: float = 0.1
         self._max_iterations: int = 999
         self._fit_method: FitMethod = FitMethod.LM
+        self._residual_type: ResidualType = ResidualType.DY_X
         self._second_derivs_B: bool = True
         self._second_derivs_H: bool = True
         self._tolerance: float = 1e-20
@@ -381,7 +386,7 @@ class Model:
     def _load_options(self) -> dict:
         # load the options.cfg file
         options = {}
-        ignore = ('residual_type', 'show_info_window', 'user_dir')
+        ignore = ('show_info_window', 'user_dir')
         with open(self._cfg_path) as f:
             for line in f:
                 k, v = line.split('=')
@@ -395,6 +400,8 @@ class Model:
                     options[k] = FitMethod(options[k])
                 elif k == 'absolute_residuals':
                     options[k] = options[k] == 'Absolute'
+                elif k == 'residual_type':
+                    options[k] = ResidualType(options[k])
         return options
 
     def _load_user_defined(self) -> None:
@@ -838,6 +845,7 @@ class Model:
                 delta: float = None,
                 max_iterations: int = None,
                 fit_method: FitMethod | str = None,
+                residual_type: ResidualType | str = None,
                 second_derivs_B: bool = None,  # noqa
                 second_derivs_H: bool = None,  # noqa
                 tolerance: float = None,
@@ -849,7 +857,7 @@ class Model:
         ----------
         absolute_residuals
             Whether absolute residuals or relative residuals are used to evaluate
-            the :attr:`~msl.nlf.datatypes.Result.eof`.
+            the :attr:`~msl.nlf.datatypes.Result.eof`. Default: True (absolute).
         correlated
             Whether to include the correlations in the fitting process. Including
             correlations in the fit is only possible for least-squares fitting,
@@ -865,6 +873,10 @@ class Model:
             The fitting method to use. Can be a member name or value of the
             :class:`~msl.nlf.datatypes.FitMethod` enum.
             Default: Levenberg-Marquardt.
+        residual_type
+            The residual type to use to evaluate the :attr:`~msl.nlf.datatypes.Result.eof`.
+            Can be a member name or value of the :class:`~msl.nlf.datatypes.ResidualType`
+            enum. Default: DY_X (uncertainty in :math:`y` versus :math:`x`).
         second_derivs_B
             Whether the second derivatives in the **B** matrix are included in
             the propagation of uncertainty calculations. Default: True.
@@ -889,11 +901,21 @@ class Model:
         # NOTE: Since Nonlinear-Fitting is a private repository, you must be logged
         #       in to GitHub to view the source code.
         #
-        # AbsoluteRes and ResidualType are not kwargs because residuals are not
-        # returned from the DLL.
-        #
         # ShowInfoWindow is not a kwarg because the popup Window flashes to quickly
         # to be useful.
+        def get_enum(item, enum):
+            if not isinstance(item, enum):
+                try:
+                    item = enum(item)
+                except ValueError:
+                    try:
+                        item = enum[item]
+                    except KeyError:
+                        raise ValueError(
+                            f'{item!r} is not a valid {enum.__name__} '
+                            f'enum member name or value') from None
+            return item
+
         if absolute_residuals is not None:
             self._absolute_residuals = bool(absolute_residuals)
         if correlated is not None:
@@ -912,17 +934,10 @@ class Model:
             self._uy_weights_only = bool(uy_weights_only)
         if weighted is not None:
             self._weighted = bool(weighted)
+        if residual_type is not None:
+            self._residual_type = get_enum(residual_type, ResidualType)
         if fit_method is not None:
-            if not isinstance(fit_method, FitMethod):
-                try:
-                    fit_method = FitMethod(fit_method)
-                except ValueError:
-                    try:
-                        fit_method = FitMethod[fit_method]
-                    except KeyError:
-                        raise ValueError(f'{fit_method!r} is not a valid FitMethod '
-                                         f'enum member name or value') from None
-            self._fit_method = fit_method
+            self._fit_method = get_enum(fit_method, FitMethod)
 
         absolute_residuals = 'Absolute' if self._absolute_residuals else 'Relative'
         with open(self._cfg_path, mode='wt') as f:
@@ -931,7 +946,7 @@ class Model:
                     f'tolerance={self._tolerance}\n'  # StrToFloat(S);
                     f'delta={self._delta}\n'  # StrToFloat(S);
                     f'absolute_residuals={absolute_residuals}\n'  # S='Absolute';
-                    f'residual_type=dy v x\n'  # S=one of 'dx v x', 'dy v x', 'dx v y', 'dy v y'
+                    f'residual_type={self._residual_type.value}\n'  # S=one of ResidualType values
                     f'fit_method={self._fit_method.value}\n'  # S=one of FitMethod values
                     f'second_derivs_H={self._second_derivs_H}\n'  # S='True';
                     f'second_derivs_B={self._second_derivs_B}\n'  # S='True';

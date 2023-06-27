@@ -38,10 +38,31 @@ def test_invalid_kwarg():
      'POWELL_MM',
      'Powell minimax',
      ])
-def test_method_valid(method):
-    # all these data types and values for the 'method' kwarg are valid
+def test_fit_method_valid(method):
+    # all these data types and values for the 'fit_method' kwarg are valid
     with LinearModel() as model:
         model.options(fit_method=method)
+
+
+@pytest.mark.parametrize(
+    'residual_type',
+    [LinearModel.ResidualType.DX_X,
+     'DX_X',
+     'dx v x',
+     LinearModel.ResidualType.DX_Y,
+     'DX_Y',
+     'dx v y',
+     LinearModel.ResidualType.DY_X,
+     'DY_X',
+     'dy v x',
+     LinearModel.ResidualType.DY_Y,
+     'DY_Y',
+     'dy v y'
+     ])
+def test_residual_type_valid(residual_type):
+    # all these data types and values for the 'residual_type' kwarg are valid
+    with LinearModel() as model:
+        model.options(residual_type=residual_type)
 
 
 @pytest.mark.parametrize(
@@ -53,11 +74,26 @@ def test_method_valid(method):
      'Amoeba mini',
      'powell least squares',
      2])
-def test_method_invalid(method):
-    # all these data types and values for the 'method' kwarg are invalid
+def test_fit_method_invalid(method):
+    # all these data types and values for the 'fit_method' kwarg are invalid
     with LinearModel() as model:
-        with pytest.raises(ValueError, match=r'enum member name or value'):
+        with pytest.raises(ValueError, match=r'FitMethod enum member name or value'):
             model.options(fit_method=method)
+
+
+@pytest.mark.parametrize(
+    'residual_type',
+    ['',
+     'uy_y',
+     'Levenberg-Marquardt',
+     'DY Y',
+     'something',
+     2])
+def test_residual_type_invalid(residual_type):
+    # all these data types and values for the 'residual_type' kwarg are invalid
+    with LinearModel() as model:
+        with pytest.raises(ValueError, match=r'ResidualType enum member name or value'):
+            model.options(residual_type=residual_type)
 
 
 def test_default():
@@ -69,8 +105,9 @@ def test_default():
         assert inputs.absolute_residuals is True
         assert inputs.correlated is False
         assert inputs.delta == 0.1
-        assert inputs.max_iterations == 999
         assert inputs.fit_method == model.FitMethod.LM
+        assert inputs.max_iterations == 999
+        assert inputs.residual_type == model.ResidualType.DY_X
         assert inputs.second_derivs_B is True
         assert inputs.second_derivs_H is True
         assert inputs.tolerance == 1e-20
@@ -82,8 +119,9 @@ def test_default():
         assert inputs.absolute_residuals is True
         assert inputs.correlated is False
         assert inputs.delta == 0.1
-        assert inputs.max_iterations == 123
         assert inputs.fit_method == model.FitMethod.LM
+        assert inputs.max_iterations == 123
+        assert inputs.residual_type == model.ResidualType.DY_X
         assert inputs.second_derivs_B is False
         assert inputs.second_derivs_H is True
         assert inputs.tolerance == 1e-20
@@ -95,8 +133,9 @@ def test_default():
         assert inputs.absolute_residuals is True
         assert inputs.correlated is False
         assert inputs.delta == 0.1
-        assert inputs.max_iterations == 123
         assert inputs.fit_method == model.FitMethod.LM
+        assert inputs.max_iterations == 123
+        assert inputs.residual_type == model.ResidualType.DY_X
         assert inputs.second_derivs_B is False
         assert inputs.second_derivs_H is True
         assert inputs.tolerance == 1e-20
@@ -108,20 +147,23 @@ def test_default():
         assert inputs.absolute_residuals is True
         assert inputs.correlated is True
         assert inputs.delta == 0.0
-        assert inputs.max_iterations == 123
         assert inputs.fit_method == model.FitMethod.POWELL_MD
+        assert inputs.max_iterations == 123
+        assert inputs.residual_type == model.ResidualType.DY_X
         assert inputs.second_derivs_B is False
         assert inputs.second_derivs_H is True
         assert inputs.tolerance == 1e-20
         assert inputs.uy_weights_only is False
         assert inputs.weighted is True
 
-        model.options(fit_method='AMOEBA_LS')
+        model.options(fit_method='AMOEBA_LS', residual_type='dy v y')
         inputs = model.fit(x, y, params=params, debug=True)
+        assert inputs.absolute_residuals is True
         assert inputs.correlated is True
         assert inputs.delta == 0.0
-        assert inputs.max_iterations == 123
         assert inputs.fit_method == model.FitMethod.AMOEBA_LS
+        assert inputs.max_iterations == 123
+        assert inputs.residual_type == model.ResidualType.DY_Y
         assert inputs.second_derivs_B is False
         assert inputs.second_derivs_H is True
         assert inputs.tolerance == 1e-20
@@ -133,8 +175,9 @@ def test_default():
         assert inputs.absolute_residuals is False
         assert inputs.correlated is True
         assert inputs.delta == 0.0
-        assert inputs.max_iterations == 123
         assert inputs.fit_method == model.FitMethod.AMOEBA_MM
+        assert inputs.max_iterations == 123
+        assert inputs.residual_type == model.ResidualType.DY_Y
         assert inputs.second_derivs_B is False
         assert inputs.second_derivs_H is True
         assert inputs.tolerance == 1e-20
@@ -146,8 +189,9 @@ def test_default():
         assert inputs.absolute_residuals is False
         assert inputs.correlated is True
         assert inputs.delta == 0.0
-        assert inputs.max_iterations == 123
         assert inputs.fit_method == model.FitMethod.AMOEBA_MM
+        assert inputs.max_iterations == 123
+        assert inputs.residual_type == model.ResidualType.DY_Y
         assert inputs.second_derivs_B is False
         assert inputs.second_derivs_H is False
         assert inputs.tolerance == 1.0
