@@ -621,7 +621,7 @@ class Model:
             ux: ArrayLike = None,
             uy: ArrayLike1D = None,
             debug: bool = False,
-            **options):
+            **options) -> Result | Input:
         """Fit the model to the data.
 
         .. tip::
