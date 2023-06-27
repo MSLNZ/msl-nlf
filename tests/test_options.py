@@ -66,6 +66,7 @@ def test_default():
     params = [0, 1]
     with LinearModel() as model:
         inputs = model.fit(x, y, params=params, debug=True)
+        assert inputs.absolute_residuals is True
         assert inputs.correlated is False
         assert inputs.delta == 0.1
         assert inputs.max_iterations == 999
@@ -78,6 +79,7 @@ def test_default():
 
         model.options(second_derivs_B=False, max_iterations=123)
         inputs = model.fit(x, y, params=params, debug=True)
+        assert inputs.absolute_residuals is True
         assert inputs.correlated is False
         assert inputs.delta == 0.1
         assert inputs.max_iterations == 123
@@ -90,6 +92,7 @@ def test_default():
 
         model.options(weighted=True)
         inputs = model.fit(x, y, params=params, debug=True)
+        assert inputs.absolute_residuals is True
         assert inputs.correlated is False
         assert inputs.delta == 0.1
         assert inputs.max_iterations == 123
@@ -102,6 +105,7 @@ def test_default():
 
         model.options(correlated=True, fit_method=model.FitMethod.POWELL_MD, delta=0)
         inputs = model.fit(x, y, params=params, debug=True)
+        assert inputs.absolute_residuals is True
         assert inputs.correlated is True
         assert inputs.delta == 0.0
         assert inputs.max_iterations == 123
@@ -124,8 +128,9 @@ def test_default():
         assert inputs.uy_weights_only is False
         assert inputs.weighted is True
 
-        model.options(fit_method='Amoeba minimax')
+        model.options(fit_method='Amoeba minimax', absolute_residuals=False)
         inputs = model.fit(x, y, params=params, debug=True)
+        assert inputs.absolute_residuals is False
         assert inputs.correlated is True
         assert inputs.delta == 0.0
         assert inputs.max_iterations == 123
@@ -138,6 +143,7 @@ def test_default():
 
         model.options(tolerance=1, second_derivs_H=False, uy_weights_only=True)
         inputs = model.fit(x, y, params=params, debug=True)
+        assert inputs.absolute_residuals is False
         assert inputs.correlated is True
         assert inputs.delta == 0.0
         assert inputs.max_iterations == 123

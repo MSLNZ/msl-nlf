@@ -188,6 +188,7 @@ class Model:
         self._npts: int = -1
 
         # fit options
+        self._absolute_residuals: bool = True
         self._correlated: bool = False
         self._delta: float = 0.1
         self._max_iterations: int = 999
@@ -380,8 +381,7 @@ class Model:
     def _load_options(self) -> dict:
         # load the options.cfg file
         options = {}
-        ignore = ('absolute_res', 'residual_type',
-                  'show_info_window', 'user_dir')
+        ignore = ('residual_type', 'show_info_window', 'user_dir')
         with open(self._cfg_path) as f:
             for line in f:
                 k, v = line.split('=')
@@ -393,6 +393,8 @@ class Model:
                     options[k] = v.rstrip()
                 if k == 'fit_method':
                     options[k] = FitMethod(options[k])
+                elif k == 'absolute_residuals':
+                    options[k] = options[k] == 'Absolute'
         return options
 
     def _load_user_defined(self) -> None:
@@ -831,6 +833,7 @@ class Model:
 
     def options(self,
                 *,
+                absolute_residuals: bool = None,
                 correlated: bool = None,
                 delta: float = None,
                 max_iterations: int = None,
@@ -844,6 +847,9 @@ class Model:
 
         Parameters
         ----------
+        absolute_residuals
+            Whether absolute residuals or relative residuals are used to evaluate
+            the :attr:`~msl.nlf.datatypes.Result.eof`.
         correlated
             Whether to include the correlations in the fitting process. Including
             correlations in the fit is only possible for least-squares fitting,
@@ -888,6 +894,8 @@ class Model:
         #
         # ShowInfoWindow is not a kwarg because the popup Window flashes to quickly
         # to be useful.
+        if absolute_residuals is not None:
+            self._absolute_residuals = bool(absolute_residuals)
         if correlated is not None:
             self._correlated = bool(correlated)
         if delta is not None:
@@ -916,12 +924,13 @@ class Model:
                                          f'enum member name or value') from None
             self._fit_method = fit_method
 
+        absolute_residuals = 'Absolute' if self._absolute_residuals else 'Relative'
         with open(self._cfg_path, mode='wt') as f:
             f.write(f'weighted={self._weighted}\n'  # S='True';
                     f'max_iterations={self._max_iterations}\n'  # StrToInt(S);
                     f'tolerance={self._tolerance}\n'  # StrToFloat(S);
                     f'delta={self._delta}\n'  # StrToFloat(S);
-                    f'absolute_res=Absolute\n'  # S='Absolute';
+                    f'absolute_residuals={absolute_residuals}\n'  # S='Absolute';
                     f'residual_type=dy v x\n'  # S=one of 'dx v x', 'dy v x', 'dx v y', 'dy v y'
                     f'fit_method={self._fit_method.value}\n'  # S=one of FitMethod values
                     f'second_derivs_H={self._second_derivs_H}\n'  # S='True';

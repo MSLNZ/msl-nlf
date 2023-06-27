@@ -12,6 +12,7 @@ def test_input_uncorrelated():
         got = model.fit(x=x, y=y, params=params, debug=True)
 
     expected = """Input(
+  absolute_residuals=True
   correlated=False
   correlations=    
     Correlations(
@@ -54,6 +55,7 @@ def test_input_correlated():
         got = model.fit(x=x, y=y, params=a, uy=sigy, ux=sigx, debug=True)
 
     expected = """Input(
+  absolute_residuals=True
   correlated=True
   correlations=    
     Correlations(

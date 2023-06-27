@@ -210,6 +210,7 @@ You can display a summary of the input information
 
     >>> info
     Input(
+      absolute_residuals=True
       correlated=False
       correlations=
         Correlations(

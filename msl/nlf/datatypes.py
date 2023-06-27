@@ -101,6 +101,10 @@ class Correlations:
 class Input:
     """The input data to a fit model."""
 
+    absolute_residuals: bool
+    """Whether absolute residuals or relative residuals are used to evaluate
+    the :attr:`~.Result.eof`."""
+
     correlated: bool
     """Whether correlations are applied in the fitting process."""
 
@@ -172,6 +176,7 @@ class Input:
             param_str = f'\n{indent}'.join(params)
 
         return f'Input(\n' \
+               f'  absolute_residuals={self.absolute_residuals}\n' \
                f'  correlated={self.correlated}\n' \
                f'  correlations={corr_str}\n' \
                f'  delta={self.delta}\n' \

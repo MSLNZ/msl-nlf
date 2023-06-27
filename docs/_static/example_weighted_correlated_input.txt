@@ -1,4 +1,5 @@
 Input(
+  absolute_residuals=True
   correlated=True
   correlations=    
     Correlations(
