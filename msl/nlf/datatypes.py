@@ -236,11 +236,7 @@ class Result:
     """The number of degrees of freedom."""
 
     eof: float
-    """The error-of-fit value (the standard deviation of the residuals).
-    
-    For a MiniMax fit, this value is the maximum absolute residual or the
-    maximum absolute relative residual.
-    """
+    """The error-of-fit value (the standard deviation of the residuals)."""
 
     iterations: int
     """The total number of fit iterations."""
