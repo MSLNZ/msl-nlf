@@ -1,9 +1,10 @@
 """
-Wrapper around the DLL functions.
+Wrapper around DLL functions.
 """
 from __future__ import annotations
 
 import os
+from array import array
 from ctypes import CDLL
 from ctypes import POINTER
 from ctypes import byref
@@ -286,31 +287,46 @@ def get_user_defined(directory: str) -> dict[str, UserDefined]:
     return functions
 
 
-def evaluate(fcn: Callable, x: Sequence[Sequence[float]], a: Sequence[float]) -> list[float]:
+def evaluate(fcn: Callable,
+             a: Sequence[float],
+             x: Sequence[float],
+             shape: tuple[int, int],
+             y):
     """Call *GetFunctionValue* in the user-defined DLL.
 
     Parameters
     ----------
     fcn
         Reference to *GetFunctionValue*.
-    x
-        Independent variable (stimulus) data.
     a
         Parameter values.
+    x
+        Independent variable (stimulus) data. The data must already be
+        transposed and flat.
+    shape
+        The shape of the *x* data.
+    y
+        Pre-allocated sequence for the dependent variable (response) data.
 
     Returns
     -------
-    :class:`list` [ :class:`float` ]
+    :class:`~array.array` or :class:`~numpy.ndarray`
         Dependent variable (response) data.
     """
-    # make global variables local variables to improve the for loop
-    _byref, _double = byref, c_double
-    nvars, npts = len(x), len(x[0])
-    y = [0.0] * npts
-    y_val = _double()
-    a = (len(a) * _double)(*a)
-    for i in range(npts):
-        values = (nvars * _double)(*tuple(x[j][i] for j in range(nvars)))
-        fcn(_byref(values), _byref(a), _byref(y_val))
-        y[i] = y_val.value
+    j = 0
+    y_val = c_double()
+    nvars, npts = shape
+    if isinstance(a, array):
+        a_ref = (len(a) * c_double)(*a)
+        x_ref = nvars * c_double
+        for i in range(npts):
+            fcn(x_ref(*x[j:j+nvars]), a_ref, y_val)
+            y[i] = y_val.value
+            j += nvars
+    else:
+        # a, x and y are np.ndarray
+        for i in range(npts):
+            fcn(x[j:j+nvars], a, y_val)
+            y[i] = y_val.value
+            j += nvars
     return y

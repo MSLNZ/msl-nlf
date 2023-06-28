@@ -1,5 +1,5 @@
 """
-Call functions in a 32-bit version of a DLL from 64-bit Python.
+Call functions in a 32-bit DLL from 64-bit Python.
 """
 from __future__ import annotations
 
@@ -14,8 +14,6 @@ from msl.loadlib import Server32
 
 if Server32.is_interpreter():
     from dll import *
-    class np:  # noqa: mimics type hinting on the Server
-        ndarray = dict
 else:
     import numpy as np
     from .dll import UserDefined
@@ -45,22 +43,29 @@ class ServerNLF(Server32):
         """Get the version number from the DLL."""
         return version(self.lib)
 
-    def evaluate(self, x: list[list[float]], a: list[float]) -> list[float]:
+    def evaluate(self,
+                 a: array,
+                 x: array,
+                 shape: tuple[int, int]) -> array:
         """Evaluate the user-defined function.
 
         Parameters
         ----------
-        x
-            Independent variable (stimulus) data.
         a
             Parameter values.
+        x
+            Independent variable (stimulus) data.
+        shape
+            The shape of the *x* data.
 
         Returns
         -------
-        :class:`list` [ :class:`float` ]
+        :class:`~array.array`
             Dependent variable (response) data.
         """
-        return evaluate(self._user_function, x, a)
+        _, npts = shape
+        y = array('d', [0.0 for _ in range(npts)])
+        return evaluate(self._user_function, a, x, shape, y)
 
     def fit(self, **kwargs) -> dict:
         """Fit the model to the data using the supplied keyword arguments."""
@@ -118,6 +123,9 @@ class ServerNLF(Server32):
         for v in get_user_defined(directory).values():
             if v.equation == equation:
                 self._user_function = v.function
+                self._user_function.restype = None
+                self._user_function.argtypes = [
+                    POINTER(c_double), POINTER(c_double), POINTER(c_double)]
                 break
 
 
@@ -138,22 +146,27 @@ class ClientNLF(Client64):
         """Get the version number from the DLL."""
         return self.request32('dll_version')
 
-    def evaluate(self, x: np.ndarray[float], a: np.ndarray[float]) -> np.ndarray[float]:
+    def evaluate(self,
+                 a: array,
+                 x: array,
+                 shape: tuple[int, int]) -> array:
         """Evaluate the user-defined function.
 
         Parameters
         ----------
-        x
-            Independent variable (stimulus) data.
         a
             Parameter values.
+        x
+            Independent variable (stimulus) data.
+        shape
+            The shape of the *x* data.
 
         Returns
         -------
-        :class:`~numpy.ndarray` [ :class:`float` ]
+        :class:`~array.array`
             Dependent variable (response) data.
         """
-        return np.array(self.request32('evaluate', x.tolist(), a.tolist()))
+        return self.request32('evaluate', a, x, shape)
 
     def fit(self, **kwargs) -> dict:
         """Fit the model to the data using the supplied keyword arguments."""

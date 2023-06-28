@@ -6,6 +6,9 @@ from __future__ import annotations
 import os
 import re
 import warnings
+from array import array
+from ctypes import POINTER
+from ctypes import c_double
 from shutil import rmtree
 from tempfile import mkdtemp
 from typing import Iterable
@@ -444,6 +447,12 @@ class Model:
             self._dll.load_user_defined(self._equation, self._user_dir)
         else:
             self._user_function = ud.function
+            self._user_function.restype = None
+            p = np.ctypeslib.ndpointer
+            self._user_function.argtypes = [
+                p(dtype=c_double, flags='C_CONTIGUOUS'),
+                p(dtype=c_double, flags='C_CONTIGUOUS'),
+                POINTER(c_double)]
 
     @staticmethod
     def _get_corr_indices(s1: str, s2: str) -> tuple[int, int]:
@@ -546,28 +555,6 @@ class Model:
             The *y* (response) values.
         """
         x = np.asanyarray(x)
-        if self._is_user_function:
-            try:
-                a = result.params.values()
-            except AttributeError:
-                a = np.array(list(result.values()))
-
-            if x.ndim == 1:
-                x = np.asarray([x])
-
-            if isinstance(self._dll, ClientNLF):
-                return self._dll.evaluate(x, a)
-            return np.array(evaluate(self._user_function, x, a))
-
-        equation = self._equation.replace('^', '**')
-
-        try:
-            namespace = dict((p.name, p.value) for p in result.params)
-        except AttributeError:
-            namespace = result
-
-        namespace.update(**self._np_map)
-
         if x.ndim == 1:
             nvars, npts = (1, x.size)
         elif x.ndim == 2:
@@ -579,6 +566,29 @@ class Model:
             raise ValueError(f'Unexpected number of x variables '
                              f'[{nvars} != {self._num_vars}]')
 
+        if self._is_user_function:
+            try:
+                a = result.params.values()
+            except AttributeError:
+                a = np.array(list(result.values()))
+
+            shape = (nvars, npts)
+            xtf = x.T.reshape(-1)  # transpose and flatten
+            if isinstance(self._dll, ClientNLF):
+                a_array = array('d', a.tobytes())
+                x_array = array('d', xtf.tobytes())
+                return np.array(self._dll.evaluate(a_array, x_array, shape))
+
+            y = np.empty(npts, dtype=float)
+            return evaluate(self._user_function, a, xtf, shape, y)
+
+        try:
+            namespace = dict((p.name, p.value) for p in result.params)
+        except AttributeError:
+            namespace = result
+
+        namespace.update(**self._np_map)
+
         if nvars == 1:
             namespace['x'] = x
             namespace['x1'] = x  # x can also be written as x1
@@ -587,6 +597,7 @@ class Model:
             for i, row in enumerate(x, start=1):
                 namespace[f'x{i}'] = row
 
+        equation = self._equation.replace('^', '**')
         return eval(equation, {'__builtins__': {}}, namespace)
 
     @overload
