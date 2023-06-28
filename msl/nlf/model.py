@@ -141,7 +141,7 @@ class Model:
                  dll: str = None,
                  user_dir: str = None,
                  **options) -> None:
-        """A model for the non-linear fitting software of P. Saunders, MSL.
+        """A model for non-linear fitting.
 
         Parameters
         ----------
@@ -163,7 +163,7 @@ class Model:
             |
 
             If using a user-defined function that has been compiled to a DLL,
-            the equation must be equal to *f* followed by a positive integer,
+            the *equation* name must begin with *f* followed by a positive integer,
             for example, ``f1``. The *user_dir* keyword argument may also need
             to be set. See :ref:`nlf-user-defined-function`.
         dll

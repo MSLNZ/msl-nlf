@@ -10,7 +10,7 @@ The equation for the underdamped oscillator is
 
 .. math::
 
-    f(x; a) = a_1 e^{-a_2 x} sin(a_3 x + a_4) + a_5
+    f(x; a) = a_1 e^{-a_2 x} \sin(a_3 x + a_4) + a_5
 
 First, simulate some noisy data *(we can also see what the expected results of the*
 :math:`a_i` *parameters are)*

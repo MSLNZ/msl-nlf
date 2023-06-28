@@ -77,7 +77,7 @@ can also be instantiated directly
 There are multiple ways to add a parameter to an
 :class:`~msl.nlf.parameter.InputParameters` object. To add a parameter, you
 could explicitly add an instance of an :class:`~msl.nlf.parameter.InputParameter`
-(using the :meth:`~msl.nlf.parameter.InputParameters.add` method or as one would
+using the :meth:`~msl.nlf.parameter.InputParameters.add` method (or as one would
 add items to a :class:`dict`)
 
 .. code-block:: pycon
@@ -88,7 +88,8 @@ add items to a :class:`dict`)
     >>> a3 = params.add(InputParameter('a3', 3, constant=True, label='label-3'))
     >>> params['a4'] = InputParameter('a4', 4)
 
-You could also specify positional arguments (or set it equal to a :class:`tuple`)
+You could also specify multiple positional arguments (or assign several parameters
+using the mapping syntax)
 
 .. code-block:: pycon
 
@@ -147,7 +148,7 @@ or just get all of the values
     array([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10.,  11.,  12.,  13.,
            14., 15., 16., 17., 18.])
 
-You can get a specific parameter by its *name* or *label* (provide that the
+You can get a specific parameter by its *name* or *label* (provided that the
 *label* is not :data:`None`)
 
 .. code-block:: pycon

@@ -79,13 +79,13 @@ A user-defined function is created in Delphi Pascal for the Beta Distribution.
 
 Using the Function
 ------------------
-To use a custom function, you must specify the *f#* value that was chosen
-for the function as the *equation*, and, optionally, specify the directory
-where the custom DLL is located as a *user_dir* keyword argument. If you are
-also using the Delphi GUI, the directory that has been set in the GUI for the
-user-defined functions will be used as the default *user_dir* value. Otherwise,
-the current working directory is used as the default *user_dir* value if a
-directory is not explicitly specified.
+To use a custom function, the first parameter passed when defining a
+:class:`~msl.nlf.model.Model` must be the first part of the name, up to the colon,
+defined in *GetFunctionName*, and, optionally, specify the directory where the
+custom DLL is located as a *user_dir* keyword argument. If you are also using the
+Delphi GUI, the directory that has been set in the GUI for the user-defined functions
+will be used as the default *user_dir* value. Otherwise, the current working directory
+is used as the default *user_dir* value if a directory is not explicitly specified.
 
 Below, the C++ function, *f1*, is used as the custom function
 

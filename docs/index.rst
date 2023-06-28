@@ -33,7 +33,7 @@ For more details see *Propagation of uncertainty for non-linear calibration*
 *equations with an application in radiation thermometry*, **P. Saunders**,
 `Metrologia 40 93 (2003) <https://doi.org/10.1088/0026-1394/40/2/315>`_.
 
-The non-linear fitting algorithm implements the follow features:
+The non-linear fitting algorithm implements the following features:
 
 1. perform an unweighted fit or a weighted fit with uncertainties in the :math:`x` and/or :math:`y` data
 2. setting correlations between the :math:`x_i-x_i`, :math:`x_i-x_j`, :math:`x_i-y` and/or :math:`y-y` data

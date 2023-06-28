@@ -189,13 +189,13 @@ class LinearModel(Model):
 class SineModel(Model):
 
     def __init__(self, **kwargs) -> None:
-        """A model based on a sine function.
+        r"""A model based on a sine function.
 
         The function is defined as
 
         .. math::
 
-            f(x; a) = a_1 sin(a_2 x + a_3)
+            f(x; a) = a_1 \sin(a_2 x + a_3)
 
         Parameters
         ----------

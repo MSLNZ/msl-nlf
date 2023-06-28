@@ -17,7 +17,8 @@ As defined in Appendix H3 of the GUM, the calibration curve is
 
    b(t) = y_1 + y_2 (t-t_0)
 
-where the reference temperature, :math:`t_0`, is chosen to be 20 :math:`^\circ C`.
+where the reference temperature, :math:`t_0`, is chosen to be 20
+:math:`^\circ \mathrm{C}`.
 
 This translates to the following equation that is passed to a
 :class:`~msl.nlf.model.Model`
@@ -61,7 +62,7 @@ used to calculate the response at a chosen stimulus.
     intercept, slope = result.to_ureal()
 
 The *intercept* and *slope* can be used to calculate a correction for
-a reading of 30 :math:`^\circ C`
+a reading of 30 :math:`^\circ \mathrm{C}`
 
 .. code-block:: console
 
