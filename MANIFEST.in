@@ -1,1 +1,1 @@
-recursive-include msl/nlf/*.dll
+recursive-include msl/nlf *.dll
