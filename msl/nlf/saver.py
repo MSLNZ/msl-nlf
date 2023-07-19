@@ -537,4 +537,9 @@ def save(*,
     )
     save_form(saver, form)  # data_form
 
+    # IncludeRow
+    saver.write_integer(npts)
+    for _ in range(npts):
+        saver.write_boolean(True)
+
     saver.save(path)

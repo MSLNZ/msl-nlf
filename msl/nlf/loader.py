@@ -441,4 +441,11 @@ def _load(path: str) -> dict:
     file['covar_form'] = load_form(loader)
     file['data_form'] = load_form(loader)
 
+    if loader.version > 5.42:
+        max_row = loader.read_integer()
+        include_row = [loader.read_boolean() for _ in range(max_row)]
+    else:
+        include_row = [True] * file['npt']
+    file['include_row'] = include_row
+
     return file

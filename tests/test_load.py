@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pytest
 
 from msl.nlf import FitMethod
 from msl.nlf import load
@@ -194,3 +195,53 @@ def test_str():
         if 'SKIP' in e:
             continue
         assert g == e
+
+
+def test_5_43():
+    loaded = load(get_path('5_43'))
+    assert loaded.version() == f'{version_info.major}.{version_info.minor}'
+    assert loaded.nlf_version == '5.43'
+    assert loaded.nlf_path.endswith('5_43.nlf')
+    assert loaded.equation == 'a1+a2*x'
+    assert loaded.num_variables == 1
+    assert loaded.num_parameters == 2
+    assert loaded.comments == 'Uncorrelated and\nunweighted and\nexcluded row #3 example'
+
+    with pytest.warns(UserWarning, match='uncertainties are specified'):
+        inputs = loaded.fit(loaded.x, loaded.y, params=loaded.params,
+                            ux=loaded.ux, uy=loaded.uy, debug=True)
+
+    assert inputs.absolute_residuals is False
+    assert inputs.correlated is False
+    assert inputs.weighted is False
+    assert inputs.max_iterations == 472
+    assert inputs.tolerance == 0.4e-13
+    assert inputs.delta == 0.02
+    assert inputs.fit_method == FitMethod.POWELL_MM
+    assert inputs.residual_type == loaded.ResidualType.DY_Y
+    assert inputs.equation == 'a1+a2*x'
+    assert inputs.second_derivs_H is False
+    assert inputs.second_derivs_B is True
+    assert inputs.uy_weights_only is False
+
+    is_correlated = inputs.correlations.is_correlated
+    assert np.array_equal(is_correlated, [[False, False], [False, False]])
+    assert len(inputs.correlations.data) == 0
+
+    params = loaded.params
+    assert len(params) == 2
+    assert params['a1'].value == 1.4916366170334300e-21
+    assert params['a1'].constant is False
+    assert params['a1'].label is None
+    assert params['a2'].value == 0.1
+    assert params['a2'].constant is True
+    assert params['a2'].label is None
+
+    x = np.array([[1, 2, 4]], dtype=float)  # excluded row 3
+    ux = np.array([[0.01, 0.02, 0.04]])
+    y = np.array([0.1, 0.2, 0.4])
+    uy = np.array([0.05, 0.1, 0.2])
+    assert np.array_equal(loaded.x, x)
+    assert np.array_equal(loaded.ux, ux)
+    assert np.array_equal(loaded.y, y)
+    assert np.array_equal(loaded.uy, uy)
