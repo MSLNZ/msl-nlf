@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pytest
 from msl.loadlib import IS_PYTHON_64BIT
@@ -183,3 +185,21 @@ def test_nelson(dll):
         eof = np.sqrt(chisq / (len(y) - len(params)))
         assert pytest.approx(chisq_expected) == chisq
         assert pytest.approx(eof_expected) == eof
+
+
+@pytest.mark.parametrize(
+    'user_dir',
+    ['./tests/user_defined',
+     './tests/user_defined/',
+     '.\\tests\\user_defined',
+     '.\\tests\\user_defined\\',
+     os.path.join(os.path.dirname(__file__), 'user_defined'),
+     os.path.dirname(__file__) + '/user_defined',
+     os.path.dirname(__file__) + '/user_defined/',
+     os.path.dirname(__file__) + r'\user_defined',
+     os.path.dirname(__file__) + '\\user_defined\\',
+     ])
+def test_path_seperator_ending(user_dir):
+    with Model('f1', user_dir=user_dir) as model:
+        assert model.equation == 'f1'
+        assert model.user_function_name == 'f1: Roszman1 f1=a1-a2*x-arctan(a3/(x-a4))/pi'
