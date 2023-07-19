@@ -1044,7 +1044,9 @@ class Model:
             params = self._parameters
 
         c = comments or ''
-        data = self.fit(x, y, params=params, ux=ux, uy=uy, debug=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            data = self.fit(x, y, params=params, ux=ux, uy=uy, debug=True)
         save(path=path, comments=c, overwrite=overwrite, data=data)
 
     def set_correlation(self,
