@@ -102,6 +102,8 @@ def load_graph(loader: Loader) -> dict:
     dict
         The settings of the *TGraphWindow*.
     """
+    # See the repository "Nonlinear-Fitting/NLFGraph.pas"
+    # procedure TGraphWindow.LoadFile(TheStream:TStream);
     graph = dict()
     graph['win_left'] = loader.read_integer()
     graph['left'] = graph['win_left']
@@ -215,6 +217,8 @@ def load_form(loader: Loader) -> dict:
     dict
         The settings of the *TDataForm*.
     """
+    # See the repository "Nonlinear-Fitting/NLFDataForm.pas"
+    # procedure TDataForm.LoadFile(TheStream:TStream; FromDisk:Boolean);
     form = dict()
     form['win_left'] = loader.read_integer()
     form['left'] = form['win_left']
@@ -266,6 +270,8 @@ def _load(path: str) -> dict:
     dict
         The settings of the file.
     """
+    # See the repository "Nonlinear-Fitting/NLFMain.pas"
+    # procedure TNLFMainForm.LoadFile(FromDisk:Boolean; FileName: string);
     file = dict()
     loader = Loader(path)
     version = loader.version

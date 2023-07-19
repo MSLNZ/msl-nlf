@@ -143,6 +143,8 @@ def save_graph(saver: Saver, name: str) -> None:
     name
         The name of the graph window.
     """
+    # See the repository "Nonlinear-Fitting/NLFGraph.pas"
+    # procedure TGraphWindow.StoreFile(TheStream:TStream);
     if name == 'fit_graph':
         left = 1
         top = 300
@@ -254,6 +256,8 @@ def save_form(saver: Saver, data: dict) -> None:
         form should have the appropriate number of columns
         and number of rows. Covariance forms is not populated.
     """
+    # See the repository "Nonlinear-Fitting/NLFDataForm.pas"
+    # procedure TDataForm.StoreFile(TheStream: TStream; OnDisk:Boolean);
     saver.write_integer(data['left'])  # win_left=left
     saver.write_integer(data['top'])  # win_top=top
     saver.write_integer(data['width'])  # win_width=width
@@ -409,6 +413,8 @@ def save(*,
 
     nvars, npts = data.x.shape
 
+    # See the repository "Nonlinear-Fitting/NLFMain.pas"
+    # procedure TNLFMainForm.StoreFile(OnDisk:Boolean);
     saver = Saver(version)
     saver.write_string(data.equation)
     saver.write_integer(len(data.params))
