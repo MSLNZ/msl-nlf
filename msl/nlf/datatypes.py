@@ -31,7 +31,8 @@ class FitMethod(Enum):
 
     Minimum distance (MD) minimises the sum of the distances (in two dimensions)
     between each point and the fitted curve. This type of fit is not available
-    when data is correlated.
+    when data is correlated nor is it available when there is more than one
+    independent variable (stimulus).
 
     MiniMax (MM) minimises the value of the maximum absolute y-residual. This
     type of fit is not available when data is correlated.
