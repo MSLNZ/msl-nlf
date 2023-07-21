@@ -296,6 +296,7 @@ def test_options():
         model.save(path, x=[1, 2, 3], y=[1, 2, 3], params=[1, 1])
         loaded = load(path)
         assert loaded.equation == 'a1+a2*x'
+        loaded.show_warnings = False
         data = loaded.fit(loaded.x, loaded.y, params=loaded.params, debug=True)
         assert data.absolute_residuals is False
         assert data.correlated is True

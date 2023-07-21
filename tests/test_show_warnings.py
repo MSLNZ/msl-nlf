@@ -106,6 +106,16 @@ def test_fit_correlated():
         warnings.simplefilter('error')
         model.fit(x=[1, 2, 3], y=[1, 2, 3], params=[0, 1], debug=True, correlated=False)
 
+    # correlated but no correlations are specified
+    with pytest.warns(UserWarning, match='no correlations'):
+        model.fit(x=[1, 2, 3], y=[1, 2, 3], params=[0, 1], debug=True, correlated=True)
+
+    # disable
+    model.show_warnings = False
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')
+        model.fit(x=[1, 2, 3], y=[1, 2, 3], params=[0, 1], debug=True, correlated=True)
+
 
 def test_max_iterations():
     x = np.array([[1, 2, 3, 4], [0.1, 0.2, 0.3, 0.4]])

@@ -730,16 +730,26 @@ class Model:
         if self._show_warnings:
             if (not self._weighted) and (ux is not None or uy is not None):
                 warnings.warn(
-                    'uncertainties are specified but the fit option is set to unweighted',
+                    'unweighted fit but uncertainties are specified',
                     UserWarning,
                     stacklevel=2
                 )
-            if (not self._correlated) and np.any(self._is_corr_array):
-                warnings.warn(
-                    'correlations are specified but the fit option is set to uncorrelated',
-                    UserWarning,
-                    stacklevel=2
-                )
+
+            any_correlations = np.any(self._is_corr_array)
+            if self._correlated:
+                if not any_correlations:
+                    warnings.warn(
+                        'correlated fit but there are no correlations',
+                        UserWarning,
+                        stacklevel=2
+                    )
+            else:
+                if any_correlations:
+                    warnings.warn(
+                        'uncorrelated fit but correlations are specified',
+                        UserWarning,
+                        stacklevel=2
+                    )
 
         if debug:
             info = self._load_options()

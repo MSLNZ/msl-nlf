@@ -142,6 +142,7 @@ def test_default():
         assert inputs.uy_weights_only is False
         assert inputs.weighted is True
 
+        model.show_warnings = False
         model.options(correlated=True, fit_method=model.FitMethod.POWELL_MD, delta=0)
         inputs = model.fit(x, y, params=params, debug=True)
         assert inputs.absolute_residuals is True
