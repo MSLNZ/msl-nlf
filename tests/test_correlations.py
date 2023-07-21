@@ -285,3 +285,20 @@ def test_set_correlation():
             assert np.array_equal(c.is_correlated, [[False, False, False],
                                                     [False, False, False],
                                                     [False, False, False]])
+
+
+def test_bad_corr_file():
+    # DLL raises an error if the correlation file cannot be read
+
+    bad_dir = os.path.join(TMP_DIR, 'bad')
+    os.mkdir(bad_dir)
+    file = os.path.join(bad_dir, 'CorrCoeffs Y-Y.txt')
+    with open(file, mode='wt') as fp:
+        fp.write('1 2 3\n')
+        fp.write('4 x 6\n')
+        fp.write('7 8 9\n')
+
+    with LinearModel(correlated=True, weighted=True) as model:
+        model.set_correlation_dir(bad_dir)
+        with pytest.raises(RuntimeError, match='Error reading the correlation coefficient file'):
+            model.fit([1, 2, 3], [1, 2, 3], params=[0, 1], uy=[0.1, 0.1, 0.1])
