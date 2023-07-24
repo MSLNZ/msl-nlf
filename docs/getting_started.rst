@@ -275,7 +275,7 @@ You can display a summary of the fit result
                    [-0.88698141  1.        ]]
       covariance=[[ 0.93780488 -0.13414634]
                   [-0.13414634  0.02439024]]
-      dof=3
+      dof=3.0
       eof=5.299876973568286
       iterations=22
       params=

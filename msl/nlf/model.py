@@ -9,6 +9,7 @@ import warnings
 from array import array
 from ctypes import POINTER
 from ctypes import c_double
+from math import inf
 from shutil import rmtree
 from tempfile import mkdtemp
 from typing import Iterable
@@ -788,7 +789,11 @@ class Model:
         else:
             result = fit(self._dll.lib, covar=self._covar, ua=self._ua, **kwargs)
 
-        result['dof'] = npts - nparams + int(np.sum(self._constant[:nparams]))
+        if self._weighted or self._correlated:
+            result['dof'] = inf
+        else:
+            result['dof'] = float(npts - nparams + np.sum(self._constant[:nparams]))
+
         result['params'] = ResultParameters(result, parameters)
 
         # calculate correlation matrix from covariance matrix

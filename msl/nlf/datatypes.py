@@ -233,8 +233,13 @@ class Result:
     covariance: np.ndarray[float]
     """Parameter covariance matrix."""
 
-    dof: int
-    """The number of degrees of freedom."""
+    dof: float
+    """The number of degrees of freedom that are retained.
+    
+    If a fit is weighted or correlated, the degrees of freedom is infinity.
+    Otherwise, the degrees of freedom is equal to the number of data points
+    minus the number of fit parameters.
+    """
 
     eof: float
     """The error-of-fit value (the standard deviation of the residuals)."""

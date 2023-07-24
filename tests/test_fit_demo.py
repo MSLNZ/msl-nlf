@@ -3,6 +3,8 @@ The word "demo" in this test script filename refers to the example Python script
 that P. Saunders wrote to illustrate how to interact with the DLL. This test
 verifies that the same results are obtained.
 """
+import math
+
 import numpy as np
 import pytest
 from msl.loadlib import IS_PYTHON_64BIT
@@ -50,7 +52,7 @@ def test_demo(dll):
                                      [0.33998683044214156, -0.4180723600492553, 1.0]]))
         assert r.chisq == pytest.approx(0.854875600205648)
         assert r.eof == pytest.approx(0.32710857899179385)
-        assert r.dof == 1
+        assert math.isinf(r.dof)
         assert r.iterations == 33
         assert r.calls == 3
 
