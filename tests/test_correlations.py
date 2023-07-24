@@ -302,3 +302,36 @@ def test_bad_corr_file():
         model.set_correlation_dir(bad_dir)
         with pytest.raises(RuntimeError, match='Error reading the correlation coefficient file'):
             model.fit([1, 2, 3], [1, 2, 3], params=[0, 1], uy=[0.1, 0.1, 0.1])
+
+
+def test_correlations_reset():
+    # Prior to DLL version 5.43
+    # (commit 457fcead50c9132a5599e38bf7e83a97f4e87cc9, 24 July 2023)
+    # the correlation coefficients would only be read once (from disk)
+    # and the same coefficients would be used subsequent correlated fits.
+    #
+    # This test checks that this issue does not occur.
+    # The expected values were taken from the GUI for the same data
+
+    x = [1., 2., 3., 4.]
+    y = [1.1, 1.9, 3.2, 3.7]
+    p = [0, 1]
+    uy = [0.1, 0.2, 0.3, 0.4]
+
+    with LinearModel(correlated=True) as model:
+        model.show_warnings = False
+
+        model.set_correlation('y', 'y', value=0.9)
+        result = model.fit(x=x, y=y, params=p, uy=uy)
+        assert pytest.approx(0.2, rel=1e-9) == result.params['a1'].value
+        assert pytest.approx(0.0774596669241483, rel=1e-9) == result.params['a1'].uncert
+        assert pytest.approx(0.91, rel=1e-9) == result.params['a2'].value
+        assert pytest.approx(0.103247275993122, rel=1e-9) == result.params['a2'].uncert
+
+        # the correlation is different so the uncertainties are different
+        model.set_correlation('y', 'y', value=0.1)
+        result = model.fit(x=x, y=y, params=p, uy=uy)
+        assert pytest.approx(0.2, rel=1e-9) == result.params['a1'].value
+        assert pytest.approx(0.232379000772445, rel=1e-9) == result.params['a1'].uncert
+        assert pytest.approx(0.91, rel=1e-9) == result.params['a2'].value
+        assert pytest.approx(0.126253712816693, rel=1e-9) == result.params['a2'].uncert
