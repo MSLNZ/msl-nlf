@@ -65,6 +65,16 @@ def fit(dll: CDLL, **k) -> dict:
     eof = c_double()
     error = c_bool()
     error_str = create_unicode_buffer(1024)
+
+    try:
+        # procedure ResetFile; cdecl;
+        # Added in version 5.43
+        # Commit 457fcead50c9132a5599e38bf7e83a97f4e87cc9
+        # 24 July 2023
+        dll.ResetFile()
+    except AttributeError:
+        pass
+
     while iter_total < max_iter:
         calls += 1
         dll.DoNonlinearFit(
@@ -88,11 +98,14 @@ def fit(dll: CDLL, **k) -> dict:
     if hasattr(c, 'dtype'):
         covar = c[:n, :n]
 
-        # In the Delphi code, the software doesn't attempt to calculate a value
-        # for ua[i] and it puts a blank cell into the Results spreadsheet. But
-        # if a fit had previously been carried out with a[i] varying, then ua[i]
-        # will have the previous value because that part of the covariance matrix
-        # doesn't get overwritten.
+        # Prior to version 5.43 in the Delphi code,
+        # (commit 457fcead50c9132a5599e38bf7e83a97f4e87cc9, 24 July 2023)
+        # if a fit had previously been carried out with a[i] varying, and then
+        # with a[i] fixed, the value of ua[i] did not get set to 0 in the
+        # fixed case because the GUI puts a blank cell into the Results
+        # spreadsheet. As of the commit on 24 July 2023, the following is
+        # no longer required, but it is kept to the handle the situation
+        # if an older DLL prior to that commit was loaded for a Model.
         k['ua'][k['constant']] = 0.0
         ua = k['ua'][:n]
     else:
