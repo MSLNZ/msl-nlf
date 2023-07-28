@@ -217,7 +217,7 @@ class Input:
                f')'
 
 
-@dataclass(eq=False, order=False, frozen=True)
+@dataclass(eq=False, order=False, frozen=False)
 class Result:
     """The result from a fit model."""
 
