@@ -66,14 +66,8 @@ def fit(dll: CDLL, **k) -> dict:
     error = c_bool()
     error_str = create_unicode_buffer(1024)
 
-    try:
-        # procedure ResetFile; cdecl;
-        # Added in version 5.43
-        # Commit 457fcead50c9132a5599e38bf7e83a97f4e87cc9
-        # 24 July 2023
-        dll.ResetFile()
-    except AttributeError:
-        pass
+    # the ResetFile function was added in v5.43
+    dll.ResetFile()
 
     while iter_total < max_iter:
         calls += 1
@@ -97,25 +91,12 @@ def fit(dll: CDLL, **k) -> dict:
     n, c = k['nparams'], k['covar']
     if hasattr(c, 'dtype'):
         covar = c[:n, :n]
-
-        # Prior to version 5.43 in the Delphi code,
-        # (commit 457fcead50c9132a5599e38bf7e83a97f4e87cc9, 24 July 2023)
-        # if a fit had previously been carried out with a[i] varying, and then
-        # with a[i] fixed, the value of ua[i] did not get set to 0 in the
-        # fixed case because the GUI puts a blank cell into the Results
-        # spreadsheet. As of the commit on 24 July 2023, the following is
-        # no longer required, but it is kept to the handle the situation
-        # if an older DLL prior to that commit was loaded for a Model.
-        k['ua'][k['constant']] = 0.0
-        ua = k['ua'][:n]
     else:
         covar = [[c[i][j] for i in range(n)] for j in range(n)]
-        constant = k['constant'].contents
-        ua = [0.0 if constant[i] else u for i, u in enumerate(k['ua'][:n])]
 
     return {
         'a': k['a'][:n],
-        'ua': ua,
+        'ua': k['ua'][:n],
         'covariance': covar,
         'chisq': chisq.value,
         'eof': eof.value,
@@ -127,10 +108,6 @@ def fit(dll: CDLL, **k) -> dict:
 def version(dll: CDLL) -> str:
     """Call the *GetVersion* function in the DLL.
 
-    The *GetVersion* function was added to the DLL in v5.41. If an older
-    version of the DLL is loaded when a :class:`~msl.nlf.model.Model` is
-    created, calling this method will raise an :exc:`AttributeError`.
-
     Parameters
     ----------
     dll
@@ -141,6 +118,7 @@ def version(dll: CDLL) -> str:
     str
         The version number of the DLL.
     """
+    # the GetVersion function was added in v5.41
     buffer = create_unicode_buffer(16)
     dll.GetVersion.restype = None
     dll.GetVersion.argtypes = [c_wchar_p]
