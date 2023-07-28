@@ -1190,11 +1190,7 @@ class Model:
         return self._user_function_name
 
     def version(self) -> str:
-        """Get the version number from the DLL.
-
-        The *GetVersion* function was added to the DLL in v5.41. If an older
-        version of the DLL is loaded when a :class:`.Model` is created,
-        calling this method will raise an exception.
+        """Get the version number of the DLL.
 
         Returns
         -------
