@@ -238,7 +238,7 @@ class Result:
     
     If a fit is weighted or correlated, the degrees of freedom is infinity.
     Otherwise, the degrees of freedom is equal to the number of data points
-    minus the number of fit parameters.
+    (observations) minus the number of fit parameters.
     """
 
     eof: float
