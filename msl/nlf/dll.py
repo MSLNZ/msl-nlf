@@ -72,10 +72,10 @@ def fit(dll: CDLL, **k) -> dict:
     while iter_total < max_iter:
         calls += 1
         dll.DoNonlinearFit(
-            k['cfg_path'], k['equation'], k['x'], k['y'], k['ux'], k['uy'],
-            k['npts'], k['nvars'], k['a'], k['constant'], k['covar'], k['ua'],
-            k['correlated'], k['is_corr_array'], k['corr_dir'], chisq, eof,
-            iterations, error, error_str)
+            k['cfg_path'], k['equation'], k['weighted'], k['x'], k['y'],
+            k['ux'], k['uy'], k['npts'], k['nvars'], k['a'], k['constant'],
+            k['covar'], k['ua'], k['correlated'], k['is_corr_array'],
+            k['corr_dir'], chisq, eof, iterations, error, error_str)
 
         if error.value:
             raise RuntimeError(error_str.value)
@@ -159,6 +159,7 @@ def define_fit_fcn(dll: CDLL, as_ctypes: bool) -> None:
     dll.DoNonlinearFit.argtypes = [
         c_wchar_p,          # ConfigFile:PChar
         c_wchar_p,          # EquationStr:PChar
+        c_bool,             # WeightedFit:Boolean (added in v5.44)
         p_multi_data,       # xData:PMultiData
         p_data,             # yData:PData
         p_multi_data,       # xUn:PMultiData

@@ -19,7 +19,7 @@ __copyright__ = '\xa9 2023, ' + __author__
 
 # The value of the version should follow the DLL version and Python bug fixes
 # {DLL major}.{DLL minor}.{Python patch, reset to 0 when DLL major or DLL minor changes}
-__version__ = '5.43.0.dev0'
+__version__ = '5.44.0.dev0'
 
 _v = re.search(r'(\d+)\.(\d+)\.(\d+)[.-]?(.*)', __version__).groups()
 

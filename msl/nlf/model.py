@@ -755,6 +755,7 @@ class Model:
         if debug:
             info = self._load_options()
             info.update(
+                weighted=self._weighted,
                 correlated=self._correlated,
                 correlations=self._load_correlations(nvars),
                 equation=self._equation,
@@ -782,6 +783,7 @@ class Model:
             'corr_dir': self._corr_dir,
             'nparams': nparams,
             'max_iterations': self._max_iterations,
+            'weighted': self._weighted,
         }
 
         if isinstance(self._dll, ClientNLF):
@@ -967,8 +969,7 @@ class Model:
 
         absolute_residuals = 'Absolute' if self._absolute_residuals else 'Relative'
         with open(self._cfg_path, mode='wt') as f:
-            f.write(f'weighted={self._weighted}\n'  # S='True';
-                    f'max_iterations={self._max_iterations}\n'  # StrToInt(S);
+            f.write(f'max_iterations={self._max_iterations}\n'  # StrToInt(S);
                     f'tolerance={self._tolerance}\n'  # StrToFloat(S);
                     f'delta={self._delta}\n'  # StrToFloat(S);
                     f'absolute_residuals={absolute_residuals}\n'  # S='Absolute';
