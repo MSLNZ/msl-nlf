@@ -683,9 +683,7 @@ class Model:
         """
         x = _fill_array(self._x, x)
         nvars, npts = (1, x.size) if x.ndim == 1 else x.shape
-        if nvars != self._num_vars:
-            if self._num_vars == 0:
-                raise ValueError(f'Invalid equation {self._equation!r}')
+        if self._num_vars > 0 and self._num_vars != nvars:
             raise ValueError(f'Unexpected number of x (stimulus) variables '
                              f'[{nvars} != {self._num_vars}]')
 

@@ -28,8 +28,8 @@ def test_invalid(equation):
     # invalid but no exception is raised until a fit is performed
     with Model(equation) as model:
         assert model.equation == equation
-        with pytest.raises(ValueError, match=r'Invalid equation'):
-            model.fit([1, 2, 3], [1, 2, 3])
+        with pytest.raises(RuntimeError, match=r'Invalid Equation'):
+            model.fit([1, 2, 3], [1, 2, 3], params=[])
 
 
 @pytest.mark.parametrize('dll', dlls)
