@@ -1,12 +1,13 @@
 from math import fsum
 from math import sqrt
 
+import numpy as np
 from pytest import approx
 
 from msl.nlf import Model
 
 
-def test_weighted_mean():
+def test_weighted():
     y = [4.731, 10.624, 9.208, 6.178, 7.65, 10.133, 9.487,
          9.932, 3.74, 8.531, 7.97, 10.275]
 
@@ -14,6 +15,7 @@ def test_weighted_mean():
           1.06, 0.831, 0.881, 1.311, 0.727]
 
     params = [1]
+    x = list(range(len(y)))
 
     weights = [1.0/(u*u) for u in uy]
     mean = fsum(w_i * y_i for w_i, y_i in zip(weights, y)) / fsum(weights)
@@ -22,7 +24,53 @@ def test_weighted_mean():
     eof = sqrt(fsum((y_i - mean)**2 for y_i in y) / float(len(y) - len(params)))
 
     with Model('a1', weighted=True) as model:
-        result = model.fit(range(len(y)), y, uy=uy, params=params)
+        result = model.fit(x, y, uy=uy, params=params)
+        assert approx(mean, rel=1e-10) == result.params['a1'].value
+        assert approx(uncert, rel=1e-10) == result.params['a1'].uncert
+        assert approx(chisq, rel=1e-10) == result.chisq
+        assert approx(eof, rel=1e-10) == result.eof
+
+
+def test_weighted_correlated():
+    y = [4.731, 10.624, 9.208]
+    uy = [0.933, 0.951, 0.883]
+    x = list(range(len(y)))
+    params = [1]
+
+    correlation = np.array([[1.0, 0.15, 0.42],
+                            [0.15, 1.0, 0.86],
+                            [0.42, 0.86, 1.0]])
+
+    covariance = np.array([
+        [uy[0]**2, correlation[0, 1]*uy[0]*uy[1], correlation[0, 2]*uy[0]*uy[2]],
+        [correlation[0, 1]*uy[0]*uy[1], uy[1]**2, correlation[1, 2]*uy[1]*uy[2]],
+        [correlation[0, 2]*uy[0]*uy[2], correlation[1, 2]*uy[1]*uy[2], uy[2]**2]
+    ])
+
+    ones = np.ones(len(y))
+    inv_covariance = np.linalg.inv(covariance)
+    w = np.matmul(ones, inv_covariance)
+    w /= np.matmul(w, ones)
+
+    mean = fsum(w_i * y_i for w_i, y_i in zip(w, y))
+
+    uncert = sqrt(w[0]**2 * uy[0]**2 +
+                  w[1]**2 * uy[1]**2 +
+                  w[2]**2 * uy[2]**2 +
+                  2 * correlation[0, 1] * w[0] * w[1] * uy[0] * uy[1] +
+                  2 * correlation[0, 2] * w[0] * w[2] * uy[0] * uy[2] +
+                  2 * correlation[1, 2] * w[1] * w[2] * uy[1] * uy[2])
+
+    chisq = 0.
+    for i in range(len(y)):
+        for j in range(len(y)):
+            chisq += inv_covariance[i, j] * (y[i] - mean) * (y[j] - mean)
+
+    eof = sqrt(fsum((y_i - mean)**2 for y_i in y) / float(len(y) - len(params)))
+
+    with Model('a1', weighted=True, correlated=True) as model:
+        model.set_correlation('y', 'y', matrix=correlation)
+        result = model.fit(x, y, uy=uy, params=params)
         assert approx(mean, rel=1e-10) == result.params['a1'].value
         assert approx(uncert, rel=1e-10) == result.params['a1'].uncert
         assert approx(chisq, rel=1e-10) == result.chisq
