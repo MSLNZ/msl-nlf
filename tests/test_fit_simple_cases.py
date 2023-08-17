@@ -1,18 +1,12 @@
-import os
 from math import fsum
 from math import sqrt
 
 import numpy as np
-import pytest
 from pytest import approx
 
 from msl.nlf import Model
 
 
-@pytest.mark.xfail(
-    os.getenv('GITHUB_ACTIONS') == 'true',
-    reason='sometimes get fatal "access violation" from DLL',
-    raises=OSError)
 def test_weighted():
     y = [4.731, 10.624, 9.208, 6.178, 7.65, 10.133, 9.487,
          9.932, 3.74, 8.531, 7.97, 10.275]
@@ -21,7 +15,7 @@ def test_weighted():
           1.06, 0.831, 0.881, 1.311, 0.727]
 
     params = [1]
-    x = list(range(len(y)))
+    x = np.ones(len(y))
 
     weights = [1.0/(u*u) for u in uy]
     mean = fsum(w_i * y_i for w_i, y_i in zip(weights, y)) / fsum(weights)
@@ -29,7 +23,7 @@ def test_weighted():
     chisq = fsum(w_i * (y_i - mean)**2 for w_i, y_i in zip(weights, y))
     eof = sqrt(fsum((y_i - mean)**2 for y_i in y) / float(len(y) - len(params)))
 
-    with Model('a1', weighted=True) as model:
+    with Model('a1*x', weighted=True) as model:
         result = model.fit(x, y, uy=uy, params=params)
         assert approx(mean, rel=1e-10) == result.params['a1'].value
         assert approx(uncert, rel=1e-10) == result.params['a1'].uncert
@@ -40,7 +34,7 @@ def test_weighted():
 def test_weighted_correlated():
     y = [4.731, 10.624, 9.208]
     uy = [0.933, 0.951, 0.883]
-    x = list(range(len(y)))
+    x = np.ones(len(y))
     params = [1]
 
     correlation = np.array([[1.0, 0.15, 0.42],
@@ -74,7 +68,7 @@ def test_weighted_correlated():
 
     eof = sqrt(fsum((y_i - mean)**2 for y_i in y) / float(len(y) - len(params)))
 
-    with Model('a1', weighted=True, correlated=True) as model:
+    with Model('a1*x', weighted=True, correlated=True) as model:
         model.set_correlation('y', 'y', matrix=correlation)
         result = model.fit(x, y, uy=uy, params=params)
         assert approx(mean, rel=1e-10) == result.params['a1'].value
