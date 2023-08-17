@@ -81,3 +81,49 @@ def test_weighted_correlated():
         assert approx(uncert, rel=1e-10) == result.params['a1'].uncert
         assert approx(chisq, rel=1e-10) == result.chisq
         assert approx(eof, rel=1e-10) == result.eof
+
+
+def test_weighted_correlated_linear():
+    x = [1.969, 4.981, 3.357]
+    y = [4.731, 10.624, 9.208]
+    uy = [0.933, 0.951, 0.883]
+    params = [1, 1]
+    correlation = np.array([[1.0, 0.15, 0.67],
+                            [0.15, 1.0, 0.39],
+                            [0.67, 0.39, 1.0]])
+
+    covariance = np.array([
+        [uy[0]**2, correlation[0, 1]*uy[0]*uy[1], correlation[0, 2]*uy[0]*uy[2]],
+        [correlation[0, 1]*uy[0]*uy[1], uy[1]**2, correlation[1, 2]*uy[1]*uy[2]],
+        [correlation[0, 2]*uy[0]*uy[2], correlation[1, 2]*uy[1]*uy[2], uy[2]**2]
+    ])
+
+    xt = np.vstack((np.ones(len(x)), x))
+    inv_covariance = np.linalg.inv(covariance)
+    cov = np.linalg.inv((xt @ inv_covariance) @ xt.T)
+    a1, a2 = ((cov @ xt) @ inv_covariance) @ y
+    ua1, ua2 = sqrt(cov[0, 0]), sqrt(cov[1, 1])
+    a_corr = cov[0, 1] / (ua1 * ua2)
+
+    chisq = 0.
+    for i in range(len(y)):
+        for j in range(len(y)):
+            chisq += inv_covariance[i, j] * (y[i] - (a1+a2*x[i])) * (y[j] - (a1+a2*x[j]))
+
+    eof = sqrt(fsum((y[i] - (a1+a2*x[i]))**2 for i in range(len(y))) / float(len(y) - len(params)))
+
+    with Model('a1+a2*x', weighted=True, correlated=True) as model:
+        model.set_correlation('y', 'y', matrix=correlation)
+        result = model.fit(x, y, uy=uy, params=params)
+        assert approx(a1, rel=1e-8) == result.params['a1'].value
+        assert approx(ua1, rel=1e-10) == result.params['a1'].uncert
+        assert approx(a2, rel=1e-10) == result.params['a2'].value
+        assert approx(ua2, rel=1e-10) == result.params['a2'].uncert
+        assert approx(chisq, rel=1e-10) == result.chisq
+        assert approx(eof, rel=1e-10) == result.eof
+
+        intercept, slope = result.to_ureal()
+        assert 1. == intercept.get_correlation(intercept)
+        assert 1. == slope.get_correlation(slope)
+        assert approx(a_corr, rel=1e-10) == intercept.get_correlation(slope)
+        assert approx(a_corr, rel=1e-10) == slope.get_correlation(intercept)
