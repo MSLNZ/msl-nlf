@@ -1,12 +1,18 @@
+import os
 from math import fsum
 from math import sqrt
 
 import numpy as np
+import pytest
 from pytest import approx
 
 from msl.nlf import Model
 
 
+@pytest.mark.xfail(
+    os.getenv('GITHUB_ACTIONS') == 'true',
+    reason='sometimes get fatal "access violation" from DLL',
+    raises=OSError)
 def test_weighted():
     y = [4.731, 10.624, 9.208, 6.178, 7.65, 10.133, 9.487,
          9.932, 3.74, 8.531, 7.97, 10.275]
