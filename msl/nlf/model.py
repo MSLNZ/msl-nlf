@@ -15,6 +15,7 @@ from tempfile import mkdtemp
 from typing import Iterable
 from typing import Literal
 from typing import Sequence
+from typing import TypeVar
 from typing import Union
 from typing import overload
 
@@ -56,6 +57,10 @@ ArrayLike1D = Sequence[float]
 
 ArrayLike = Union[ArrayLike1D, Sequence[Sequence[float]]]
 """A 1D or 2D array."""
+
+# the Self type was added in Python 3.11 (PEP 673)
+# using TypeVar is equivalent for < 3.11
+Self = TypeVar('Self', bound='Model')
 
 
 def _fill_array(a, b):
@@ -351,7 +356,7 @@ class Model:
         except AttributeError:
             pass
 
-    def __enter__(self) -> Model:
+    def __enter__(self: Self) -> Self:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
