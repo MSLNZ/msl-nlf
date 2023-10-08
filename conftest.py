@@ -4,6 +4,7 @@ Initializes Sybil to test the examples in docstrings and .rst files.
 Sets the matplotlib backend to be 'svg' in order to not block the tests when
 plt.show() is called within ".. code-block:: python" directives in .rst files.
 """
+import sys
 from doctest import ELLIPSIS
 from doctest import NORMALIZE_WHITESPACE
 
@@ -20,6 +21,11 @@ except ImportError:
     GTC = None
 
 matplotlib.use('svg')
+
+# Sybil does not support implicit namespace packages.
+# Add msl to sys.path to avoid getting:
+#   ModuleNotFoundError: No module named 'nlf.datatypes'
+sys.path.append('msl')
 
 
 @pytest.fixture
