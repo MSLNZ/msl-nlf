@@ -316,6 +316,8 @@ class Result:
             >>> with LinearModel() as model:
             ...    result = model.fit(x, y)
 
+        .. skip: start if(no_gtc, reason='GTC cannot be imported')
+
         We can estimate the response to a particular stimulus, say :math:`x=21.5`
 
             >>> intercept, slope = result.to_ureal()

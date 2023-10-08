@@ -4,15 +4,18 @@ Compare with some of the linear fits of GTC.
 import math
 
 import numpy as np
-from GTC import get_correlation
-from GTC import type_a
 from pytest import approx
+from pytest import importorskip
 
 from msl.nlf import LinearModel
 from msl.nlf import Model
 from msl.nlf.datatypes import Result
 from msl.nlf.parameter import InputParameters
 from msl.nlf.parameter import ResultParameters
+
+GTC = importorskip('GTC', reason='GTC cannot be imported')
+get_correlation = GTC.get_correlation
+type_a = GTC.type_a
 
 
 def test_line_fit():

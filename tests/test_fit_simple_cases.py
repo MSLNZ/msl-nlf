@@ -2,6 +2,7 @@ from math import fsum
 from math import sqrt
 
 import numpy as np
+import pytest
 from pytest import approx
 
 from msl.nlf import Model
@@ -77,7 +78,7 @@ def test_weighted_correlated():
         assert approx(eof, rel=1e-10) == result.eof
 
 
-def test_weighted_correlated_linear():
+def test_weighted_correlated_linear(no_gtc):
     x = [1.969, 4.981, 3.357]
     y = [4.731, 10.624, 9.208]
     uy = [0.933, 0.951, 0.883]
@@ -115,6 +116,9 @@ def test_weighted_correlated_linear():
         assert approx(ua2, rel=1e-10) == result.params['a2'].uncert
         assert approx(chisq, rel=1e-10) == result.chisq
         assert approx(eof, rel=1e-10) == result.eof
+
+        if no_gtc:
+            pytest.skip('GTC cannot be imported, skipped at to_ureal() part')
 
         intercept, slope = result.to_ureal()
         assert 1. == intercept.get_correlation(intercept)

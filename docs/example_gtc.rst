@@ -33,6 +33,8 @@ are converted to a correlated ensemble of
 :meth:`~msl.nlf.datatypes.Result.to_ureal` method) which are
 used to calculate the response at a chosen stimulus.
 
+.. skip: start if(no_gtc, reason='GTC cannot be imported')
+
 .. code-block:: python
 
     from msl.nlf import Model
