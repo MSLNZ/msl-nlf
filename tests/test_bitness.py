@@ -1,12 +1,12 @@
 import os
 
 import pytest
-from msl.loadlib import IS_PYTHON_64BIT
 
 from msl.nlf import LinearModel
 from msl.nlf.dll import NPAR
 from msl.nlf.dll import NPTS
 from msl.nlf.dll import NVAR
+from msl.nlf.model import IS_PYTHON_64BIT
 
 
 def test_nlf32():

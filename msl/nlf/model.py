@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 import warnings
 from array import array
 from ctypes import POINTER
@@ -20,7 +21,6 @@ from typing import Union
 from typing import overload
 
 import numpy as np
-from msl.loadlib import IS_PYTHON_64BIT
 from msl.loadlib import LoadLibrary
 
 from .client_server import ClientNLF
@@ -61,6 +61,8 @@ ArrayLike = Union[ArrayLike1D, Sequence[Sequence[float]]]
 # the Self type was added in Python 3.11 (PEP 673)
 # using TypeVar is equivalent for < 3.11
 Self = TypeVar('Self', bound='Model')
+
+IS_PYTHON_64BIT: bool = sys.maxsize > 2 ** 32
 
 
 def _fill_array(a, b):

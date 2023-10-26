@@ -1,8 +1,8 @@
 import pytest
-from msl.loadlib import IS_PYTHON_64BIT
 
 from msl.nlf import LinearModel
 from msl.nlf import version_info
+from msl.nlf.model import IS_PYTHON_64BIT
 
 
 def test_default():

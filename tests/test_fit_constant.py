@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
-from msl.loadlib import IS_PYTHON_64BIT
 
 from msl.nlf import LinearModel
 from msl.nlf import PolynomialModel
+from msl.nlf.model import IS_PYTHON_64BIT
 
 if IS_PYTHON_64BIT:
     dlls = ['nlf32', 'nlf64']

@@ -2,10 +2,10 @@ import os
 
 import numpy as np
 import pytest
-from msl.loadlib import IS_PYTHON_64BIT
 
 from msl.nlf import Model
 from msl.nlf.dll import get_user_defined
+from msl.nlf.model import IS_PYTHON_64BIT
 
 if IS_PYTHON_64BIT:
     dlls = ['nlf64', 'nlf32']

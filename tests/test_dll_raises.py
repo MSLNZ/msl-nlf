@@ -1,10 +1,10 @@
 import pytest
-from msl.loadlib import IS_PYTHON_64BIT
 from msl.loadlib import Server32Error
 
 from msl.nlf import FitMethod
 from msl.nlf import LinearModel
 from msl.nlf import Model
+from msl.nlf.model import IS_PYTHON_64BIT
 
 
 def test_runtime_error():
