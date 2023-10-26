@@ -4,7 +4,7 @@ import sys
 from subprocess import check_output
 
 from setuptools import Command
-from setuptools import find_packages
+from setuptools import find_namespace_packages
 from setuptools import setup
 
 
@@ -195,7 +195,7 @@ setup(
         'gtc': ['GTC'],
     },
     cmdclass={'docs': BuildDocs, 'apidocs': ApiDocs},
-    packages=find_packages(include=('msl*',)),
+    packages=find_namespace_packages(include=('msl*',)),
     include_package_data=True,
 )
 
