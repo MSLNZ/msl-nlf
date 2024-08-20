@@ -1,0 +1,160 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "msl-nlf"
+dynamic = ["version"]
+dependencies = []
+requires-python = ">= 3.8"
+description = "Wrapper around the Delphi non-linear fitting software."
+license = {file = "LICENSE.txt"}
+readme = "README.md"
+keywords = ["MSL", "Non-linear", "Fitting"]
+authors = [
+  {name = "Measurement Standards Laboratory of New Zealand", email = "info@measurement.govt.nz"},
+]
+maintainers = [
+  {name = "Joseph Borbely", email = "joseph.borbely@measurement.govt.nz"},
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Software Development",
+]
+
+[project.urls]
+Changelog = "https://mslnz.github.io/msl-nlf/about/release-notes/"
+Documentation = "https://mslnz.github.io/msl-nlf/"
+Homepage = "https://mslnz.github.io/msl-nlf/"
+Issues = "https://github.com/MSLNZ/msl-nlf/issues"
+Source = "https://github.com/MSLNZ/msl-nlf"
+
+[project.optional-dependencies]
+tests = [
+  "GTC",
+  "pytest",
+  "pytest-cov",
+  "matplotlib",
+  "sybil",
+]
+docs = [
+  "black",
+  "mkdocs",
+  "mkdocs-material",
+  "mkdocstrings-python",
+]
+dev = [
+  "msl-nlf[tests,docs]",
+  "mypy",
+]
+gtc = [
+  "GTC",
+]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/msl/nlf/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/msl"]
+
+[tool.pytest.ini_options]
+consider_namespace_packages = true
+addopts = [
+  "--cov=src",
+  "--cov-report=html",
+  "--verbose",
+  "--import-mode=importlib",
+  "-p no:doctest",
+]
+doctest_optionflags = [
+  "NORMALIZE_WHITESPACE",
+  "ELLIPSIS",
+]
+filterwarnings = [
+    "ignore:Matplotlib is currently using svg:UserWarning",
+    "ignore:FigureCanvasSVG is non-interactive, and thus cannot be shown:UserWarning",
+    "ignore:ast.Str is deprecated.*:DeprecationWarning",
+    "ignore:datetime.datetime.utcfromtimestamp.* is deprecated.*:DeprecationWarning",
+]
+
+[tool.mypy]
+strict = true
+implicit_reexport = true
+namespace_packages = true
+warn_unused_ignores = true
+
+[tool.ruff]
+line-length = 120
+exclude = [
+  ".git",
+  ".mypy_cache",
+  ".pytest_cache",
+  ".ruff_cache",
+  ".venv",
+  "build",
+  "dist",
+  "venv",
+]
+namespace-packages = ["src/msl"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["msl.nlf"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  "D203", # one-blank-line-before-class
+  "D213", # multi-line-summary-second-line
+  "COM812", # missing-trailing-comma
+  "ISC001", # single-line-implicit-string-concatenation
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+  "F401", # Imported but unused
+]
+"__about__.py" = [
+  "F401", # Imported but unused
+]
+"tests/*.py" = [
+  "D100", # Missing docstring in public module
+  "D103", # Missing docstring in public function
+  "S101", # Use of `assert` detected
+  "PLR2004", # Magic value used in comparison
+  "INP001", # implicit-namespace-package
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.coverage.run]
+branch = true
+data_file = ".coverage_html/.coverage"
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
+include_namespace_packages = true
+
+[tool.coverage.html]
+directory = ".coverage_html"
+title = "MSL-NLF coverage report"
