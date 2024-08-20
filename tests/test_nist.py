@@ -1,6 +1,6 @@
 import pytest
 
-from NIST_datasets._nist import NIST  # noqa
+from .NIST_datasets._nist import NIST  # noqa
 from msl.nlf import Model
 
 
