@@ -1,2 +1,0 @@
-recursive-include msl/nlf *.dll
-include msl/nlf/py.typed
