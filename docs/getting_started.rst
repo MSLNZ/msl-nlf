@@ -358,12 +358,11 @@ application) once the *with* block is finished, for example,
     x = [1, 2, 3, 4, 5]
     y = [1.1, 4.02, 9.2, 16.2, 25.5]
 
-    with Model('a1*x^2', dll='nlf32') as model:  # temporary files created, client-server protocol starts
+    with Model('a1*x^2') as model:  # temporary files created
         result = model.fit(x, y, params=[1])
 
     # no longer in the 'with' block
     # temporary files have been deleted
-    # the client-server protocol has shut down
     # you must create a new Model if you want to use it again
 
 It is your choice if you want to use a :class:`~msl.nlf.model.Model` as a
