@@ -212,7 +212,7 @@ class ClientNLF(Client64):  # type: ignore[misc]
         :class:`dict` [ :class:`str`, :class:`.UserDefined` ]
             The keys are the filenames and the values are :class:`.UserDefined`.
         """
-        response = self.request32("get_user_defined", directory)
+        response = self.request32("get_user_defined", str(directory))
         return {k: UserDefined(**v) for k, v in response.items()}
 
     def load_user_defined(self, equation: str, directory: str | Path) -> None:
@@ -225,4 +225,4 @@ class ClientNLF(Client64):  # type: ignore[misc]
         directory
             The directory to look for the user-defined function.
         """
-        self.request32("load_user_defined", equation, directory)
+        self.request32("load_user_defined", equation, str(directory))
