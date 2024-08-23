@@ -217,8 +217,8 @@ class Input:
             f"  uy={np.array2string(self.uy, prefix='     ')}\n"
             f"  uy_weights_only={self.uy_weights_only}\n"
             f"  weighted={self.weighted}\n"
-            f"  x={np.array2string(self.x, prefix="    ")}\n"
-            f"  y={np.array2string(self.y, prefix="    ")}\n"
+            f"  x={np.array2string(self.x, prefix='    ')}\n"
+            f"  y={np.array2string(self.y, prefix='    ')}\n"
             f")"
         )
 
