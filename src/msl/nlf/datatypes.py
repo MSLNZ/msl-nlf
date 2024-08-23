@@ -94,7 +94,7 @@ class Correlations:
     data: list[Correlation]
     """A :class:`list` of :class:`.Correlation` objects."""
 
-    is_correlated: NDArray[np.bool]
+    is_correlated: NDArray[np.bool_]
     """Indicates which variables are correlated. The index 0 corresponds
     to the `y`-variable, the index 1 to `x1`, 2 to `x2`, etc."""
 

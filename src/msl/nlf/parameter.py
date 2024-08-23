@@ -432,9 +432,9 @@ class InputParameters(Parameters[InputParameter]):
         r"""Remove all :class:`.InputParameter`\\s from the collection."""
         self._map.clear()
 
-    def constants(self) -> NDArray[np.bool]:
+    def constants(self) -> NDArray[np.bool_]:
         """Returns the :attr:`~msl.nlf.parameter.InputParameter.constant` of each parameter."""
-        return np.array([p.constant for p in self], dtype=np.bool)
+        return np.array([p.constant for p in self], dtype=bool)
 
     def pop(self, name_or_label: str) -> InputParameter:
         """Pop an :class:`.InputParameter` from the collection.
