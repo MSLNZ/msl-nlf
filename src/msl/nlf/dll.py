@@ -1,27 +1,31 @@
-"""
-Wrapper around DLL functions.
-"""
+"""Wrapper around the Delphi functions."""
+
 from __future__ import annotations
 
-import os
-from array import array
-from ctypes import CDLL
-from ctypes import POINTER
-from ctypes import byref
-from ctypes import c_bool
-from ctypes import c_double
-from ctypes import c_int
-from ctypes import c_wchar_p
-from ctypes import create_string_buffer
-from ctypes import create_unicode_buffer
+from ctypes import CDLL, POINTER, byref, c_bool, c_double, c_int, c_wchar_p, create_string_buffer, create_unicode_buffer
 from dataclasses import dataclass
-from typing import Callable
-from typing import Sequence
+from pathlib import Path
+from typing import TYPE_CHECKING
 
-__all__ = ('NPTS', 'NPAR', 'NVAR',
-           'fit', 'version', 'define_fit_fcn',
-           'real_param_data', 'square_matrix',
-           'UserDefined', 'get_user_defined', 'evaluate')
+if TYPE_CHECKING:
+    from typing import Any
+
+    from .types import (
+        ArrayLike1D,
+        ArrayLike2D,
+        CtypesOrNumpyBool,
+        CtypesOrNumpyDouble,
+        EvaluateArray,
+        GetFunctionValue,
+        PBoolParamData,
+        PData,
+        PIsCorrelated,
+        PMultiData,
+        PRealParamData,
+        PSquareMatrix,
+        UserDefinedDict,
+    )
+
 
 NPTS = 100001  # max points
 NPAR = 99  # max parameters
@@ -42,24 +46,42 @@ is_correlated = c_bool * ((NVAR + 1) * (NVAR + 1))
 square_matrix = (c_double * NPAR) * NPAR
 
 
-def fit(dll: CDLL, **k) -> dict:
-    """Call the *DoNonlinearFit* function in the DLL.
+def fit(  # noqa: PLR0913
+    *,
+    lib: CDLL,
+    cfg_path: str,
+    equation: str,
+    weighted: bool,
+    x: CtypesOrNumpyDouble,
+    y: CtypesOrNumpyDouble,
+    ux: CtypesOrNumpyDouble,
+    uy: CtypesOrNumpyDouble,
+    npts: int,
+    nvars: int,
+    a: CtypesOrNumpyDouble,
+    constant: CtypesOrNumpyBool,
+    covar: ArrayLike2D,
+    ua: CtypesOrNumpyDouble,
+    correlated: bool,
+    is_corr_array: CtypesOrNumpyBool,
+    corr_dir: str,
+    max_iterations: int,
+    nparams: int,
+) -> dict[str, Any]:
+    """Call the *DoNonlinearFit* function.
 
     Parameters
     ----------
-    dll
-        The instance of the DLL.
-    k
-        Keyword arguments that are required to perform the fit.
+    lib
+        The library instance.
 
-    Returns
+    Returns:
     -------
     dict
         The fit results of the DLL.
     """
     calls = 0
     iter_total = 0
-    max_iter = k['max_iterations']
     iterations = c_int()
     chisq = c_double()
     eof = c_double()
@@ -67,76 +89,100 @@ def fit(dll: CDLL, **k) -> dict:
     error_str = create_unicode_buffer(1024)
 
     # the ResetFile function was added in v5.43
-    dll.ResetFile()
+    lib.ResetFile()
 
-    while iter_total < max_iter:
+    while iter_total < max_iterations:
         calls += 1
-        dll.DoNonlinearFit(
-            k['cfg_path'], k['equation'], k['weighted'], k['x'], k['y'],
-            k['ux'], k['uy'], k['npts'], k['nvars'], k['a'], k['constant'],
-            k['covar'], k['ua'], k['correlated'], k['is_corr_array'],
-            k['corr_dir'], chisq, eof, iterations, error, error_str)
+        lib.DoNonlinearFit(
+            cfg_path,
+            equation,
+            weighted,
+            x,
+            y,
+            ux,
+            uy,
+            npts,
+            nvars,
+            a,
+            constant,
+            covar,
+            ua,
+            correlated,
+            is_corr_array,
+            corr_dir,
+            chisq,
+            eof,
+            iterations,
+            error,
+            error_str,
+        )
 
         if error.value:
             raise RuntimeError(error_str.value)
 
         iter_total += iterations.value
-        if iterations.value <= 3:
+        if iterations.value <= 3:  # noqa: PLR2004
             # According to the "Nonlinear Fitting Software Instructions" manual:
             #   Once the iterations have stopped, it is good practice to click
             #   again on the Calculate button using the newly found parameters
             #   as starting values until number of iterations stops at 2 or 3
             break
 
-    n, c = k['nparams'], k['covar']
-    if hasattr(c, 'dtype'):
-        covar = c[:n, :n]
+    if hasattr(covar, "dtype"):
+        covar = covar[:nparams, :nparams]  # type: ignore[call-overload]
     else:
-        covar = [[c[i][j] for i in range(n)] for j in range(n)]
+        covar = [[covar[i][j] for i in range(nparams)] for j in range(nparams)]
 
     return {
-        'a': k['a'][:n],
-        'ua': k['ua'][:n],
-        'covariance': covar,
-        'chisq': chisq.value,
-        'eof': eof.value,
-        'iterations': iter_total,
-        'calls': calls,
+        "a": a[:nparams],
+        "ua": ua[:nparams],
+        "covariance": covar,
+        "chisq": chisq.value,
+        "eof": eof.value,
+        "iterations": iter_total,
+        "num_calls": calls,
     }
 
 
-def version(dll: CDLL) -> str:
-    """Call the *GetVersion* function in the DLL.
+def version(lib: CDLL) -> str:
+    """Call the *GetVersion* function.
 
     Parameters
     ----------
-    dll
-        The instance of the DLL.
+    lib
+        The library instance.
 
-    Returns
+    Returns:
     -------
     str
-        The version number of the DLL.
+        The version number of the library.
     """
     # the GetVersion function was added in v5.41
     buffer = create_unicode_buffer(16)
-    dll.GetVersion.restype = None
-    dll.GetVersion.argtypes = [c_wchar_p]
-    dll.GetVersion(buffer)
-    return buffer.value
+    lib.GetVersion.restype = None
+    lib.GetVersion.argtypes = [c_wchar_p]
+    lib.GetVersion(buffer)
+    return str(buffer.value)
 
 
-def define_fit_fcn(dll: CDLL, as_ctypes: bool) -> None:
-    """Defines the *argtypes* and *restype* of the *DoNonlinearFit* function.
+def define_fit_fcn(lib: CDLL, *, as_ctypes: bool) -> None:
+    r"""Defines the *argtypes* and *restype* of the *DoNonlinearFit* function.
 
     Parameters
     ----------
-    dll
-        The instance of the DLL.
+    lib
+        The library instance.
     as_ctypes
         Whether :mod:`ctypes` arrays or :class:`numpy.ndarray`\\s will be
         passed to the `DoNonlinearFit` function.
     """
+    p_multi_data: PMultiData
+    p_data: PData
+    p_real_param_data: PRealParamData
+    p_bool_param_data: PBoolParamData
+    p_square_matrix: PSquareMatrix
+    p_is_correlated: PIsCorrelated
+
     if as_ctypes:
         p_multi_data = POINTER(multi_data)
         p_data = POINTER(data)
@@ -145,39 +191,38 @@ def define_fit_fcn(dll: CDLL, as_ctypes: bool) -> None:
         p_square_matrix = POINTER(square_matrix)
         p_is_correlated = POINTER(is_correlated)
     else:
-        import numpy.ctypeslib
-        flag = 'C_CONTIGUOUS'
-        p = numpy.ctypeslib.ndpointer
-        p_multi_data = p(dtype=c_double, shape=(NVAR, NPTS), flags=flag)
-        p_data = p(dtype=c_double, shape=(NPTS,), flags=flag)
-        p_real_param_data = p(dtype=c_double, shape=(NPAR,), flags=flag)
-        p_bool_param_data = p(dtype=c_bool, shape=(NPAR,), flags=flag)
-        p_square_matrix = p(dtype=c_double, shape=(NPAR, NPAR), flags=flag)
-        p_is_correlated = p(dtype=c_bool, shape=(NVAR+1, NVAR+1), flags=flag)
+        from numpy.ctypeslib import ndpointer as p
 
-    dll.DoNonlinearFit.restype = None
-    dll.DoNonlinearFit.argtypes = [
-        c_wchar_p,          # ConfigFile:PChar
-        c_wchar_p,          # EquationStr:PChar
-        c_bool,             # WeightedFit:Boolean (added in v5.44)
-        p_multi_data,       # xData:PMultiData
-        p_data,             # yData:PData
-        p_multi_data,       # xUn:PMultiData
-        p_data,             # yUn:PData
-        c_int,              # N:Integer
-        c_int,              # xVar:Integer
+        p_multi_data = p(dtype=c_double, shape=(NVAR, NPTS), flags="C_CONTIGUOUS")
+        p_data = p(dtype=c_double, shape=(NPTS,), flags="C_CONTIGUOUS")
+        p_real_param_data = p(dtype=c_double, shape=(NPAR,), flags="C_CONTIGUOUS")
+        p_bool_param_data = p(dtype=c_bool, shape=(NPAR,), flags="C_CONTIGUOUS")
+        p_square_matrix = p(dtype=c_double, shape=(NPAR, NPAR), flags="C_CONTIGUOUS")
+        p_is_correlated = p(dtype=c_bool, shape=(NVAR + 1, NVAR + 1), flags="C_CONTIGUOUS")
+
+    lib.DoNonlinearFit.restype = None
+    lib.DoNonlinearFit.argtypes = [
+        c_wchar_p,  # ConfigFile:PChar
+        c_wchar_p,  # EquationStr:PChar
+        c_bool,  # WeightedFit:Boolean (added in v5.44)
+        p_multi_data,  # xData:PMultiData
+        p_data,  # yData:PData
+        p_multi_data,  # xUn:PMultiData
+        p_data,  # yUn:PData
+        c_int,  # N:Integer
+        c_int,  # xVar:Integer
         p_real_param_data,  # Params:PRealParamData
         p_bool_param_data,  # Constant:PBoolParamData
-        p_square_matrix,    # Cov:PSquareMatrix
+        p_square_matrix,  # Cov:PSquareMatrix
         p_real_param_data,  # ParamUncerts:PRealParamData
-        c_bool,             # CorrData:Boolean
-        p_is_correlated,    # IsCorrelated:PIsCorrelated
-        c_wchar_p,          # CorrCoeffsDirectory:PChar
+        c_bool,  # CorrData:Boolean
+        p_is_correlated,  # IsCorrelated:PIsCorrelated
+        c_wchar_p,  # CorrCoeffsDirectory:PChar
         POINTER(c_double),  # var ChiSquared:Double
         POINTER(c_double),  # var EofFit:Double
-        POINTER(c_int),     # var NumIterations:Integer
-        POINTER(c_bool),    # var Error:Boolean
-        c_wchar_p           # ErrorStr:PChar
+        POINTER(c_int),  # var NumIterations:Integer
+        POINTER(c_bool),  # var Error:Boolean
+        c_wchar_p,  # ErrorStr:PChar
     ]
 
 
@@ -188,7 +233,7 @@ class UserDefined:
     equation: str
     """The value to use as the *equation* for a :class:`~msl.nlf.model.Model`."""
 
-    function: Callable
+    function: GetFunctionValue
     """A reference to the *GetFunctionValue* function."""
 
     name: str
@@ -200,21 +245,21 @@ class UserDefined:
     num_variables: int
     """The value returned by the *GetNumVariables* function."""
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> UserDefinedDict:
         """Convert this object to be a pickleable :class:`dict`.
 
         The value of :attr:`.function` becomes :data:`None`.
         """
         return {
-            'equation': self.equation,
-            'function': None,
-            'name': self.name,
-            'num_parameters': self.num_parameters,
-            'num_variables': self.num_variables,
+            "equation": self.equation,
+            "function": None,
+            "name": self.name,
+            "num_parameters": self.num_parameters,
+            "num_variables": self.num_variables,
         }
 
 
-def get_user_defined(directory: str) -> dict[str, UserDefined]:
+def get_user_defined(directory: str | Path) -> dict[Path, UserDefined]:
     """Get all user-defined functions.
 
     Parameters
@@ -222,68 +267,63 @@ def get_user_defined(directory: str) -> dict[str, UserDefined]:
     directory
         The directory to look for the user-defined functions.
 
-    Returns
+    Returns:
     -------
     :class:`dict` [ :class:`str`, :class:`.UserDefined` ]
         The keys are the filenames and the values are :class:`.UserDefined`.
     """
-    functions = {}
     n = c_int()
     buffer = create_string_buffer(255)
-    for filename in os.listdir(directory):
-        _, ext = os.path.splitext(filename)
-        if ext.lower() != '.dll':
-            continue
 
+    functions: dict[Path, UserDefined] = {}
+    for file in Path(directory).glob("*.dll"):
         try:
-            dll = CDLL(os.path.join(directory, filename))
+            lib = CDLL(str(file))
         except OSError:
-            # perhaps loading a DLL of the wrong bitness
+            # perhaps loading a library of the wrong bitness
             continue
 
         try:
-            dll.GetFunctionName(buffer)
+            lib.GetFunctionName(buffer)
         except AttributeError:
             continue
 
         try:
-            dll.GetNumParameters(byref(n))
+            lib.GetNumParameters(byref(n))
         except AttributeError:
             continue
         else:
             num_par = n.value
 
         try:
-            dll.GetNumVariables(byref(n))
+            lib.GetNumVariables(byref(n))
         except AttributeError:
             continue
         else:
             num_var = n.value
 
         try:
-            dll.GetFunctionValue
+            _ = lib.GetFunctionValue
         except AttributeError:
             continue
 
-        name = buffer.value.decode(encoding='ansi', errors='replace')
-        equation, *rest = name.split(':')
+        name = buffer.value.decode(encoding="ansi", errors="replace")
+        equation, *rest = name.split(":")
 
-        functions[filename] = UserDefined(
-            equation=equation,
-            function=dll.GetFunctionValue,
-            name=name,
-            num_parameters=num_par,
-            num_variables=num_var
+        functions[file] = UserDefined(
+            equation=equation, function=lib.GetFunctionValue, name=name, num_parameters=num_par, num_variables=num_var
         )
 
     return functions
 
 
-def evaluate(fcn: Callable,
-             a: Sequence[float],
-             x: Sequence[float],
-             shape: tuple[int, int],
-             y):
+def evaluate(
+    fcn: GetFunctionValue,
+    a: ArrayLike1D,
+    x: ArrayLike1D,
+    shape: tuple[int, int],
+    y: EvaluateArray,
+) -> EvaluateArray:
     """Call *GetFunctionValue* in the user-defined DLL.
 
     Parameters
@@ -298,9 +338,9 @@ def evaluate(fcn: Callable,
     shape
         The shape of the *x* data.
     y
-        Pre-allocated sequence for the dependent variable (response) data.
+        Pre-allocated array for the dependent variable (response) data.
 
-    Returns
+    Returns:
     -------
     :class:`~array.array` or :class:`~numpy.ndarray`
         Dependent variable (response) data.
@@ -308,17 +348,17 @@ def evaluate(fcn: Callable,
     j = 0
     y_val = c_double()
     nvars, npts = shape
-    if isinstance(a, array):
-        a_ref = (len(a) * c_double)(*a)
-        x_ref = nvars * c_double
+    if hasattr(a, "dtype"):
+        # a, x and y are np.ndarray
         for i in range(npts):
-            fcn(x_ref(*x[j:j+nvars]), a_ref, y_val)
+            fcn(x[j : j + nvars], a, y_val)
             y[i] = y_val.value
             j += nvars
     else:
-        # a, x and y are np.ndarray
+        a_ref = (len(a) * c_double)(*a)
+        x_ref = nvars * c_double
         for i in range(npts):
-            fcn(x[j:j+nvars], a, y_val)
+            fcn(x_ref(*x[j : j + nvars]), a_ref, y_val)
             y[i] = y_val.value
             j += nvars
     return y

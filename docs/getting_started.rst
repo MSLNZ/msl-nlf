@@ -269,7 +269,6 @@ You can display a summary of the fit result
 
     >>> result
     Result(
-      calls=2
       chisq=84.266087804878
       correlation=[[ 1.         -0.88698141]
                    [-0.88698141  1.        ]]
@@ -278,6 +277,7 @@ You can display a summary of the fit result
       dof=3.0
       eof=5.299876973568286
       iterations=22
+      num_calls=2
       params=
         ResultParameters(
           ResultParameter(name='a1', value=0.5224390243941934, uncert=5.132418149940028, label=None),

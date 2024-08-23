@@ -1,27 +1,40 @@
-"""
-Call functions in a 32-bit DLL from 64-bit Python.
-"""
+"""Call functions in a 32-bit DLL from 64-bit Python."""
+
 from __future__ import annotations
 
 from array import array
-from ctypes import POINTER
-from ctypes import c_bool
-from ctypes import c_double
-from ctypes import cast
+from ctypes import POINTER, c_bool, c_double, cast
+from typing import TYPE_CHECKING
 
-from msl.loadlib import Client64
-from msl.loadlib import Server32
+from msl.loadlib import Client64, Server32  # type: ignore[import-untyped]
 
 if Server32.is_interpreter():
-    from dll import *
+    from dll import (  # type: ignore[import-not-found]
+        define_fit_fcn,
+        evaluate,
+        fit,
+        get_user_defined,
+        real_param_data,
+        square_matrix,
+        version,
+    )
 else:
     import numpy as np
+
     from .dll import UserDefined
 
+if TYPE_CHECKING:
+    from ctypes import CDLL
+    from pathlib import Path
+    from typing import Any
 
-class ServerNLF(Server32):
+    from .types import GetFunctionValue, UserDefinedDict
 
-    def __init__(self, host: str, port: int, path: str = '') -> None:
+
+class ServerNLF(Server32):  # type: ignore[misc]
+    """Handle requests for the 32-bit DLL."""
+
+    def __init__(self, host: str, port: int, path: str = "") -> None:
         """Handle requests for the 32-bit DLL.
 
         Parameters
@@ -33,20 +46,18 @@ class ServerNLF(Server32):
         path
             The path to the DLL file.
         """
-        super().__init__(path, 'cdll', host, port)
+        super().__init__(path, "cdll", host, port)
+        self._user_function: GetFunctionValue
         self._ua = real_param_data()
         self._covar = square_matrix()
-        self._user_function = None
-        define_fit_fcn(self.lib, True)
+        define_fit_fcn(self.lib, as_ctypes=True)
 
     def dll_version(self) -> str:
         """Get the version number from the DLL."""
-        return version(self.lib)
+        v: str = version(self.lib)
+        return v
 
-    def evaluate(self,
-                 a: array,
-                 x: array,
-                 shape: tuple[int, int]) -> array:
+    def evaluate(self, a: array[float], x: array[float], shape: tuple[int, int]) -> array[float]:
         """Evaluate the user-defined function.
 
         Parameters
@@ -58,41 +69,42 @@ class ServerNLF(Server32):
         shape
             The shape of the *x* data.
 
-        Returns
+        Returns:
         -------
         :class:`~array.array`
             Dependent variable (response) data.
         """
         _, npts = shape
-        y = array('d', [0.0 for _ in range(npts)])
-        return evaluate(self._user_function, a, x, shape, y)
+        y = array("d", [0.0 for _ in range(npts)])
+        result: array[float] = evaluate(self._user_function, a, x, shape, y)
+        return result
 
-    def fit(self, **kwargs) -> dict:
+    def fit(self, **kwargs: Any) -> dict[str, Any]:  # noqa: ANN401
         """Fit the model to the data using the supplied keyword arguments."""
-        kw = {'covar': self._covar, 'ua': self._ua}
+        kw = {"covar": self._covar, "ua": self._ua}
 
         # Create a ctypes memory view to each array to avoid copying values
         for k, v in kwargs.items():
             if isinstance(v, array):
                 address, length = v.buffer_info()
                 c_type = c_bool if v.itemsize == 1 else c_double
-                kw[k] = cast(address, POINTER(c_type * length))
+                kw[k] = cast(address, POINTER(c_type * length))  # type: ignore[arg-type, operator]
             else:
                 kw[k] = v
 
         # Perform the fit
-        result = fit(self.lib, **kw)
+        result: dict[str, Any] = fit(lib=self.lib, **kw)
 
-        # result['a'] is a ctypes POINTER to the original input array, which
+        # result["a"] is a ctypes POINTER to the original input array, which
         # shares the same memory space and was updated by the DLL, so return
         # a slice of the original input array. An array.array() object can be
         # pickled but a POINTER cannot be pickled.
-        result['a'] = kwargs['a'][:kwargs['nparams']]
+        result["a"] = kwargs["a"][: kwargs["nparams"]]
 
         return result
 
     @staticmethod
-    def get_user_defined(directory: str) -> dict:
+    def get_user_defined(directory: str) -> dict[Path, UserDefinedDict]:
         """Get all user-defined functions.
 
         Parameters
@@ -100,15 +112,12 @@ class ServerNLF(Server32):
         directory
             The directory to look for the user-defined functions.
 
-        Returns
+        Returns:
         -------
         :class:`dict`
             The user-defined functions.
         """
-        new = {}
-        for k, v in get_user_defined(directory).items():
-            new[k] = v.to_dict()
-        return new
+        return {k: v.to_dict() for k, v in get_user_defined(directory).items()}
 
     def load_user_defined(self, equation: str, directory: str) -> None:
         """Load a user-defined function in a custom DLL.
@@ -124,14 +133,14 @@ class ServerNLF(Server32):
             if v.equation == equation:
                 self._user_function = v.function
                 self._user_function.restype = None
-                self._user_function.argtypes = [
-                    POINTER(c_double), POINTER(c_double), POINTER(c_double)]
+                self._user_function.argtypes = [POINTER(c_double), POINTER(c_double), POINTER(c_double)]
                 break
 
 
-class ClientNLF(Client64):
+class ClientNLF(Client64):  # type: ignore[misc]
+    """Send requests to the 32-bit DLL."""
 
-    def __init__(self, path: str) -> None:
+    def __init__(self, path: str | Path) -> None:
         """Send requests to the 32-bit DLL.
 
         Parameters
@@ -139,17 +148,15 @@ class ClientNLF(Client64):
         path
             The path to the DLL file.
         """
-        super().__init__(__file__, path=path)
-        self.lib = None  # avoids inspection warnings in PyCharm IDE
+        super().__init__(__file__, path=str(path))
+        self.lib: CDLL
 
     def dll_version(self) -> str:
         """Get the version number from the DLL."""
-        return self.request32('dll_version')
+        response: str = self.request32("dll_version")
+        return response
 
-    def evaluate(self,
-                 a: array,
-                 x: array,
-                 shape: tuple[int, int]) -> array:
+    def evaluate(self, a: array[float], x: array[float], shape: tuple[int, int]) -> array[float]:
         """Evaluate the user-defined function.
 
         Parameters
@@ -161,16 +168,16 @@ class ClientNLF(Client64):
         shape
             The shape of the *x* data.
 
-        Returns
+        Returns:
         -------
         :class:`~array.array`
             Dependent variable (response) data.
         """
-        return self.request32('evaluate', a, x, shape)
+        response: array[float] = self.request32("evaluate", a, x, shape)
+        return response
 
-    def fit(self, **kwargs) -> dict:
+    def fit(self, **kwargs: Any) -> dict[str, Any]:  # noqa: ANN401
         """Fit the model to the data using the supplied keyword arguments."""
-
         # The 32-bit server does not have 32-bit numpy installed, so convert a
         # numpy ndarray to a builtin array so that the values can be pickled.
         # Using array.array() is faster than using ndarray.flatten().tolist()
@@ -179,11 +186,11 @@ class ClientNLF(Client64):
         # 2D ctypes array. This is valid since the ndarray's are C_CONTIGUOUS.
         for k, v in kwargs.items():
             if isinstance(v, np.ndarray):
-                typecode = 'b' if v.dtype.itemsize == 1 else 'd'
-                kwargs[k] = array(typecode, v.tobytes())
+                type_code = "b" if v.dtype.itemsize == 1 else "d"
+                kwargs[k] = array(type_code, v.tobytes())
 
         # Send request to the 32-bit server to perform the fit
-        result = self.request32('fit', **kwargs)
+        result: dict[str, Any] = self.request32("fit", **kwargs)
 
         # Convert a list back into a numpy ndarray
         for k, v in result.items():
@@ -192,7 +199,7 @@ class ClientNLF(Client64):
 
         return result
 
-    def get_user_defined(self, directory: str) -> dict[str, UserDefined]:
+    def get_user_defined(self, directory: str | Path) -> dict[Path, UserDefined]:
         """Get all user-defined functions.
 
         Parameters
@@ -200,18 +207,16 @@ class ClientNLF(Client64):
         directory
             The directory to look for the user-defined functions.
 
-        Returns
+        Returns:
         -------
         :class:`dict` [ :class:`str`, :class:`.UserDefined` ]
             The keys are the filenames and the values are :class:`.UserDefined`.
         """
-        functions = {}
-        for k, v in self.request32('get_user_defined', directory).items():
-            functions[k] = UserDefined(**v)
-        return functions
+        response = self.request32("get_user_defined", directory)
+        return {k: UserDefined(**v) for k, v in response.items()}
 
-    def load_user_defined(self, equation: str, directory: str) -> None:
-        """Load a user-defined function in a custom DLL.
+    def load_user_defined(self, equation: str, directory: str | Path) -> None:
+        """Load a user-defined function.
 
         Parameters
         ----------
@@ -220,4 +225,4 @@ class ClientNLF(Client64):
         directory
             The directory to look for the user-defined function.
         """
-        self.request32('load_user_defined', equation, directory)
+        self.request32("load_user_defined", equation, directory)

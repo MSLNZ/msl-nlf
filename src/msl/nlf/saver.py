@@ -1,20 +1,21 @@
-"""
-Save a **.nlf** file.
-"""
+"""Save a **.nlf** file."""
+
+from __future__ import annotations
+
 import math
-import os
+from pathlib import Path
 from struct import pack
+from typing import Any
 
 import numpy as np
 
-from .datatypes import FitMethod
-from .datatypes import Input
-from .datatypes import ResidualType
+from .datatypes import FitMethod, Input, ResidualType
 
-ansi = {'encoding': 'ansi'}
+ansi = {"encoding": "ansi"}
 
 
 class Saver:
+    """Helper class to create a **.nlf** file."""
 
     def __init__(self, version: str) -> None:
         """Helper class to create a **.nlf** file.
@@ -27,7 +28,7 @@ class Saver:
         self._buffer = bytearray()
         self.write_string_padded(version, 10)
 
-    def save(self, path: str) -> None:
+    def save(self, path: str | Path) -> None:
         """Save the buffer to a **.nlf** file.
 
         Parameters
@@ -35,10 +36,9 @@ class Saver:
         path
             The **.nlf** file path.
         """
-        with open(path, mode='wb') as fp:
-            fp.write(self._buffer)
+        Path(path).write_bytes(self._buffer)
 
-    def write_boolean(self, value: bool) -> None:
+    def write_boolean(self, value: bool) -> None:  # noqa: FBT001
         """Write a boolean.
 
         Parameters
@@ -46,7 +46,7 @@ class Saver:
         value
             Write `value` to the buffer.
         """
-        self._buffer.extend(pack('?', value))
+        self._buffer.extend(pack("?", value))
 
     def write_byte(self, value: int) -> None:
         """Write a byte.
@@ -56,7 +56,7 @@ class Saver:
         value
             Write `value` to the buffer.
         """
-        self._buffer.extend(pack('b', value))
+        self._buffer.extend(pack("b", value))
 
     def write_extended(self, value: float) -> None:
         """Write a Delphi 10-byte extended float.
@@ -79,7 +79,7 @@ class Saver:
             uint16, uint64 = 0x7FFF, 0
             if value < 0:
                 uint16 |= 0x8000
-        self._buffer.extend(pack('QH', uint64, uint16))
+        self._buffer.extend(pack("QH", uint64, uint16))
 
     def write_integer(self, value: int) -> None:
         """Write an unsigned integer.
@@ -89,7 +89,7 @@ class Saver:
         value
             Write `value` to the buffer.
         """
-        self._buffer.extend(pack('I', value))
+        self._buffer.extend(pack("I", value))
 
     def write_string(self, value: str) -> None:
         """Write a string.
@@ -101,7 +101,7 @@ class Saver:
         """
         length = len(value)
         self.write_integer(length)
-        self._buffer.extend(pack(f'{length}s', value.encode(**ansi)))
+        self._buffer.extend(pack(f"{length}s", value.encode(**ansi)))
 
     def write_string_padded(self, value: str, pad: int) -> None:
         """Write a string with null padding at the end.
@@ -117,10 +117,10 @@ class Saver:
         """
         length = len(value)
         self.write_byte(length)
-        self._buffer.extend(pack(f'{length}s', value.encode(**ansi)))
+        self._buffer.extend(pack(f"{length}s", value.encode(**ansi)))
         n = pad - length
         if n > 0:
-            self._buffer.extend(pack(f'{n}x'))
+            self._buffer.extend(pack(f"{n}x"))
 
     def write_word(self, value: int) -> None:
         """Write an unsigned short.
@@ -130,10 +130,10 @@ class Saver:
         value
             Write `value` to the buffer.
         """
-        self._buffer.extend(pack('H', value))
+        self._buffer.extend(pack("H", value))
 
 
-def save_graph(saver: Saver, name: str) -> None:
+def save_graph(saver: Saver, name: str) -> None:  # noqa: PLR0915
     """Save a *TGraphWindow*.
 
     Parameters
@@ -145,23 +145,24 @@ def save_graph(saver: Saver, name: str) -> None:
     """
     # See the repository "Nonlinear-Fitting/NLFGraph.pas"
     # procedure TGraphWindow.StoreFile(TheStream:TStream);
-    if name == 'fit_graph':
+    if name == "fit_graph":
         left = 1
         top = 300
         width = 380
         height = 300
-    elif name == 'residuals_graph':
+    elif name == "residuals_graph":
         left = 400
         top = 300
         width = 380
         height = 300
-    elif name == 'uncert_graph':
+    elif name == "uncert_graph":
         left = 300
         top = 50
         width = 200
         height = 100
     else:
-        assert False, f'Unsupported TGraphWindow name {name}'
+        msg = f"Unsupported TGraphWindow name {name}"
+        raise ValueError(msg)
 
     num_curves = 1
     saver.write_integer(left)  # win_left=left
@@ -170,10 +171,10 @@ def save_graph(saver: Saver, name: str) -> None:
     saver.write_integer(height)  # win_height=height
     saver.write_byte(1)  # the_state
     saver.write_integer(num_curves)  # num_curves
-    saver.write_boolean(True)  # x_axis_scale_to_window
-    saver.write_boolean(True)  # y_axis_scale_to_window
-    saver.write_string_padded('76.994', 20)  # x_axis_length
-    saver.write_string_padded('51.065', 20)  # y_axis_length
+    saver.write_boolean(True)  # x_axis_scale_to_window  # noqa: FBT003
+    saver.write_boolean(True)  # y_axis_scale_to_window  # noqa: FBT003
+    saver.write_string_padded("76.994", 20)  # x_axis_length
+    saver.write_string_padded("51.065", 20)  # y_axis_length
     saver.write_extended(0)  # x_min
     saver.write_extended(0)  # x_max
     saver.write_extended(0)  # y_min
@@ -208,32 +209,32 @@ def save_graph(saver: Saver, name: str) -> None:
     saver.write_integer(0)  # y_max_disp_places
     saver.write_integer(0)  # y_min_disp_places
     saver.write_integer(0)  # y_inc_disp_places
-    saver.write_boolean(True)  # empty
+    saver.write_boolean(True)  # empty  # noqa: FBT003
     saver.write_integer(351)  # axis_max_x
     saver.write_integer(20)  # axis_max_y
     saver.write_integer(60)  # axis_min_x
     saver.write_integer(213)  # axis_min_y
-    saver.write_boolean(True)  # x_title_auto
-    saver.write_boolean(True)  # y_title_auto
-    saver.write_string_padded('x', 255)  # x_title
-    saver.write_string_padded('y', 255)  # y_title
+    saver.write_boolean(True)  # x_title_auto  # noqa: FBT003
+    saver.write_boolean(True)  # y_title_auto  # noqa: FBT003
+    saver.write_string_padded("x", 255)  # x_title
+    saver.write_string_padded("y", 255)  # y_title
     saver.write_integer(8)  # x_title_font_size
     saver.write_byte(0)  # x_title_font_style
     saver.write_byte(0)  # x_title_font_pitch
-    saver.write_string_padded('Arial', 255)  # x_title_font_name
+    saver.write_string_padded("Arial", 255)  # x_title_font_name
     saver.write_integer(8)  # y_title_font_size
     saver.write_byte(0)  # y_title_font_style
     saver.write_byte(0)  # y_title_font_pitch
-    saver.write_string_padded('Arial', 255)  # y_title_font_name
+    saver.write_string_padded("Arial", 255)  # y_title_font_name
     saver.write_integer(8)  # x_number_font_size
     saver.write_byte(0)  # x_number_font_style
     saver.write_byte(0)  # x_number_font_pitch
-    saver.write_string_padded('Arial', 255)  # x_number_font_name
+    saver.write_string_padded("Arial", 255)  # x_number_font_name
     saver.write_integer(8)  # y_number_font_size
     saver.write_byte(0)  # y_number_font_style
     saver.write_byte(0)  # y_number_font_pitch
-    saver.write_string_padded('Arial', 255)  # y_number_font_name
-    for i in range(num_curves):
+    saver.write_string_padded("Arial", 255)  # y_number_font_name
+    for _ in range(num_curves):
         saver.write_byte(1)  # plot_types
         saver.write_integer(16711680)  # curve_colour
         saver.write_integer(0)  # num_points
@@ -243,7 +244,7 @@ def save_graph(saver: Saver, name: str) -> None:
     saver.write_extended(0)  # max_x_value
 
 
-def save_form(saver: Saver, data: dict) -> None:
+def save_form(saver: Saver, data: dict[str, Any]) -> None:  # noqa: C901, PLR0912
     """Save a *TDataForm*.
 
     Parameters
@@ -258,62 +259,62 @@ def save_form(saver: Saver, data: dict) -> None:
     """
     # See the repository "Nonlinear-Fitting/NLFDataForm.pas"
     # procedure TDataForm.StoreFile(TheStream: TStream; OnDisk:Boolean);
-    saver.write_integer(data['left'])  # win_left=left
-    saver.write_integer(data['top'])  # win_top=top
-    saver.write_integer(data['width'])  # win_width=width
-    saver.write_integer(data['height'])  # win_height=height
-    saver.write_byte(data['the_state'])
+    saver.write_integer(data["left"])  # win_left=left
+    saver.write_integer(data["top"])  # win_top=top
+    saver.write_integer(data["width"])  # win_width=width
+    saver.write_integer(data["height"])  # win_height=height
+    saver.write_byte(data["the_state"])
 
-    def write_cell(cell):
+    def write_cell(cell: str | int) -> None:
         saver.write_string(str(cell))
         saver.write_byte(0)  # cell_format
         saver.write_byte(0)  # cell_places
 
     # Add items to table in column-wise order
-    if 'covar_form' in data:
+    if "covar_form" in data:
         # this Form gets automatically populated when
         # the Calculate button is clicked on the GUI,
         # msl-nlf does not use Form information
         saver.write_integer(0)  # the_size
         return
 
-    if 'results_form' in data:
+    if "results_form" in data:
         # must create the layout for this Form for the GUI,
         # msl-nlf does not use Form information
-        header = ['Parameter', 'Value', 'Uncertainty', 't-Ratio']
+        header = ["Parameter", "Value", "Uncertainty", "t-Ratio"]
         the_size = len(header)
         saver.write_integer(the_size)
         for i in range(the_size):
             col_width = 75 if i == 0 else 128
             saver.write_integer(col_width)  # col_widths
-            saver.write_integer(data['nparams']+3)  # the_count
+            saver.write_integer(data["nparams"] + 3)  # the_count
 
         # add Parameter column
         write_cell(header[0])
-        for i in range(data['nparams']):
-            write_cell(f'a{i+1}')
-        write_cell('Chi Squared')
-        write_cell('Error Of Fit')
+        for i in range(data["nparams"]):
+            write_cell(f"a{i+1}")
+        write_cell("Chi Squared")
+        write_cell("Error Of Fit")
 
         # add remaining columns as empty cells
         for h in header[1:]:
             write_cell(h)
-            for i in range(data['nparams']+2):
-                write_cell('')
+            for _ in range(data["nparams"] + 2):
+                write_cell("")
         return
 
     # Create the Data Form
-    nvars, npts = data['x'].shape
-    header = ['']
+    nvars, npts = data["x"].shape
+    header = [""]
     if nvars == 1:
-        header.extend(['x', 'y', 'ux'])
+        header.extend(["x", "y", "ux"])
     else:
         for i in range(nvars):
-            header.append(f'x{i+1}')
-        header.append('y')
+            header.append(f"x{i+1}")
+        header.append("y")
         for i in range(nvars):
-            header.append(f'ux{i+1}')
-    header.extend(['uy', 'x Fit', 'y Fit', 'x Res', 'y Res', 'x Uncert', 'y Uncert'])
+            header.append(f"ux{i+1}")
+    header.extend(["uy", "x Fit", "y Fit", "x Res", "y Res", "x Uncert", "y Uncert"])
 
     the_size = len(header)
     saver.write_integer(the_size)
@@ -323,43 +324,39 @@ def save_form(saver: Saver, data: dict) -> None:
         saver.write_integer(npts + 1)  # the_count, +1 for the header row
 
     # add row numbers
-    for i in range(npts+1):
+    for i in range(npts + 1):
         write_cell(header[i] if i == 0 else i)
 
     # add x data
-    for i, row in enumerate(data['x'], start=1):
+    for i, row in enumerate(data["x"], start=1):
         write_cell(header[i])
         for value in row:
             write_cell(value)
 
     # add y data
-    write_cell(header[nvars+1])
-    for value in data['y']:
+    write_cell(header[nvars + 1])
+    for value in data["y"]:
         write_cell(value)
 
     # add ux data
-    for i, row in enumerate(data['ux'], start=nvars+2):
+    for i, row in enumerate(data["ux"], start=nvars + 2):
         write_cell(header[i])
         for value in row:
             write_cell(value)
 
     # add uy data
-    write_cell(header[2*nvars+2])
-    for value in data['uy']:
+    write_cell(header[2 * nvars + 2])
+    for value in data["uy"]:
         write_cell(value)
 
     # fill the rest with empty cells
     for item in header[-6:]:
         write_cell(item)
-        for j in range(npts):
-            write_cell('')
+        for _ in range(npts):
+            write_cell("")
 
 
-def save(*,
-         path: str,
-         comments: str,
-         overwrite: bool,
-         data: Input) -> None:
+def save(*, path: str | Path, comments: str, overwrite: bool, data: Input) -> None:  # noqa: C901, PLR0912, PLR0915
     """Save a **.nlf** file.
 
     The file can be opened in the Delphi GUI application or loaded via
@@ -378,20 +375,23 @@ def save(*,
     data
         The input data to the fit model.
     """
-    if not overwrite and os.path.isfile(path):
-        raise FileExistsError(f'Will not overwrite {path!r}')
+    path = Path(path)
+    if not overwrite and path.is_file():
+        msg = f"Will not overwrite {path!r}"
+        raise FileExistsError(msg)
 
-    _, extn = os.path.splitext(path)
-    if extn.lower() != '.nlf':
+    if path.suffix.lower() != ".nlf":
         # the Delphi GUI filters files based on a .nlf extension
         # msl-nlf does not care what the extension is
-        raise ValueError('The file extension must be .nlf')
+        msg = "The file extension must be .nlf"
+        raise ValueError(msg)
 
-    from . import version_info
-    version = f'{version_info.major}.{version_info.minor}'
+    from . import version_tuple
 
-    # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas
-    # TFittingMethod=(LM,AmLS,AmMD,AmMM,PwLS,PwMD,PwMM);
+    # only use version_tuple once a release is made for version 5.46
+    version = "5.44" if version_tuple[0] == 0 else f"{version_tuple[0]}.{version_tuple[1]}"
+
+    # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas => TFittingMethod=(LM,AmLS,AmMD,AmMM,PwLS,PwMD,PwMM);
     methods = {
         FitMethod.LM: 0,
         FitMethod.AMOEBA_LS: 1,
@@ -402,8 +402,7 @@ def save(*,
         FitMethod.POWELL_MM: 6,
     }
 
-    # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas
-    # TResidualType=(dxVx,dyVx,dxVy,dyVy);
+    # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas => TResidualType=(dxVx,dyVx,dxVy,dyVy);
     res_types = {
         ResidualType.DX_X: 0,
         ResidualType.DY_X: 1,
@@ -420,9 +419,9 @@ def save(*,
     saver.write_integer(len(data.params))
     saver.write_integer(npts)
     saver.write_boolean(data.weighted)
-    saver.write_boolean(False)  # extrapolate_calc_graphs
-    saver.write_boolean(False)  # curve_fitted
-    saver.write_boolean(False)  # plot_uncert_curve
+    saver.write_boolean(False)  # extrapolate_calc_graphs  # noqa: FBT003
+    saver.write_boolean(False)  # curve_fitted  # noqa: FBT003
+    saver.write_boolean(False)  # plot_uncert_curve  # noqa: FBT003
     saver.write_byte(2)  # TCalcCurveType (ccXData:0, ccXFitData:1, ccEvenData:2)
     saver.write_integer(201)  # num_calc_points
     saver.write_boolean(data.absolute_residuals)  # absolute_res
@@ -432,7 +431,7 @@ def save(*,
     saver.write_integer(17)  # num_param_sig_figs
     saver.write_string(str(data.tolerance))  # tolerance_str
     saver.write_string(str(data.delta))  # delta_str
-    saver.write_string('0')  # randomise_str
+    saver.write_string("0")  # randomise_str
     saver.write_boolean(data.second_derivs_H)  # second_derivs_H
     saver.write_boolean(data.second_derivs_B)  # second_derivs_B
     saver.write_byte(0)  # unweighted_uncert
@@ -451,25 +450,25 @@ def save(*,
         for j in range(nvars):
             saver.write_extended(ux[j, i])
         saver.write_extended(uy[i])
-    for i in range(npts):
+    for _ in range(npts):
         saver.write_extended(0)  # sig
 
     saver.write_boolean(data.correlated)  # correlated_data
     saver.write_boolean(not data.correlated)  # uncorrelated_fit
     if data.correlated:
-        for i in range(nvars+1):
-            for j in range(nvars+1):
+        for i in range(nvars + 1):
+            for j in range(nvars + 1):
                 is_corr = data.correlations.is_correlated[i, j]
                 saver.write_boolean(is_corr)
                 if is_corr:
                     saver.write_boolean(is_corr)  # valid_correlations
 
                     # find the Correlation object based on i, j values
-                    n1 = 'Y' if i == 0 else f'X{i}'
-                    n2 = 'Y' if j == 0 else f'X{j}'
+                    n1 = "Y" if i == 0 else f"X{i}"
+                    n2 = "Y" if j == 0 else f"X{j}"
                     coeffs = None
                     for corr in data.correlations.data:
-                        if corr.path.endswith(f'{n1}-{n2}.txt'):
+                        if str(corr.path).endswith(f"{n1}-{n2}.txt"):
                             coeffs = corr.coefficients
                             break
                     if coeffs is None:
@@ -489,57 +488,59 @@ def save(*,
     saver.write_integer(250)  # width
     saver.write_integer(100)  # height
     saver.write_byte(0 if comments else 1)  # the_state
-    prefix = '{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang5129{' \
-             '\\fonttbl{\\f0\\fnil\\fcharset0 Times New Roman;}}\r\n' \
-             '\\viewkind4\\uc1\\pard\\f0\\fs20 '
-    suffix = '\\par\r\n}\r\n\x00'
-    comments = comments.replace('\n', '\\par\r\n')
-    comments = comments.replace('{', '\\{')
-    comments = comments.replace('}', '\\}')
+    prefix = (
+        "{\\rtf1\\ansi\\ansicpg1252\\deff0\\deflang5129{"
+        "\\fonttbl{\\f0\\fnil\\fcharset0 Times New Roman;}}\r\n"
+        "\\viewkind4\\uc1\\pard\\f0\\fs20 "
+    )
+    suffix = "\\par\r\n}\r\n\x00"
+    comments = comments.replace("\n", "\\par\r\n")
+    comments = comments.replace("{", "\\{")
+    comments = comments.replace("}", "\\}")
     saver.write_string(prefix + comments + suffix)
 
-    save_graph(saver, 'fit_graph')
-    save_graph(saver, 'residuals_graph')
-    save_graph(saver, 'uncert_graph')
+    save_graph(saver, "fit_graph")
+    save_graph(saver, "residuals_graph")
+    save_graph(saver, "uncert_graph")
 
-    form = dict(
-        results_form=True,
-        left=500,
-        top=100,
-        width=500,
-        height=200,
-        the_state=0,
-        nparams=len(data.params),
-    )
-    save_form(saver, form)  # results_form
+    results_form = {
+        "results_form": True,
+        "left": 500,
+        "top": 100,
+        "width": 500,
+        "height": 200,
+        "the_state": 0,
+        "nparams": len(data.params),
+    }
+    save_form(saver, results_form)
 
-    form = dict(
-        covar_form=True,
-        left=300,
-        top=400,
-        width=100,
-        height=100,
-        the_state=1,
-    )
-    save_form(saver, form)  # covar_form
+    covar_form = {
+        "covar_form": True,
+        "left": 300,
+        "top": 400,
+        "width": 100,
+        "height": 100,
+        "the_state": 1,
+    }
+    save_form(saver, covar_form)
 
-    form = dict(
-        data_form=True,
-        left=1,
-        top=1,
-        width=750,
-        height=500,
-        the_state=0,
-        x=data.x,
-        y=data.y,
-        ux=data.ux,
-        uy=data.uy
-    )
-    save_form(saver, form)  # data_form
+    data_form = {
+        "data_form": True,
+        "left": 1,
+        "top": 1,
+        "width": 750,
+        "height": 500,
+        "the_state": 0,
+        "x": data.x,
+        "y": data.y,
+        "ux": data.ux,
+        "uy": data.uy,
+    }
+    save_form(saver, data_form)
 
     # IncludeRow
     saver.write_integer(npts)
     for _ in range(npts):
-        saver.write_boolean(True)
+        saver.write_boolean(True)  # noqa: FBT003
 
     saver.save(path)

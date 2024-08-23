@@ -1,5 +1,4 @@
-"""
-Predefined models
+"""Predefined models.
 
 * :class:`.ConstantModel`
 * :class:`.ExponentialModel`
@@ -8,21 +7,31 @@ Predefined models
 * :class:`.PolynomialModel`
 * :class:`.SineModel`
 """
-from __future__ import annotations  # to render ArrayLike1D in docs
+
+from __future__ import annotations
 
 import math
 import warnings
+from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.polynomial.polynomial import polyfit
 
-from .model import ArrayLike1D
 from .model import Model
 from .parameter import InputParameters
 
+if TYPE_CHECKING:
+    from typing import Any
+
+    from .types import ArrayLike1D
+
 __all__ = (
-    'ConstantModel', 'ExponentialModel', 'GaussianModel', 'LinearModel',
-    'PolynomialModel', 'SineModel',
+    "ConstantModel",
+    "ExponentialModel",
+    "GaussianModel",
+    "LinearModel",
+    "PolynomialModel",
+    "SineModel",
 )
 
 
@@ -41,8 +50,9 @@ def _mean_min_n(array: ArrayLike1D, n: int) -> float:
 
 
 class GaussianModel(Model):
+    """A model based on a Gaussian function or a normal distribution."""
 
-    def __init__(self, normalized: bool = False, **kwargs) -> None:
+    def __init__(self, *, normalized: bool = False, **kwargs: Any) -> None:  # noqa: ANN401
         r"""A model based on a Gaussian function or a normal distribution.
 
         The non-normalized function is defined as
@@ -64,29 +74,24 @@ class GaussianModel(Model):
         **kwargs
             All additional keyword arguments are passed to :class:`~msl.nlf.model.Model`.
         """
-        exp = 'exp(-0.5*((x-a2)/a3)^2)'
+        exp = "exp(-0.5*((x-a2)/a3)^2)"
         if normalized:
             sq2pi = math.sqrt(2.0 * math.pi)
-            equation = f'a1/(a3*{sq2pi})*{exp}'
+            equation = f"a1/(a3*{sq2pi})*{exp}"
         else:
-            equation = f'a1*{exp}'
+            equation = f"a1*{exp}"
         self._normalized = normalized
         super().__init__(equation, **kwargs)
 
         # must define after calling super()
-        self._factor = 'a1'
+        self._factor = "a1"
         if normalized:
-            self._composite_equation = f'1/a3*{exp}'
+            self._composite_equation = f"1/a3*{exp}"
         else:
             self._composite_equation = exp
 
-    def guess(self,
-              x: ArrayLike1D,
-              y: ArrayLike1D,
-              *,
-              n: int = 3) -> InputParameters:
-        """Converts the data to a quadratic and calls the
-        :func:`~numpy.polynomial.polynomial.polyfit` function.
+    def guess(self, x: ArrayLike1D, y: ArrayLike1D, *, n: int = 3) -> InputParameters:  # type: ignore[override]
+        r"""Converts the data to a quadratic and calls the :func:`~numpy.polynomial.polynomial.polyfit` function.
 
         Parameters
         ----------
@@ -98,52 +103,54 @@ class GaussianModel(Model):
             Uses the *n* maximum and the *n* minimum values in *y* to
             determine the region where the peak/dip is located.
 
-        Returns
+        Returns:
         -------
         :class:`.InputParameters`
             Initial guess for the amplitude (area), :math:`\\mu` and
             :math:`\\sigma` parameters.
         """
+        x = np.asanyarray(x)
         y = np.asanyarray(y)
         y_min = _mean_min_n(y, n)
         y_max = _mean_max_n(y, n)
         inverted = abs(y_min) > abs(y_max)
 
-        # only use the points near the peak/dip for the polyfit
-        if inverted:
-            indices = y < 0.368 * y_min  # 0.368=1/e
-        else:
-            indices = y > 0.368 * y_max
+        # only use the points near the peak/dip for the polyfit (0.368=1/e)
+        indices = y < 0.368 * y_min if inverted else y > 0.368 * y_max
 
         x, y = x[indices], y[indices]
         ln_y = np.log(np.absolute(y) + 1e-15)
         with warnings.catch_warnings():
             # ignore "RankWarning: The fit may be poorly conditioned"
-            warnings.simplefilter('ignore')
-            a, b, c = polyfit(x, ln_y, 2)  # noqa
+            warnings.simplefilter("ignore")
+            a, b, c = polyfit(x, ln_y, 2)
 
-        sigma = np.sqrt(abs(1/(2*c)))
-        mu = -b / (2*c)
-        amplitude = np.exp(a - b**2/(4*c))
+        sigma = np.sqrt(abs(1 / (2 * c)))
+        mu = -b / (2 * c)
+        amplitude = np.exp(a - b**2 / (4 * c))
         if inverted:
             amplitude *= -1
 
         if self._normalized:
-            a1_label = 'area'
+            a1_label = "area"
             a1 = amplitude * sigma * math.sqrt(2.0 * math.pi)
         else:
-            a1_label = 'amplitude'
+            a1_label = "amplitude"
             a1 = amplitude
 
-        return InputParameters((
-            ('a1', a1, False, a1_label),
-            ('a2', mu, False, 'mu'),
-            ('a3', sigma, False, 'sigma'),))
+        return InputParameters(
+            (
+                ("a1", a1, False, a1_label),
+                ("a2", mu, False, "mu"),
+                ("a3", sigma, False, "sigma"),
+            )
+        )
 
 
 class LinearModel(Model):
+    """A model based on a linear function."""
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401
         """A model based on a linear function.
 
         The function is defined as
@@ -157,14 +164,14 @@ class LinearModel(Model):
         **kwargs
             All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
         """
-        a2x = 'a2*x'
-        super().__init__(f'a1+{a2x}', **kwargs)
+        a2x = "a2*x"
+        super().__init__(f"a1+{a2x}", **kwargs)
 
         # must define after calling super()
-        self._offset = 'a1'
+        self._offset = "a1"
         self._composite_equation = a2x
 
-    def guess(self, x: ArrayLike1D, y: ArrayLike1D, **kwargs) -> InputParameters:
+    def guess(self, x: ArrayLike1D, y: ArrayLike1D, **kwargs: Any) -> InputParameters:  # type: ignore[override]  # noqa: ANN401, ARG002
         """Calls the :func:`~numpy.polynomial.polynomial.polyfit` function.
 
         Parameters
@@ -176,19 +183,19 @@ class LinearModel(Model):
         **kwargs
             No keyword arguments are used.
 
-        Returns
+        Returns:
         -------
         :class:`.InputParameters`
             Initial guess for the intercept and slope.
         """
         a1, a2 = polyfit(x, y, 1)
-        return InputParameters((('a1', a1, False, 'intercept'),
-                                ('a2', a2, False, 'slope')))
+        return InputParameters((("a1", a1, False, "intercept"), ("a2", a2, False, "slope")))
 
 
 class SineModel(Model):
+    """A model based on a sine function."""
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401
         r"""A model based on a sine function.
 
         The function is defined as
@@ -202,20 +209,15 @@ class SineModel(Model):
         **kwargs
             All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
         """
-        sin = 'sin(a2*x+a3)'
-        super().__init__(f'a1*{sin}', **kwargs)
+        sin = "sin(a2*x+a3)"
+        super().__init__(f"a1*{sin}", **kwargs)
 
         # must define after calling super()
-        self._factor = 'a1'
+        self._factor = "a1"
         self._composite_equation = sin
 
-    def guess(self,
-              x: ArrayLike1D,
-              y: ArrayLike1D,
-              *,
-              uniform: bool = True,
-              n: int = 11) -> InputParameters:
-        """Uses an FFT to determine the amplitude and angular frequency.
+    def guess(self, x: ArrayLike1D, y: ArrayLike1D, *, uniform: bool = True, n: int = 11) -> InputParameters:  # type: ignore[override]
+        r"""Uses an FFT to determine the amplitude and angular frequency.
 
         Parameters
         ----------
@@ -230,7 +232,7 @@ class SineModel(Model):
             The number of sub-intervals to break up [0, :math:`2\\pi`) to
             determine the phase guess.
 
-        Returns
+        Returns:
         -------
         :class:`.InputParameters`
             Initial guess for the amplitude, angular frequency and phase.
@@ -246,17 +248,15 @@ class SineModel(Model):
         a1 = 2.0 * amplitudes[argmax] / len(amplitudes)
         a2 = two_pi * abs(frequencies[argmax])
         phases = np.linspace(0, two_pi, n, endpoint=False)
-        norms = [np.linalg.norm(y - a1*np.sin(a2*x+p)) for p in phases]
+        norms = [np.linalg.norm(y - a1 * np.sin(a2 * x + p)) for p in phases]
         a3 = phases[np.argmin(norms)]
-        return InputParameters((
-            ('a1', a1, False, 'amplitude'),
-            ('a2', a2, False, 'omega'),
-            ('a3', a3, False, 'phase')))
+        return InputParameters((("a1", a1, False, "amplitude"), ("a2", a2, False, "omega"), ("a3", a3, False, "phase")))
 
 
 class ExponentialModel(Model):
+    """A model based on an exponential function."""
 
-    def __init__(self, cumulative: bool = False, **kwargs) -> None:
+    def __init__(self, *, cumulative: bool = False, **kwargs: Any) -> None:  # noqa: ANN401
         """A model based on an exponential function.
 
         The non-cumulative function is defined as
@@ -279,20 +279,15 @@ class ExponentialModel(Model):
             All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
         """
         self._cumulative = cumulative
-        exp = '(1-exp(-a2*x))' if cumulative else 'exp(-a2*x)'
-        super().__init__(f'a1*{exp}', **kwargs)
+        exp = "(1-exp(-a2*x))" if cumulative else "exp(-a2*x)"
+        super().__init__(f"a1*{exp}", **kwargs)
 
         # must define after calling super()
-        self._factor = 'a1'
+        self._factor = "a1"
         self._composite_equation = exp
 
-    def guess(self,
-              x: ArrayLike1D,
-              y: ArrayLike1D,
-              *,
-              n: int = 3) -> InputParameters:
-        """Linearizes the equation and calls the
-        :func:`~numpy.polynomial.polynomial.polyfit` function.
+    def guess(self, x: ArrayLike1D, y: ArrayLike1D, *, n: int = 3) -> InputParameters:  # type: ignore[override]
+        """Linearizes the equation and calls the :func:`~numpy.polynomial.polynomial.polyfit` function.
 
         Parameters
         ----------
@@ -305,7 +300,7 @@ class ExponentialModel(Model):
             values in *y* to calculate the mean and assigns
             the mean value as the amplitude guess.
 
-        Returns
+        Returns:
         -------
         :class:`.InputParameters`
             Initial guess for the amplitude and decay factor.
@@ -314,23 +309,23 @@ class ExponentialModel(Model):
         y = np.asanyarray(y)
         if self._cumulative:
             amplitude = _mean_max_n(y, n)
-            abs_y = np.absolute(1.0-y/amplitude)
+            abs_y = np.absolute(1.0 - y / amplitude)
         else:
             abs_y = np.absolute(y)
 
-        ln_y = np.log(abs_y + 1.e-15)  # make sure ln(0) is not calculated
+        ln_y = np.log(abs_y + 1.0e-15)  # make sure ln(0) is not calculated
         intercept, slope = polyfit(x, ln_y, 1)
         decay = -slope
         if amplitude is None:
             amplitude = np.exp(intercept)
 
-        return InputParameters((('a1', amplitude, False, 'amplitude'),
-                                ('a2', decay, False, 'decay')))
+        return InputParameters((("a1", amplitude, False, "amplitude"), ("a2", decay, False, "decay")))
 
 
 class PolynomialModel(Model):
+    """A model based on a polynomial function."""
 
-    def __init__(self, n: int, **kwargs) -> None:
+    def __init__(self, n: int, **kwargs: Any) -> None:  # noqa: ANN401
         r"""A model based on a polynomial function.
 
         The function is defined as
@@ -347,24 +342,25 @@ class PolynomialModel(Model):
             All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
         """
         if n < 1:
-            raise ValueError('Polynomial order must be >= 1')
+            msg = "Polynomial order must be >= 1"
+            raise ValueError(msg)
 
-        eqn = ['a1']
-        for i in range(1, n+1):
+        eqn = ["a1"]
+        for i in range(1, n + 1):
             if i == 1:
-                eqn.append('+a2*x')
+                eqn.append("+a2*x")
             else:
-                eqn.append(f'+a{i+1}*x^{i}')
+                eqn.append(f"+a{i+1}*x^{i}")
 
         self._n = n
-        equation = ''.join(eqn)
+        equation = "".join(eqn)
         super().__init__(equation, **kwargs)
 
         # must define after calling super()
-        self._offset = 'a1'
+        self._offset = "a1"
         self._composite_equation = equation[3:]
 
-    def guess(self, x: ArrayLike1D, y: ArrayLike1D, **kwargs) -> InputParameters:
+    def guess(self, x: ArrayLike1D, y: ArrayLike1D, **kwargs: Any) -> InputParameters:  # type: ignore[override]  # noqa: ANN401, ARG002
         """Calls the :func:`~numpy.polynomial.polynomial.polyfit` function.
 
         Parameters
@@ -376,7 +372,7 @@ class PolynomialModel(Model):
         **kwargs
             No keyword arguments are used.
 
-        Returns
+        Returns:
         -------
         :class:`.InputParameters`
             Initial guess for the polynomial coefficients.
@@ -384,20 +380,20 @@ class PolynomialModel(Model):
         params = InputParameters()
         for i, coeff in enumerate(polyfit(x, y, self._n), start=1):
             if i == 1:
-                label = 'a1'
-            elif i == 2:
-                label = 'a2*x'
+                label = "a1"
+            elif i == 2:  # noqa: PLR2004
+                label = "a2*x"
             else:
-                label = f'a{i}*x^{i-1}'
-            params[f'a{i}'] = coeff, False, label
+                label = f"a{i}*x^{i-1}"
+            params[f"a{i}"] = coeff, False, label
         return params
 
 
 class ConstantModel(Model):
+    """A model based on a constant."""
 
-    def __init__(self, **kwargs) -> None:
-        r"""A model based on a constant (i.e., a single parameter with no
-        :math:`x` dependence).
+    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401
+        r"""A model based on a constant (i.e., a single parameter with no math:`x` dependence).
 
         The function is defined as
 
@@ -410,17 +406,13 @@ class ConstantModel(Model):
         **kwargs
             All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
         """
-        super().__init__('a1', **kwargs)
+        super().__init__("a1", **kwargs)
 
         # must define after calling super()
-        self._offset = 'a1'
-        self._composite_equation = ''
+        self._offset = "a1"
+        self._composite_equation = ""
 
-    def guess(self,
-              x: ArrayLike1D,
-              y: ArrayLike1D,
-              *,
-              n: int = None) -> InputParameters:
+    def guess(self, x: ArrayLike1D, y: ArrayLike1D, *, n: int | None = None) -> InputParameters:  # type: ignore[override]  # noqa: ARG002
         """Calculates the mean value of *y*.
 
         Parameters
@@ -434,7 +426,7 @@ class ConstantModel(Model):
             specified, all values are used. If a positive integer then the first
             *n* values are used. Otherwise, the last *n* values are used.
 
-        Returns
+        Returns:
         -------
         :class:`.InputParameters`
             Initial guess for the constant.
@@ -445,4 +437,4 @@ class ConstantModel(Model):
             mean = np.mean(y[:n])
         else:
             mean = np.mean(y[n:])
-        return InputParameters([('a1', float(mean), False, 'constant')])
+        return InputParameters([("a1", float(mean), False, "constant")])
