@@ -465,7 +465,7 @@ def _load(path: str | Path) -> dict[str, Any]:  # noqa: C901, PLR0912, PLR0915
     return file
 
 
-def load(path: str | Path, *, dll: str | None = None) -> LoadedModel:
+def load(path: str | Path, *, win32: bool = False) -> LoadedModel:
     """Load a **.nlf** file.
 
     No information about the fit results are read from the file. The fit
@@ -481,8 +481,8 @@ def load(path: str | Path, *, dll: str | None = None) -> LoadedModel:
     path
         The path to a **.nlf** file. The file could have been created by the
         Delphi GUI application or by the :meth:`~msl.nlf.model.Model.save` method.
-    dll
-        Passed to the *dll* keyword argument in :class:`~msl.nlf.model.Model`.
+    win32
+        Passed to the *win32* keyword argument in :class:`~msl.nlf.model.Model`.
 
     Returns:
     -------
@@ -545,7 +545,7 @@ def load(path: str | Path, *, dll: str | None = None) -> LoadedModel:
         "weighted": file["weighted"],
     }
 
-    mod = LoadedModel(file["equation"], dll=dll, **options)
+    mod = LoadedModel(equation=file["equation"], win32=win32, **options)
     if file["correlated_data"]:
         import numpy as np
 

@@ -301,7 +301,7 @@ def test_numeric_exponential_linear_polynomial() -> None:
     assert m.equation == "((1-a1*exp(-a2*x))*(a3+a4*x))/(2.1345*(a5+a6*x+a7*x^2)+273.15)"
 
 
-def test_dll_raises() -> None:
+def test_delphi_raises() -> None:
     # arctan and pi are not supported
     x = [-4868.68, -4868.09, -4867.41, -3375.19, -3373.14, -3372.03]
     y = [0.252429, 0.252141, 0.251809, 0.297989, 0.296257, 0.295319]

@@ -14,7 +14,7 @@ The following are *submodules*:
 
    client_server <_api/msl.nlf.client_server>
    datatypes <_api/msl.nlf.datatypes>
-   dll <_api/msl.nlf.dll>
+   delphi <_api/msl.nlf.delphi>
    loader <_api/msl.nlf.loader>
    model <_api/msl.nlf.model>
    models <_api/msl.nlf.models>

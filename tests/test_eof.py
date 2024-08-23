@@ -43,7 +43,7 @@ def test_eof(abs_res: bool, res_typ: ResidualType, method: FitMethod, expected: 
     # The expected value comes from the Delphi GUI
     #
     # For MiniMax fitting, the GUI returns the maximum residual
-    # whereas the DLL returns the error of fit (therefore we calculate the expected value below)
+    # whereas the NLF library returns the error of fit (therefore we calculate the expected value below)
 
     x = np.array([77.6, 114.9, 141.1, 190.8, 239.9, 289.0, 332.8, 378.4, 434.8, 477.3, 536.8, 593.1, 689.1, 760.0])
     y = np.array([10.07, 14.73, 17.94, 23.93, 29.61, 35.18, 40.02, 44.82, 50.76, 55.05, 61.01, 66.4, 75.47, 81.78])

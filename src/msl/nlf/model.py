@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import sys
 import warnings
 from array import array
 from ctypes import POINTER, c_double
@@ -18,11 +17,12 @@ from msl.loadlib import LoadLibrary  # type: ignore[import-untyped]
 
 from .client_server import ClientNLF
 from .datatypes import Correlation, Correlations, FitMethod, Input, ResidualType, Result
-from .dll import NPAR, NPTS, NVAR, define_fit_fcn, evaluate, fit, get_user_defined, version
+from .delphi import NPAR, NPTS, NVAR, define_fit_fcn, delphi_version, evaluate, fit, get_user_defined, nlf_info
 from .parameter import InputParameters, ResultParameters
 from .saver import save
 
 if TYPE_CHECKING:
+    import sys
     from types import TracebackType
     from typing import Any, Iterable, Literal, TypeVar
 
@@ -43,8 +43,6 @@ _corr_file_regex = re.compile(r"^CorrCoeffs (Y|X\d{1,2})-(Y|X\d{1,2})\.txt$")
 _user_fcn_regex = re.compile(r"^\s*f\d+\s*$")
 
 _winreg_user_dir: str = ""
-
-IS_PYTHON_64BIT: bool = sys.maxsize > 2**32
 
 
 def _fill_array(a: NDArray[np.float64], b: ArrayLike) -> NDArray[np.float64]:
@@ -129,12 +127,12 @@ class Model:
     MAX_VARIABLES: int = NVAR
     """Maximum number of x (stimulus) variables allowed."""
 
-    def __init__(  # noqa: C901, PLR0912, PLR0915
+    def __init__(  # noqa: PLR0915
         self,
         equation: str,
         *,
-        dll: str | Path | None = None,
         user_dir: str | Path | None = None,
+        win32: bool = False,
         **options: Any,  # noqa: ANN401
     ) -> None:
         """A model for non-linear fitting.
@@ -158,27 +156,24 @@ class Model:
 
             |
 
-            If using a user-defined function that has been compiled to a DLL,
-            the *equation* name must begin with *f* followed by a positive integer,
-            for example, ``f1``. The *user_dir* keyword argument may also need
-            to be set. See :ref:`nlf-user-defined-function`.
-        dll
-            The path to a non-linear fit DLL file. A default DLL is chosen
-            based on the bitness of the Python interpreter. If you want to
-            load a 32-bit DLL in 64-bit Python then set *dll* to be **nlf32**.
-            See :ref:`nlf-32vs64` for reasons why you may want to use a
-            different DLL bitness. You may also specify a path to a DLL that
-            is located in a particular directory of your computer.
+            If using a user-defined function, the *equation* name must begin
+            with *f* followed by a positive integer, for example, ``f1``.
+            The *user_dir* keyword argument may also need to be set.
+            See :ref:`nlf-user-defined-function`.
         user_dir
             Directory where the user-defined functions are located. The default
             directory is the directory that the Delphi GUI has set. If the
             Delphi GUI has not set a directory (because the GUI has not been
             used) the default directory is the current working directory.
             See :ref:`nlf-user-defined-function`.
+        win32
+            Whether to load the 32-bit non-linear-fitting library in 64-bit Python.
+            See :ref:`nlf-32vs64` for reasons why you may want to enable this feature.
+            Available on Windows only.
         **options
             All additional keyword arguments are passed to :meth:`.options`.
         """
-        self._dll: LoadLibrary | ClientNLF | None = None
+        self._nlf: LoadLibrary | ClientNLF | None = None
         self._tmp_dir = Path(mkdtemp(prefix="nlf-"))
         self._cfg_path = self._tmp_dir / "options.cfg"
         self._equation = equation
@@ -188,6 +183,7 @@ class Model:
         self._show_warnings = True
         self._parameters = InputParameters()
         self._npts = -1
+        self._win32 = win32
 
         # fit options
         self._absolute_residuals = True
@@ -239,6 +235,8 @@ class Model:
             msg = f"Too many fitting parameters in equation [{self._num_params} > {self.MAX_PARAMETERS}]"
             raise ValueError(msg)
 
+        self._nlf_path, as_client, self._os_extension = nlf_info(win32=win32)
+
         self.options(**options)
 
         self._x = np.zeros((self.MAX_VARIABLES, self.MAX_POINTS))
@@ -249,35 +247,16 @@ class Model:
         self._constant = np.zeros(self.MAX_PARAMETERS, dtype=bool)
         self._is_corr_array = np.zeros((self.MAX_VARIABLES + 1, self.MAX_VARIABLES + 1), dtype=bool)
 
-        here = Path(__file__).parent
-        if not dll:
-            bit = "64" if IS_PYTHON_64BIT else "32"
-            dll = here / f"nlf{bit}.dll"
-        elif dll == "nlf32":
-            dll = here / "nlf32.dll"
-        elif dll == "nlf64":
-            if not IS_PYTHON_64BIT:
-                msg = "Cannot load a 64-bit DLL in 32-bit Python"
-                raise ValueError(msg)
-            dll = here / "nlf64.dll"
-        self._dll_path = Path(dll)
-
-        try:
-            self._dll = LoadLibrary(dll, libtype="cdll")
-        except OSError as e:
-            if e.winerror == 193:  # noqa: PLR2004
-                # Tried to load a 32-bit DLL in 64-bit Python.
-                # Use interprocess communication (see msl-loadlib).
-                self._dll = ClientNLF(dll)
-            else:
-                raise
+        if as_client:
+            self._nlf = ClientNLF(self._nlf_path)
         else:
+            self._nlf = LoadLibrary(self._nlf_path, libtype="cdll")
             self._covar = np.zeros((self.MAX_PARAMETERS, self.MAX_PARAMETERS))
             self._ua = np.zeros(self.MAX_PARAMETERS)
-            define_fit_fcn(self._dll.lib, as_ctypes=False)
+            define_fit_fcn(self._nlf.lib, as_ctypes=False)
 
         if self._is_user_function:
-            # this must come at the end since self._dll must not be None
+            # this must come at the end since self._nlf must not be None
             # and self._num_vars, self._num_params get overwritten
             self._load_user_defined()
 
@@ -285,9 +264,9 @@ class Model:
         """Override the + operator."""
         op = "+"
         if isinstance(rhs, Model):
-            return CompositeModel(op, self, rhs, dll=self._dll_path)
+            return CompositeModel(op, self, rhs, win32=self._win32)
         if isinstance(rhs, (float, int)):
-            return Model(f"{self._equation}{op}{rhs}", dll=self._dll_path)
+            return Model(f"{self._equation}{op}{rhs}", win32=self._win32)
         msg = f"unsupported operand type(s) for {op}: {type(self).__name__!r} and {type(rhs).__name__!r}"
         raise TypeError(msg)
 
@@ -295,7 +274,7 @@ class Model:
         """Override the + operator."""
         op = "+"
         if isinstance(lhs, (float, int)):
-            return Model(f"{lhs}{op}{self._equation}", dll=self._dll_path)
+            return Model(f"{lhs}{op}{self._equation}", win32=self._win32)
         msg = f"unsupported operand type(s) for {op}: {type(lhs).__name__!r} and {type(self).__name__!r}"
         raise TypeError(msg)
 
@@ -303,9 +282,9 @@ class Model:
         """Override the - operator."""
         op = "-"
         if isinstance(rhs, Model):
-            return CompositeModel(op, self, rhs, dll=self._dll_path)
+            return CompositeModel(op, self, rhs, win32=self._win32)
         if isinstance(rhs, (float, int)):
-            return Model(f"{self._equation}{op}{rhs}", dll=self._dll_path)
+            return Model(f"{self._equation}{op}{rhs}", win32=self._win32)
         msg = f"unsupported operand type(s) for {op}: {type(self).__name__!r} and {type(rhs).__name__!r}"
         raise TypeError(msg)
 
@@ -313,7 +292,7 @@ class Model:
         """Override the - operator."""
         op = "-"
         if isinstance(lhs, (float, int)):
-            return Model(f"{lhs}{op}{self._equation}", dll=self._dll_path)
+            return Model(f"{lhs}{op}{self._equation}", win32=self._win32)
         msg = f"unsupported operand type(s) for {op}: {type(lhs).__name__!r} and {type(self).__name__!r}"
         raise TypeError(msg)
 
@@ -321,9 +300,9 @@ class Model:
         """Override the * operator."""
         op = "*"
         if isinstance(rhs, Model):
-            return CompositeModel(op, self, rhs, dll=self._dll_path)
+            return CompositeModel(op, self, rhs, win32=self._win32)
         if isinstance(rhs, (float, int)):
-            return Model(f"({self._equation}){op}{rhs}", dll=self._dll_path)
+            return Model(f"({self._equation}){op}{rhs}", win32=self._win32)
         msg = f"unsupported operand type(s) for {op}: {type(self).__name__!r} and {type(rhs).__name__!r}"
         raise TypeError(msg)
 
@@ -331,7 +310,7 @@ class Model:
         """Override the * operator."""
         op = "*"
         if isinstance(lhs, (float, int)):
-            return Model(f"{lhs}{op}({self._equation})", dll=self._dll_path)
+            return Model(f"{lhs}{op}({self._equation})", win32=self._win32)
         msg = f"unsupported operand type(s) for {op}: {type(lhs).__name__!r} and {type(self).__name__!r}"
         raise TypeError(msg)
 
@@ -339,9 +318,9 @@ class Model:
         """Override the / operator."""
         op = "/"
         if isinstance(rhs, Model):
-            return CompositeModel(op, self, rhs, dll=self._dll_path)
+            return CompositeModel(op, self, rhs, win32=self._win32)
         if isinstance(rhs, (float, int)):
-            return Model(f"({self._equation}){op}{rhs}", dll=self._dll_path)
+            return Model(f"({self._equation}){op}{rhs}", win32=self._win32)
         msg = f"unsupported operand type(s) for {op}: {type(self).__name__!r} and {type(rhs).__name__!r}"
         raise TypeError(msg)
 
@@ -349,7 +328,7 @@ class Model:
         """Override the / operator."""
         op = "/"
         if isinstance(lhs, (float, int)):
-            return Model(f"{lhs}{op}({self._equation})", dll=self._dll_path)
+            return Model(f"{lhs}{op}({self._equation})", win32=self._win32)
         msg = f"unsupported operand type(s) for {op}: {type(lhs).__name__!r} and {type(self).__name__!r}"
         raise TypeError(msg)
 
@@ -375,12 +354,11 @@ class Model:
 
     def __repr__(self) -> str:
         """Object representation."""
-        path = self._dll_path.name if Path(__file__).parent == self._dll_path.parent else str(self._dll_path)
-        return f"{self.__class__.__name__}(equation={self._equation!r}, dll={path!r})"
+        return f"{self.__class__.__name__}(equation={self._equation!r})"
 
     def _cleanup(self) -> None:
-        if isinstance(self._dll, ClientNLF):
-            self._dll.shutdown_server32()
+        if isinstance(self._nlf, ClientNLF):
+            self._nlf.shutdown_server32()
         rmtree(self._tmp_dir, ignore_errors=True)
 
     def _load_correlations(self, num_x_vars: int) -> Correlations:
@@ -400,7 +378,7 @@ class Model:
     def _load_options(self) -> dict[str, Any]:
         # load the options.cfg file
         options = {}
-        ignore = ("show_info_window", "user_dir")
+        ignore = ("os_extension", "user_dir")
         with self._cfg_path.open() as f:
             for line in f:
                 k, v = line.split("=")
@@ -420,19 +398,19 @@ class Model:
 
     def _load_user_defined(self) -> None:
         # load the user-defined functions
-        if self._dll is None:
+        if self._nlf is None:
             return
 
         if not self._user_dir.is_dir():
             msg = f"The user-defined directory does not exist: {str(self._user_dir)!r}"
             raise FileNotFoundError(msg)
 
-        if isinstance(self._dll, ClientNLF):
-            functions = self._dll.get_user_defined(self._user_dir)
+        if isinstance(self._nlf, ClientNLF):
+            functions = self._nlf.get_user_defined(self._user_dir, self._os_extension)
         else:
-            functions = get_user_defined(self._user_dir)
+            functions = get_user_defined(self._user_dir, self._os_extension)
 
-        # find all user-defined DLLs that have the expected equation
+        # find all user-defined functions that have the expected equation
         ud_matches = [ud for ud in functions.values() if ud.equation == self._equation]
 
         if not ud_matches:
@@ -442,7 +420,10 @@ class Model:
                 e += f"\nThe functions available are:\n  {names}"
             else:
                 e += "\nThere are no valid functions in this directory."
-            e += "\nMake sure that the bitness of the user-defined DLL and the bitness of the NLF DLL are the same."
+            e += (
+                "\nMake sure that the bitness of the user-defined function and "
+                "the bitness of the NLF library are the same."
+            )
             raise ValueError(e)
 
         if len(ud_matches) > 1:
@@ -458,8 +439,8 @@ class Model:
         self._num_params = ud.num_parameters
         self._num_vars = ud.num_variables
 
-        if isinstance(self._dll, ClientNLF):
-            self._dll.load_user_defined(self._equation, self._user_dir)
+        if isinstance(self._nlf, ClientNLF):
+            self._nlf.load_user_defined(self._equation, self._user_dir, self._os_extension)
         else:
             self._user_function = ud.function
             self._user_function.restype = None
@@ -536,9 +517,9 @@ class Model:
         return InputParameters(parameters)
 
     @property
-    def dll_path(self) -> Path:
-        """Returns the path to the DLL file."""
-        return self._dll_path
+    def delphi_library(self) -> Path:
+        """Returns the path to the Delphi library."""
+        return self._nlf_path
 
     @property
     def equation(self) -> str:
@@ -586,10 +567,10 @@ class Model:
 
             shape = (nvars, npts)
             xtf = x.T.reshape(-1)  # transpose and flatten
-            if isinstance(self._dll, ClientNLF):
+            if isinstance(self._nlf, ClientNLF):
                 a_array = array("d", a.tobytes())
                 x_array = array("d", xtf.tobytes())
-                return np.array(self._dll.evaluate(a_array, x_array, shape))
+                return np.array(self._nlf.evaluate(a_array, x_array, shape))
 
             if self._user_function is None:
                 msg = "self._user_function cannot be None"
@@ -681,8 +662,8 @@ class Model:
             Standard uncertainties in the y data.
         debug
             If enabled, a summary of the input data that would be passed to the
-            fit function in the DLL is returned (the DLL function is not called).
-            Enabling this parameter is useful for debugging issues if the DLL
+            non-linear fit algorithm is returned (the algorithm is not called).
+            Enabling this parameter is useful for debugging issues if the algorithm
             raises an error or if the fit result is unexpected (e.g., the data
             points with smaller uncertainties are not having a stronger influence
             on the result, perhaps because an unweighted fit has been selected
@@ -793,10 +774,10 @@ class Model:
             "weighted": self._weighted,
         }
 
-        if isinstance(self._dll, ClientNLF):
-            result = self._dll.fit(**kwargs)
+        if isinstance(self._nlf, ClientNLF):
+            result = self._nlf.fit(**kwargs)
         else:
-            result = fit(lib=self._dll.lib, covar=self._covar, ua=self._ua, **kwargs)  # type: ignore[union-attr]
+            result = fit(lib=self._nlf.lib, covar=self._covar, ua=self._ua, **kwargs)  # type: ignore[union-attr]
 
         if self._weighted or self._correlated:
             result["dof"] = float("inf")
@@ -934,9 +915,6 @@ class Model:
         # https://github.com/MSLNZ/Nonlinear-Fitting/blob/main/NLF%20DLL/NLFDLL.dpr
         # NOTE: Since Nonlinear-Fitting is a private repository, you must be logged
         #       in to GitHub to view the source code.
-        #
-        # ShowInfoWindow is not a kwarg because the popup Window flashes to quickly
-        # to be useful.
         def get_enum(item: Any, enum: Any) -> Any:  # noqa: ANN401
             if not isinstance(item, enum):
                 try:
@@ -984,7 +962,7 @@ class Model:
                 f"second_derivs_H={self._second_derivs_H}\n"  # S='True';
                 f"second_derivs_B={self._second_derivs_B}\n"  # S='True';
                 f"uy_weights_only={self._uy_weights_only}\n"  # S='True';
-                f"show_info_window=False\n"  # S='True';
+                f"os_extension={self._os_extension}\n"
                 f"user_dir={self._user_dir}\\"
             )
 
@@ -1205,20 +1183,20 @@ class Model:
         return self._user_function_name
 
     def version(self) -> str:
-        """Get the version number of the DLL.
+        """Get the version number of the Delphi library.
 
         Returns:
         -------
         str
-            The version of the DLL.
+            The library version number.
         """
         if self._version:
             return self._version
 
-        if isinstance(self._dll, ClientNLF):  # noqa: SIM108
-            ver = self._dll.dll_version()
+        if isinstance(self._nlf, ClientNLF):  # noqa: SIM108
+            ver = self._nlf.delphi_version()
         else:
-            ver = version(self._dll.lib)  # type: ignore[union-attr]
+            ver = delphi_version(self._nlf.lib)  # type: ignore[union-attr]
 
         self._version = ver
         return ver
@@ -1279,7 +1257,7 @@ class CompositeModel(Model):
 class LoadedModel(Model):
     """A :class:`.Model` that was loaded from a **.nlf** file."""
 
-    def __init__(self, equation: str, *, dll: str | None = None, **options: Any) -> None:  # noqa: ANN401
+    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401
         """A :class:`.Model` that was loaded from a **.nlf** file.
 
         Do not instantiate this class directly. The proper way to load a
@@ -1287,15 +1265,10 @@ class LoadedModel(Model):
 
         Parameters
         ----------
-        equation
-            The fit equation. See :class:`.Model` for more details.
-        dll
-            The path to a non-linear fit DLL file. See :class:`.Model` for
-            more details.
-        **options
-            All additional keyword arguments are passed to :meth:`~.Model.options`.
+        **kwargs
+            All keyword arguments are passed to :meth:`~.Model`.
         """
-        super().__init__(equation, dll=dll, **options)
+        super().__init__(**kwargs)
 
         self.comments: str = ""
         """Comments that were specified."""
@@ -1304,7 +1277,7 @@ class LoadedModel(Model):
         """The path to the **.nlf** file that was loaded."""
 
         self.nlf_version: str = ""
-        """The DLL version that created the **.nlf** file."""
+        """The version that created the **.nlf** file."""
 
         self.params: InputParameters = InputParameters()
         """Input parameters to the fit model."""
@@ -1333,20 +1306,16 @@ class LoadedModel(Model):
             params[-1] = ")"
             param_str = f"\n{indent}".join(params)
 
-        p = Path(__file__)
-        path = p.suffix if p.parent == self._dll_path.parent else self._dll_path
-
         return (
-            f'{self.__class__.__name__}(\n'
-            f'  comments={self.comments!r}\n'
-            f'  dll={path!r}\n'
-            f'  equation={self.equation!r}\n'
-            f'  nlf_path={self.nlf_path!r}\n'
-            f'  nlf_version={self.nlf_version!r}\n'
-            f'  params={param_str}\n'
-            f'  ux={np.array2string(self.ux, prefix="     ")}\n'
-            f'  uy={np.array2string(self.uy, prefix="     ")}\n'
-            f'  x={np.array2string(self.x, prefix="    ")}\n'
-            f'  y={np.array2string(self.y, prefix="    ")}\n'
-            f')'
+            f"{self.__class__.__name__}(\n"
+            f"  comments={self.comments!r}\n"
+            f"  equation={self.equation!r}\n"
+            f"  nlf_path={self.nlf_path!r}\n"
+            f"  nlf_version={self.nlf_version!r}\n"
+            f"  params={param_str}\n"
+            f"  ux={np.array2string(self.ux, prefix='     ')}\n"
+            f"  uy={np.array2string(self.uy, prefix='     ')}\n"
+            f"  x={np.array2string(self.x, prefix='    ')}\n"
+            f"  y={np.array2string(self.y, prefix='    ')}\n"
+            f")"
         )

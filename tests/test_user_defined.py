@@ -1,15 +1,22 @@
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from msl.nlf import Model
-from msl.nlf.dll import get_user_defined
-from msl.nlf.model import IS_PYTHON_64BIT
+from msl.nlf.delphi import get_user_defined
 
-dlls: list[str] = ["nlf64", "nlf32"] if IS_PYTHON_64BIT else ["nlf32"]
+win32s = [False, True] if sys.platform == "win32" else [False]
+
+if sys.platform == "win32":
+    ext = ".dll"
+elif sys.platform == "linux":
+    ext = ".so"
+elif sys.platform == "darwin":
+    ext = ".dylib"
 
 
 @pytest.mark.parametrize(
@@ -31,24 +38,24 @@ def test_invalid(equation: str) -> None:
             model.fit([1, 2, 3], [1, 2, 3], params=[])
 
 
-@pytest.mark.parametrize("dll", dlls)
-def test_does_not_exist(dll: str) -> None:
+@pytest.mark.parametrize("win32", win32s)
+def test_does_not_exist(win32: bool) -> None:  # noqa: FBT001
     with pytest.raises(ValueError, match=r"No user-defined function"):  # noqa: SIM117
-        with Model("f4", dll=dll, user_dir="./tests/user_defined"):
+        with Model("f4", win32=win32, user_dir="./tests/user_defined"):
             pass
 
 
-@pytest.mark.parametrize("dll", dlls)
-def test_multiple_exist(dll: str) -> None:
+@pytest.mark.parametrize("win32", win32s)
+def test_multiple_exist(win32: bool) -> None:  # noqa: FBT001
     with pytest.raises(ValueError, match=r"Multiple user-defined functions"):  # noqa: SIM117
-        with Model("f1", dll=dll, user_dir="./tests/user_defined/multiple"):
+        with Model("f1", win32=win32, user_dir="./tests/user_defined/multiple"):
             pass
 
 
-@pytest.mark.parametrize("dll", dlls)
-def test_none_exist(dll: str) -> None:
+@pytest.mark.parametrize("win32", win32s)
+def test_none_exist(win32: bool) -> None:  # noqa: FBT001
     with pytest.raises(ValueError, match=r"no valid functions"):  # noqa: SIM117
-        with Model("f1", dll=dll, user_dir="./tests/user_defined/only_invalid"):
+        with Model("f1", win32=win32, user_dir="./tests/user_defined/only_invalid"):
             pass
 
 
@@ -59,9 +66,9 @@ def test_invalid_directory() -> None:
 
 
 def test_get_user_defined() -> None:
-    assert get_user_defined(".") == {}
-    assert get_user_defined("./tests") == {}
-    functions = get_user_defined("./tests/user_defined")
+    assert get_user_defined(".", ext) == {}
+    assert get_user_defined("./tests", ext) == {}
+    functions = get_user_defined("./tests/user_defined", ext)
 
     assert len(functions) == 2
     for ud in functions.values():
@@ -80,8 +87,8 @@ def test_get_user_defined() -> None:
             raise ValueError(msg)
 
 
-@pytest.mark.parametrize("dll", dlls)
-def test_roszman1(dll: str) -> None:
+@pytest.mark.parametrize("win32", win32s)
+def test_roszman1(win32: bool) -> None:  # noqa: FBT001
     # See NIST_datasets/Roszman1.dat for the numerical values
 
     x = [
@@ -147,7 +154,7 @@ def test_roszman1(dll: str) -> None:
     chisq_expected = 4.9484847331e-04
     eof_expected = 4.8542984060e-03
 
-    with Model("f1", dll=dll, user_dir="./tests/user_defined") as model:
+    with Model("f1", win32=win32, user_dir="./tests/user_defined") as model:
         assert model.equation == "f1"
         result = model.fit(x, y, params=params)
 
@@ -167,8 +174,8 @@ def test_roszman1(dll: str) -> None:
         assert pytest.approx(eof_expected) == eof
 
 
-@pytest.mark.parametrize("dll", dlls)
-def test_nelson(dll: str) -> None:
+@pytest.mark.parametrize("win32", win32s)
+def test_nelson(win32: bool) -> None:  # noqa: FBT001
     # See NIST_datasets/Nelson.dat for the numerical values
 
     x = [
@@ -572,7 +579,7 @@ def test_nelson(dll: str) -> None:
     chisq_expected = 3.7976833176e00
     eof_expected = 1.7430280130e-01
 
-    with Model("f2", dll=dll, user_dir="./tests/user_defined") as model:
+    with Model("f2", win32=win32, user_dir="./tests/user_defined") as model:
         assert model.equation == "f2"
         result = model.fit(x, y, params=params)
 

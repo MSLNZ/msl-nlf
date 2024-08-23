@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import os
+import sys
+import sysconfig
 from ctypes import CDLL, POINTER, byref, c_bool, c_double, c_int, c_wchar_p, create_string_buffer, create_unicode_buffer
 from dataclasses import dataclass
 from pathlib import Path
@@ -45,6 +48,12 @@ is_correlated = c_bool * ((NVAR + 1) * (NVAR + 1))
 # returned to the 64-bit client as a list[list[float]]
 square_matrix = (c_double * NPAR) * NPAR
 
+here = Path(__file__).parent
+filename_map: dict[str, Path] = {
+    "win32": here / "bin" / "nlf-windows-i386.dll",
+    "win-amd64": here / "bin" / "nlf-windows-x86_64.dll",
+}
+
 
 def fit(  # noqa: PLR0913
     *,
@@ -78,7 +87,7 @@ def fit(  # noqa: PLR0913
     Returns:
     -------
     dict
-        The fit results of the DLL.
+        The fit results.
     """
     calls = 0
     iter_total = 0
@@ -144,7 +153,7 @@ def fit(  # noqa: PLR0913
     }
 
 
-def version(lib: CDLL) -> str:
+def delphi_version(lib: CDLL) -> str:
     """Call the *GetVersion* function.
 
     Parameters
@@ -162,7 +171,7 @@ def version(lib: CDLL) -> str:
     lib.GetVersion.restype = None
     lib.GetVersion.argtypes = [c_wchar_p]
     lib.GetVersion(buffer)
-    return str(buffer.value)
+    return buffer.value
 
 
 def define_fit_fcn(lib: CDLL, *, as_ctypes: bool) -> None:
@@ -228,7 +237,7 @@ def define_fit_fcn(lib: CDLL, *, as_ctypes: bool) -> None:
 
 @dataclass
 class UserDefined:
-    """A user-defined function that has been compiled to a DLL."""
+    """A user-defined function."""
 
     equation: str
     """The value to use as the *equation* for a :class:`~msl.nlf.model.Model`."""
@@ -259,13 +268,15 @@ class UserDefined:
         }
 
 
-def get_user_defined(directory: str | Path) -> dict[Path, UserDefined]:
+def get_user_defined(directory: str | Path, extension: str) -> dict[Path, UserDefined]:
     """Get all user-defined functions.
 
     Parameters
     ----------
     directory
         The directory to look for the user-defined functions.
+    extension
+        The file extension for the user-defined functions.
 
     Returns:
     -------
@@ -276,7 +287,7 @@ def get_user_defined(directory: str | Path) -> dict[Path, UserDefined]:
     buffer = create_string_buffer(255)
 
     functions: dict[Path, UserDefined] = {}
-    for file in Path(directory).glob("*.dll"):
+    for file in Path(directory).glob(f"*{extension}"):
         try:
             lib = CDLL(str(file))
         except OSError:
@@ -324,7 +335,7 @@ def evaluate(
     shape: tuple[int, int],
     y: EvaluateArray,
 ) -> EvaluateArray:
-    """Call *GetFunctionValue* in the user-defined DLL.
+    """Call *GetFunctionValue* in the user-defined function.
 
     Parameters
     ----------
@@ -362,3 +373,39 @@ def evaluate(
             y[i] = y_val.value
             j += nvars
     return y
+
+
+def nlf_info(*, win32: bool = False) -> tuple[Path, bool, str]:
+    """Get information about the non-linear fitting library.
+
+    Parameters
+    ----------
+    win32
+        Whether to load the 32-bit Windows library.
+
+    Returns:
+    -------
+    The path to the non-linear fitting library, whether to
+    load the library using inter-process communication and the
+    file extension for a user-defined function.
+    """
+    if win32 and sys.platform != "win32":
+        msg = "Enabling the 'win32' feature is only supported on Windows"
+        raise ValueError(msg)
+
+    if sys.platform == "win32":
+        if win32:
+            return filename_map["win32"], sys.maxsize > 2**32, ".dll"
+        return filename_map[sysconfig.get_platform()], False, ".dll"
+
+    # must be Unix
+    uname = os.uname()
+
+    msg = (
+        f"The non-linear-fitting library is not available for:\n"
+        f"sysname={uname.sysname}\n"
+        f"release={uname.release}\n"
+        f"version={uname.version}\n"
+        f"machine={uname.machine}\n"
+    )
+    raise ValueError(msg)

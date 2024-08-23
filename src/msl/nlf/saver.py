@@ -23,7 +23,7 @@ class Saver:
         Parameters
         ----------
         version
-            The DLL version number.
+            The version number.
         """
         self._buffer = bytearray()
         self.write_string_padded(version, 10)

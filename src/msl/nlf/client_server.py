@@ -9,19 +9,19 @@ from typing import TYPE_CHECKING
 from msl.loadlib import Client64, Server32  # type: ignore[import-untyped]
 
 if Server32.is_interpreter():
-    from dll import (  # type: ignore[import-not-found]
+    from delphi import (  # type: ignore[import-not-found]
         define_fit_fcn,
+        delphi_version,
         evaluate,
         fit,
         get_user_defined,
         real_param_data,
         square_matrix,
-        version,
     )
 else:
     import numpy as np
 
-    from .dll import UserDefined
+    from .delphi import UserDefined
 
 if TYPE_CHECKING:
     from ctypes import CDLL
@@ -52,9 +52,9 @@ class ServerNLF(Server32):  # type: ignore[misc]
         self._covar = square_matrix()
         define_fit_fcn(self.lib, as_ctypes=True)
 
-    def dll_version(self) -> str:
-        """Get the version number from the DLL."""
-        v: str = version(self.lib)
+    def delphi_version(self) -> str:
+        """Get the version number from the Delphi library."""
+        v: str = delphi_version(self.lib)
         return v
 
     def evaluate(self, a: array[float], x: array[float], shape: tuple[int, int]) -> array[float]:
@@ -104,22 +104,24 @@ class ServerNLF(Server32):  # type: ignore[misc]
         return result
 
     @staticmethod
-    def get_user_defined(directory: str) -> dict[Path, UserDefinedDict]:
+    def get_user_defined(directory: str, extension: str) -> dict[Path, UserDefinedDict]:
         """Get all user-defined functions.
 
         Parameters
         ----------
         directory
             The directory to look for the user-defined functions.
+        extension
+            The file extension for the user-defined functions.
 
         Returns:
         -------
         :class:`dict`
             The user-defined functions.
         """
-        return {k: v.to_dict() for k, v in get_user_defined(directory).items()}
+        return {k: v.to_dict() for k, v in get_user_defined(directory, extension).items()}
 
-    def load_user_defined(self, equation: str, directory: str) -> None:
+    def load_user_defined(self, equation: str, directory: str, extension: str) -> None:
         """Load a user-defined function in a custom DLL.
 
         Parameters
@@ -128,8 +130,10 @@ class ServerNLF(Server32):  # type: ignore[misc]
             The equation to load.
         directory
             The directory to look for the user-defined function.
+        extension
+            The file extension for the user-defined functions.
         """
-        for v in get_user_defined(directory).values():
+        for v in get_user_defined(directory, extension).values():
             if v.equation == equation:
                 self._user_function = v.function
                 self._user_function.restype = None
@@ -151,9 +155,9 @@ class ClientNLF(Client64):  # type: ignore[misc]
         super().__init__(__file__, path=str(path))
         self.lib: CDLL
 
-    def dll_version(self) -> str:
-        """Get the version number from the DLL."""
-        response: str = self.request32("dll_version")
+    def delphi_version(self) -> str:
+        """Get the version number from the Delphi library."""
+        response: str = self.request32("delphi_version")
         return response
 
     def evaluate(self, a: array[float], x: array[float], shape: tuple[int, int]) -> array[float]:
@@ -199,23 +203,25 @@ class ClientNLF(Client64):  # type: ignore[misc]
 
         return result
 
-    def get_user_defined(self, directory: str | Path) -> dict[Path, UserDefined]:
+    def get_user_defined(self, directory: str | Path, extension: str) -> dict[Path, UserDefined]:
         """Get all user-defined functions.
 
         Parameters
         ----------
         directory
             The directory to look for the user-defined functions.
+        extension
+            The file extension for the user-defined functions.
 
         Returns:
         -------
         :class:`dict` [ :class:`str`, :class:`.UserDefined` ]
             The keys are the filenames and the values are :class:`.UserDefined`.
         """
-        response = self.request32("get_user_defined", str(directory))
+        response = self.request32("get_user_defined", str(directory), extension)
         return {k: UserDefined(**v) for k, v in response.items()}
 
-    def load_user_defined(self, equation: str, directory: str | Path) -> None:
+    def load_user_defined(self, equation: str, directory: str | Path, extension: str) -> None:
         """Load a user-defined function.
 
         Parameters
@@ -224,5 +230,7 @@ class ClientNLF(Client64):  # type: ignore[misc]
             The equation to load.
         directory
             The directory to look for the user-defined function.
+        extension
+            The file extension for the user-defined functions.
         """
-        self.request32("load_user_defined", equation, str(directory))
+        self.request32("load_user_defined", equation, str(directory), extension)

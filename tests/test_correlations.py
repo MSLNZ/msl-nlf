@@ -49,8 +49,7 @@ def test_set_correlation_dir(tmp_path: Path) -> None:  # noqa: PLR0915
 
         # The correlations are independent of whether fit(correlated=False) or fit(correlated=True)
         #
-        # The correlated flag is used by the DLL to decide if
-        # correlations are to be used
+        # The correlated flag is used by the NLF library to decide if correlations are to be used
 
         # create Y-Y correlation file
         y_y_file = save_corr_array(tmp_path, dummy1, "Y-Y")
@@ -165,8 +164,7 @@ def test_set_correlation() -> None:  # noqa: PLR0915
 
         # The correlations are independent of whether fit(correlated=False) or fit(correlated=True)
         #
-        # The correlated flag is used by the DLL to decide if
-        # correlations are to be used
+        # The correlated flag is used by the NLF library to decide if correlations are to be used
 
         # create Y-Y correlation file
         model.set_correlation("y", "y", value=1)
@@ -277,7 +275,7 @@ def test_set_correlation() -> None:  # noqa: PLR0915
 
 
 def test_bad_corr_file(tmp_path: Path) -> None:
-    # DLL raises an error if the correlation file cannot be read
+    # Delphi raises an error if the correlation file cannot be read
 
     bad_dir = tmp_path / "bad"
     bad_dir.mkdir()
@@ -294,7 +292,7 @@ def test_bad_corr_file(tmp_path: Path) -> None:
 
 
 def test_correlations_reset() -> None:
-    # Prior to DLL version 5.43
+    # Prior to Delphi NLF version 5.43
     # (commit 457fcead50c9132a5599e38bf7e83a97f4e87cc9, 24 July 2023)
     # the correlation coefficients would only be read once (from disk)
     # and the same coefficients would be used subsequent correlated fits.

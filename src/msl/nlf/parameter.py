@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Generic, TypeVar
 
 import numpy as np
 
-from .dll import NPAR
+from .delphi import NPAR
 
 if TYPE_CHECKING:
     from typing import Any, Iterable, Iterator

@@ -1,17 +1,18 @@
+import sys
+
 import numpy as np
 import pytest
 
 from msl.nlf import LinearModel, PolynomialModel
-from msl.nlf.model import IS_PYTHON_64BIT
 
-dlls = ["nlf32", "nlf64"] if IS_PYTHON_64BIT else ["nlf32"]
+win32s = [False, True] if sys.platform == "win32" else [False]
 
 rtol = 1e-11
 atol = 1e-15
 
 
-@pytest.mark.parametrize("dll", dlls)
-def test_ua_zero(dll: str) -> None:
+@pytest.mark.parametrize("win32", win32s)
+def test_ua_zero(win32: bool) -> None:  # noqa: FBT001
     # In the Delphi code, the software doesn't attempt to calculate a value
     # for ua[i] and it puts a blank cell into the Results spreadsheet. But
     # if a fit had previously been carried out with a[i] varying, then ua[i]
@@ -21,7 +22,7 @@ def test_ua_zero(dll: str) -> None:
     x = [1.6, 3.2, 5.5, 7.8, 9.4]
     y = [7.8, 19.1, 17.6, 33.9, 45.4]
 
-    with LinearModel(dll=dll) as model:
+    with LinearModel(win32=win32) as model:
         params = model.create_parameters()
         params["a1"] = 0
         params["a2"] = 1
@@ -73,15 +74,15 @@ def test_ua_zero(dll: str) -> None:
         )
 
 
-@pytest.mark.parametrize("dll", dlls)
-def test_intermixed(dll: str) -> None:  # noqa: PLR0915
+@pytest.mark.parametrize("win32", win32s)
+def test_intermixed(win32: bool) -> None:  # noqa: FBT001, PLR0915
     # intermix constant=True and constant=False
     x = np.linspace(0, 10)
     y = np.zeros(x.size)
     for i, c in enumerate([1.2, 0.2, 0.04, 0.005, 0.00071, 0.0000912]):
         y += c * x**i
 
-    with PolynomialModel(5, dll=dll) as model:
+    with PolynomialModel(5, win32=win32) as model:
         params = model.create_parameters()
         params["a1"] = 1
         params["a2"] = 0.21, True

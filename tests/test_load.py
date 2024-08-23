@@ -300,7 +300,6 @@ def test_str() -> None:
 
     expected = """LoadedModel(
   comments=''
-  dll=SKIP
   equation=''
   nlf_path=SKIP
   nlf_version='5.41'

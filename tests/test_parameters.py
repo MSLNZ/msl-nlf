@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from msl.nlf import InputParameter, InputParameters
-from msl.nlf.dll import NPAR
+from msl.nlf.delphi import NPAR
 from msl.nlf.parameter import ResultParameter, ResultParameters
 
 

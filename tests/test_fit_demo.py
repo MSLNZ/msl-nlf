@@ -1,30 +1,30 @@
 """The "demo" test.
 
 The word "demo" in this test script filename refers to the example Python script
-that P. Saunders wrote to illustrate how to interact with the DLL. This test
+that P. Saunders wrote to illustrate how to interact with the NLF library. This test
 verifies that the same results are obtained.
 """
 
 import math
+import sys
 
 import numpy as np
 import pytest
 
 from msl.nlf import Model
-from msl.nlf.model import IS_PYTHON_64BIT
 
-dlls = ["nlf32", "nlf64"] if IS_PYTHON_64BIT else ["nlf32"]
+win32s = [False, True] if sys.platform == "win32" else [False]
 
 
-@pytest.mark.parametrize("dll", dlls)
-def test_demo(dll: str) -> None:
+@pytest.mark.parametrize("win32", win32s)
+def test_demo(win32: bool) -> None:  # noqa: FBT001
     x = np.array([[1, 2, 3, 4], [0.1, 0.2, 0.3, 0.4]])
     y = np.array([1.1, 1.9, 3.2, 3.7])
     a = np.array([0, 0.9, 0])
     uy = np.array([0.5, 0.5, 0.5, 0.5])
     ux = np.array([[0.01, 0.02, 0.03, 0.04], [0.002, 0.004, 0.006, 0.008]])
 
-    with Model("a1+a2*(x+exp(a3*x))+x2", dll=dll, weighted=True, correlated=True) as model:
+    with Model("a1+a2*(x+exp(a3*x))+x2", win32=win32, weighted=True, correlated=True) as model:
         model.set_correlation("y", "y", value=0.5)
         model.set_correlation("x", "x", value=0.8)
         r = model.fit(x=x, y=y, params=a, uy=uy, ux=ux)

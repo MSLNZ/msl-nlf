@@ -1,7 +1,7 @@
-msl.nlf.dll module
+msl.nlf.delphi module
 ==================
 
-.. automodule:: msl.nlf.dll
+.. automodule:: msl.nlf.delphi
    :members:
    :undoc-members:
    :show-inheritance:

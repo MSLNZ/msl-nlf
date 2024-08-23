@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 import pytest
-from NIST_datasets._nist import NIST
+from NIST_datasets._nist import NIST  # type: ignore[import-not-found]
 
 from msl.nlf import FitMethod, Model
 

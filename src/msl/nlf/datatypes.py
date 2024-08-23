@@ -251,7 +251,7 @@ class Result:
     """The total number of fit iterations."""
 
     num_calls: int
-    """The number of calls to the DLL fit function."""
+    """The number of calls to the fit function."""
 
     params: ResultParameters
     """The result parameters from the fit model."""
