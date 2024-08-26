@@ -1,5 +1,5 @@
 site_name: MSL NLF
-site_description: Wrapper around the Delphi non-linear fitting software
+site_description: Python wrapper for the Delphi non-linear fitting software
 copyright: Copyright &copy; 2024 Measurement Standards Laboratory of New Zealand
 repo_url: https://github.com/MSLNZ/msl-nlf
 
@@ -49,7 +49,7 @@ nav:
   - API:
     - Generic Model: api/model.md
     - Built-in Models: api/models.md
-    - .nlf files: api/loader.md
+    - .nlf Files: api/loader.md
     - Datatypes: api/datatypes.md
     - Parameters: api/parameters.md
   - About:
