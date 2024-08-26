@@ -22,7 +22,6 @@ As a simple example, one might need to model data that has a linear relationship
 ```python
 >>> x = [1.6, 3.2, 5.5, 7.8, 9.4]
 >>> y = [7.8, 19.1, 17.6, 33.9, 45.4]
-
 ```
 
 The first task to perform is to create a [Model] and specify the fit equation as a string (see the documentation of [Model] for an overview of what arithmetic operations and functions are allowed in the equation)
@@ -39,8 +38,8 @@ Provide an initial guess for the parameters (*a1* and *a2*) and apply the fit
 >>> result = model.fit(x, y, params=[1, 1])
 >>> result.params
 ResultParameters(
-   ResultParameter(name='a1', value=0.522439024..., uncert=5.132418149..., label=None),
-   ResultParameter(name='a2', value=4.406829268..., uncert=0.827701724..., label=None)
+  ResultParameter(name='a1', value=0.522439024..., uncert=5.132418149..., label=None),
+  ResultParameter(name='a2', value=4.406829268..., uncert=0.827701724..., label=None)
 )
 
 ```
@@ -62,8 +61,8 @@ In this case, we will use one of the built-in [models] to perform a linear fit a
 >>> result = model.fit(x, y, params=params)
 >>> result.params
 ResultParameters(
-   ResultParameter(name='a1', value=0.0, uncert=0.0, label='intercept'),
-   ResultParameter(name='a2', value=4.4815604681..., uncert=0.3315980376..., label='slope')
+  ResultParameter(name='a1', value=0.0, uncert=0.0, label='intercept'),
+  ResultParameter(name='a2', value=4.4815604681..., uncert=0.3315980376..., label='slope')
 )
 
 ```
