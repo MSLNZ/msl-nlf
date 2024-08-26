@@ -5,7 +5,7 @@ import pytest
 
 from msl.nlf import InputParameter, InputParameters
 from msl.nlf.delphi import NPAR
-from msl.nlf.parameter import ResultParameter, ResultParameters
+from msl.nlf.parameters import ResultParameter, ResultParameters
 
 
 @pytest.mark.parametrize("name", ["a", " a ", "ax", "a 1", "a0", f"a{NPAR+1}"])

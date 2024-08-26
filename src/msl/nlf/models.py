@@ -1,12 +1,4 @@
-"""Predefined models.
-
-* :class:`.ConstantModel`
-* :class:`.ExponentialModel`
-* :class:`.GaussianModel`
-* :class:`.LinearModel`
-* :class:`.PolynomialModel`
-* :class:`.SineModel`
-"""
+"""Built-in models."""
 
 from __future__ import annotations
 
@@ -18,12 +10,12 @@ import numpy as np
 from numpy.polynomial.polynomial import polyfit
 
 from .model import Model
-from .parameter import InputParameters
+from .parameters import InputParameters
 
 if TYPE_CHECKING:
     from typing import Any
 
-    from .types import ArrayLike1D
+    from .types import ArrayLike1D, ArrayLike2D
 
 __all__ = (
     "ConstantModel",
@@ -57,22 +49,15 @@ class GaussianModel(Model):
 
         The non-normalized function is defined as
 
-        .. math::
-
-            f(x; a) = a_1 e^{-\frac{1}{2}(\frac{x-a_2}{a_3})^2}
+        $$f(x; a) = a_1 e^{-\frac{1}{2}(\frac{x-a_2}{a_3})^2}$$
 
         whereas, the normalized function is defined as
 
-        .. math::
+        $$f(x; a) = \frac{a_1}{a_3\sqrt{2\pi}} e^{-\frac{1}{2}(\frac{x-a_2}{a_3})^2}$$
 
-            f(x; a) = \frac{a_1}{a_3\sqrt{2\pi}} e^{-\frac{1}{2}(\frac{x-a_2}{a_3})^2}
-
-        Parameters
-        ----------
-        normalized
-            Whether to use the normalized function.
-        **kwargs
-            All additional keyword arguments are passed to :class:`~msl.nlf.model.Model`.
+        Args:
+            normalized: Whether to use the normalized function.
+            **kwargs: All additional keyword arguments are passed to [Model][msl.nlf.model.Model].
         """
         exp = "exp(-0.5*((x-a2)/a3)^2)"
         if normalized:
@@ -91,24 +76,17 @@ class GaussianModel(Model):
             self._composite_equation = exp
 
     def guess(self, x: ArrayLike1D, y: ArrayLike1D, *, n: int = 3) -> InputParameters:  # type: ignore[override]
-        r"""Converts the data to a quadratic and calls the :func:`~numpy.polynomial.polynomial.polyfit` function.
+        r"""Converts the data to a quadratic and calls the [polyfit][numpy.polynomial.polynomial.polyfit]{:target="_blank"} function.
 
-        Parameters
-        ----------
-        x
-            The independent variable (stimulus) data.
-        y
-            The dependent variable (response) data.
-        n
-            Uses the *n* maximum and the *n* minimum values in *y* to
-            determine the region where the peak/dip is located.
+        Args:
+            x: The independent variable (stimulus) data.
+            y: The dependent variable (response) data.
+            n: Uses the `n` maximum and the `n` minimum values in `y` to determine the region
+                where the peak/dip is located.
 
         Returns:
-        -------
-        :class:`.InputParameters`
-            Initial guess for the amplitude (area), :math:`\\mu` and
-            :math:`\\sigma` parameters.
-        """
+            Initial guess for the amplitude (area), $\mu$ and $\sigma$ parameters.
+        """  # noqa: E501
         x = np.asanyarray(x)
         y = np.asanyarray(y)
         y_min = _mean_min_n(y, n)
@@ -155,14 +133,10 @@ class LinearModel(Model):
 
         The function is defined as
 
-        .. math::
+        $$f(x; a) = a_1 + a_2 x$$
 
-            f(x; a) = a_1 + a_2 x
-
-        Parameters
-        ----------
-        **kwargs
-            All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
+        Args:
+            **kwargs: All keyword arguments are passed to [Model][msl.nlf.model.Model].
         """
         a2x = "a2*x"
         super().__init__(f"a1+{a2x}", **kwargs)
@@ -172,20 +146,14 @@ class LinearModel(Model):
         self._composite_equation = a2x
 
     def guess(self, x: ArrayLike1D, y: ArrayLike1D, **kwargs: Any) -> InputParameters:  # type: ignore[override]  # noqa: ANN401, ARG002
-        """Calls the :func:`~numpy.polynomial.polynomial.polyfit` function.
+        """Calls the [polyfit][numpy.polynomial.polynomial.polyfit]{:target="_blank"} function.
 
-        Parameters
-        ----------
-        x
-            The independent variable (stimulus) data.
-        y
-            The dependent variable (response) data.
-        **kwargs
-            No keyword arguments are used.
+        Args:
+            x: The independent variable (stimulus) data.
+            y: The dependent variable (response) data.
+            **kwargs: Ignored. No keyword arguments are used.
 
         Returns:
-        -------
-        :class:`.InputParameters`
             Initial guess for the intercept and slope.
         """
         a1, a2 = polyfit(x, y, 1)
@@ -200,14 +168,10 @@ class SineModel(Model):
 
         The function is defined as
 
-        .. math::
+        $$f(x; a) = a_1 \sin(a_2 x + a_3)$$
 
-            f(x; a) = a_1 \sin(a_2 x + a_3)
-
-        Parameters
-        ----------
-        **kwargs
-            All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
+        Args:
+            **kwargs: All keyword arguments are passed to [Model][msl.nlf.model.Model].
         """
         sin = "sin(a2*x+a3)"
         super().__init__(f"a1*{sin}", **kwargs)
@@ -219,22 +183,13 @@ class SineModel(Model):
     def guess(self, x: ArrayLike1D, y: ArrayLike1D, *, uniform: bool = True, n: int = 11) -> InputParameters:  # type: ignore[override]
         r"""Uses an FFT to determine the amplitude and angular frequency.
 
-        Parameters
-        ----------
-        x
-            The independent variable (stimulus) data. The *x* data
-            must be sorted.
-        y
-            The dependent variable (response) data.
-        uniform
-            Whether the *x* data has uniform spacing between each value.
-        n
-            The number of sub-intervals to break up [0, :math:`2\\pi`) to
-            determine the phase guess.
+        Args:
+            x: The independent variable (stimulus) data. The `x` data must be sorted (smallest to largest).
+            y: The dependent variable (response) data.
+            uniform: Whether the `x` data has uniform spacing between each value.
+            n: The number of sub-intervals to break up [0, $2\pi$) to determine the phase guess.
 
         Returns:
-        -------
-        :class:`.InputParameters`
             Initial guess for the amplitude, angular frequency and phase.
         """
         x, y = np.asanyarray(x), np.asanyarray(y)
@@ -261,22 +216,15 @@ class ExponentialModel(Model):
 
         The non-cumulative function is defined as
 
-        .. math::
-
-            f(x; a) = a_1 e^{-a_2 x}
+        $$f(x; a) = a_1 e^{-a_2 x}$$
 
         whereas, the cumulative function is defined as
 
-        .. math::
+        $$f(x; a) = a_1 (1-e^{-a_2 x})$$
 
-            f(x; a) = a_1 (1-e^{-a_2 x})
-
-        Parameters
-        ----------
-        cumulative
-            Whether to use the cumulative function.
-        **kwargs
-            All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
+        Args:
+            cumulative: Whether to use the cumulative function.
+            **kwargs: All keyword arguments are passed to [Model][msl.nlf.model.Model].
         """
         self._cumulative = cumulative
         exp = "(1-exp(-a2*x))" if cumulative else "exp(-a2*x)"
@@ -287,24 +235,17 @@ class ExponentialModel(Model):
         self._composite_equation = exp
 
     def guess(self, x: ArrayLike1D, y: ArrayLike1D, *, n: int = 3) -> InputParameters:  # type: ignore[override]
-        """Linearizes the equation and calls the :func:`~numpy.polynomial.polynomial.polyfit` function.
+        """Linearizes the equation and calls the [polyfit][numpy.polynomial.polynomial.polyfit]{:target="_blank"} function.
 
-        Parameters
-        ----------
-        x
-            The independent variable (stimulus) data.
-        y
-            The dependent variable (response) data.
-        n
-            For a cumulative equation, uses the maximum *n*
-            values in *y* to calculate the mean and assigns
-            the mean value as the amplitude guess.
+        Args:
+            x: The independent variable (stimulus) data.
+            y: The dependent variable (response) data.
+            n: For a cumulative equation, uses the maximum `n` values in `y` to calculate the mean
+                and assigns the mean value as the amplitude guess.
 
         Returns:
-        -------
-        :class:`.InputParameters`
             Initial guess for the amplitude and decay factor.
-        """
+        """  # noqa: E501
         amplitude = None
         y = np.asanyarray(y)
         if self._cumulative:
@@ -330,16 +271,11 @@ class PolynomialModel(Model):
 
         The function is defined as
 
-        .. math::
+        $$f(x; a) = \sum_{i=1}^{n} a_i x^{i-1}$$
 
-            f(x; a) = \sum_{i=1}^{n} a_i x^{i-1}
-
-        Parameters
-        ----------
-        n
-            The order of the polynomial (n :math:`\geq` 1).
-        **kwargs
-            All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
+        Args:
+            n: The order of the polynomial (n $\geq$ 1).
+            **kwargs: All keyword arguments are passed to [Model][msl.nlf.model.Model].
         """
         if n < 1:
             msg = "Polynomial order must be >= 1"
@@ -361,20 +297,14 @@ class PolynomialModel(Model):
         self._composite_equation = equation[3:]
 
     def guess(self, x: ArrayLike1D, y: ArrayLike1D, **kwargs: Any) -> InputParameters:  # type: ignore[override]  # noqa: ANN401, ARG002
-        """Calls the :func:`~numpy.polynomial.polynomial.polyfit` function.
+        """Calls the [polyfit][numpy.polynomial.polynomial.polyfit]{:target="_blank"} function.
 
-        Parameters
-        ----------
-        x
-            The independent variable (stimulus) data.
-        y
-            The dependent variable (response) data.
-        **kwargs
-            No keyword arguments are used.
+        Args:
+            x: The independent variable (stimulus) data.
+            y: The dependent variable (response) data.
+            **kwargs: Ignored. No keyword arguments are used.
 
         Returns:
-        -------
-        :class:`.InputParameters`
             Initial guess for the polynomial coefficients.
         """
         params = InputParameters()
@@ -393,18 +323,14 @@ class ConstantModel(Model):
     """A model based on a constant."""
 
     def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401
-        r"""A model based on a constant (i.e., a single parameter with no math:`x` dependence).
+        r"""A model based on a constant (i.e., a single parameter with no $x$ dependence).
 
         The function is defined as
 
-        .. math::
+        $$f(x; a) = a_1$$
 
-            f(x; a) = a_1
-
-        Parameters
-        ----------
-        **kwargs
-            All keyword arguments are passed to :class:`~msl.nlf.model.Model`.
+        Args:
+            **kwargs: All keyword arguments are passed to [Model][msl.nlf.model.Model].
         """
         super().__init__("a1", **kwargs)
 
@@ -412,23 +338,17 @@ class ConstantModel(Model):
         self._offset = "a1"
         self._composite_equation = ""
 
-    def guess(self, x: ArrayLike1D, y: ArrayLike1D, *, n: int | None = None) -> InputParameters:  # type: ignore[override]  # noqa: ARG002
-        """Calculates the mean value of *y*.
+    def guess(self, x: ArrayLike1D | ArrayLike2D, y: ArrayLike1D, *, n: int | None = None) -> InputParameters:  # type: ignore[override]  # noqa: ARG002
+        """Calculates the mean value of `y`.
 
-        Parameters
-        ----------
-        x
-            The independent variable (stimulus) data. The data is not used.
-        y
-            The dependent variable (response) data.
-        n
-            The number of values in *y* to use to calculate the mean. If not
-            specified, all values are used. If a positive integer then the first
-            *n* values are used. Otherwise, the last *n* values are used.
+        Args:
+            x: The independent variable (stimulus) data. The data is not used.
+            y: The dependent variable (response) data.
+            n: The number of values in `y` to use to calculate the mean. If not specified,
+                all values are used. If a positive integer then the first `n` values are used,
+                otherwise, the last `n` values are used.
 
         Returns:
-        -------
-        :class:`.InputParameters`
             Initial guess for the constant.
         """
         if n is None:

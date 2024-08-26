@@ -18,4 +18,9 @@ __pycache__/
 /src/msl/nlf/_version.py
 
 # doctest files
-samples.nlf
+/samples.nlf
+/docs/assets/example_damped_oscillator.txt
+/docs/assets/example_weighted_correlated_input.txt
+/docs/assets/example_weighted_correlated_result.txt
+/docs/assets/images/example_damped_oscillator.svg
+/docs/assets/images/example_matplotlib.svg

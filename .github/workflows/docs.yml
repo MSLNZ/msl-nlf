@@ -1,0 +1,29 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: Build and deploy documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+      - name: Install package
+        run: python -m pip install --upgrade .[dev]
+      - name: Generate the required doctest files
+        run: pytest docs
+      - name: Build the docs and deploy to GitHub Pages
+        run: mkdocs gh-deploy --force

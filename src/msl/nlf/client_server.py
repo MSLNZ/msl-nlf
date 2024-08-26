@@ -1,9 +1,10 @@
-"""Call functions in a 32-bit DLL from 64-bit Python."""
+"""Call user-defined functions in a 32-bit DLL from 64-bit Python."""
 
 from __future__ import annotations
 
 from array import array
 from ctypes import POINTER, c_bool, c_double, cast
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from msl.loadlib import Client64, Server32  # type: ignore[import-untyped]
@@ -25,26 +26,21 @@ else:
 
 if TYPE_CHECKING:
     from ctypes import CDLL
-    from pathlib import Path
     from typing import Any
 
     from .types import GetFunctionValue, UserDefinedDict
 
 
 class ServerNLF(Server32):  # type: ignore[misc]
-    """Handle requests for the 32-bit DLL."""
+    """Handle requests for the 32-bit Delphi library."""
 
     def __init__(self, host: str, port: int, path: str = "") -> None:
-        """Handle requests for the 32-bit DLL.
+        """Handle requests for the 32-bit Delphi library.
 
-        Parameters
-        ----------
-        host
-            The IP address of the server.
-        port
-            The port to run the server on.
-        path
-            The path to the DLL file.
+        Args:
+            host: The IP address of the server.
+            port: The port to run the server on.
+            path: The path to the Delphi shared-library file.
         """
         super().__init__(path, "cdll", host, port)
         self._user_function: GetFunctionValue
@@ -53,25 +49,23 @@ class ServerNLF(Server32):  # type: ignore[misc]
         define_fit_fcn(self.lib, as_ctypes=True)
 
     def delphi_version(self) -> str:
-        """Get the version number from the Delphi library."""
+        """Get the version number of the Delphi shared library.
+
+        Returns:
+            The version number.
+        """
         v: str = delphi_version(self.lib)
         return v
 
     def evaluate(self, a: array[float], x: array[float], shape: tuple[int, int]) -> array[float]:
         """Evaluate the user-defined function.
 
-        Parameters
-        ----------
-        a
-            Parameter values.
-        x
-            Independent variable (stimulus) data.
-        shape
-            The shape of the *x* data.
+        Args:
+            a: Parameter values.
+            x: Independent variable (stimulus) data.
+            shape: The shape of the *x* data.
 
         Returns:
-        -------
-        :class:`~array.array`
             Dependent variable (response) data.
         """
         _, npts = shape
@@ -80,7 +74,11 @@ class ServerNLF(Server32):  # type: ignore[misc]
         return result
 
     def fit(self, **kwargs: Any) -> dict[str, Any]:  # noqa: ANN401
-        """Fit the model to the data using the supplied keyword arguments."""
+        """Fit the model to the data using the supplied keyword arguments.
+
+        Returns:
+            The fit result.
+        """
         kw = {"covar": self._covar, "ua": self._ua}
 
         # Create a ctypes memory view to each array to avoid copying values
@@ -104,19 +102,14 @@ class ServerNLF(Server32):  # type: ignore[misc]
         return result
 
     @staticmethod
-    def get_user_defined(directory: str, extension: str) -> dict[Path, UserDefinedDict]:
+    def get_user_defined(directory: str, extension: str) -> dict[str, UserDefinedDict]:
         """Get all user-defined functions.
 
-        Parameters
-        ----------
-        directory
-            The directory to look for the user-defined functions.
-        extension
-            The file extension for the user-defined functions.
+        Args:
+            directory: The directory to look for the user-defined functions.
+            extension: The file extension for the user-defined functions.
 
         Returns:
-        -------
-        :class:`dict`
             The user-defined functions.
         """
         return {k: v.to_dict() for k, v in get_user_defined(directory, extension).items()}
@@ -124,14 +117,10 @@ class ServerNLF(Server32):  # type: ignore[misc]
     def load_user_defined(self, equation: str, directory: str, extension: str) -> None:
         """Load a user-defined function in a custom DLL.
 
-        Parameters
-        ----------
-        equation
-            The equation to load.
-        directory
-            The directory to look for the user-defined function.
-        extension
-            The file extension for the user-defined functions.
+        Args:
+            equation: The equation to load.
+            directory: The directory to look for the user-defined function.
+            extension: The file extension for the user-defined functions.
         """
         for v in get_user_defined(directory, extension).values():
             if v.equation == equation:
@@ -142,46 +131,46 @@ class ServerNLF(Server32):  # type: ignore[misc]
 
 
 class ClientNLF(Client64):  # type: ignore[misc]
-    """Send requests to the 32-bit DLL."""
+    """Send requests to the 32-bit Delphi library."""
 
     def __init__(self, path: str | Path) -> None:
-        """Send requests to the 32-bit DLL.
+        """Send requests to the 32-bit Delphi library.
 
-        Parameters
-        ----------
-        path
-            The path to the DLL file.
+        Args:
+            path: The path to the Delphi library.
         """
         super().__init__(__file__, path=str(path))
         self.lib: CDLL
 
     def delphi_version(self) -> str:
-        """Get the version number from the Delphi library."""
+        """Get the version number of the Delphi shared library.
+
+        Returns:
+            The version number.
+        """
         response: str = self.request32("delphi_version")
         return response
 
     def evaluate(self, a: array[float], x: array[float], shape: tuple[int, int]) -> array[float]:
         """Evaluate the user-defined function.
 
-        Parameters
-        ----------
-        a
-            Parameter values.
-        x
-            Independent variable (stimulus) data.
-        shape
-            The shape of the *x* data.
+        Args:
+            a: Parameter values.
+            x: Independent variable (stimulus) data.
+            shape: The shape of the *x* data.
 
         Returns:
-        -------
-        :class:`~array.array`
             Dependent variable (response) data.
         """
         response: array[float] = self.request32("evaluate", a, x, shape)
         return response
 
     def fit(self, **kwargs: Any) -> dict[str, Any]:  # noqa: ANN401
-        """Fit the model to the data using the supplied keyword arguments."""
+        """Fit the model to the data using the supplied keyword arguments.
+
+        Returns:
+            The fit results.
+        """
         # The 32-bit server does not have 32-bit numpy installed, so convert a
         # numpy ndarray to a builtin array so that the values can be pickled.
         # Using array.array() is faster than using ndarray.flatten().tolist()
@@ -206,31 +195,22 @@ class ClientNLF(Client64):  # type: ignore[misc]
     def get_user_defined(self, directory: str | Path, extension: str) -> dict[Path, UserDefined]:
         """Get all user-defined functions.
 
-        Parameters
-        ----------
-        directory
-            The directory to look for the user-defined functions.
-        extension
-            The file extension for the user-defined functions.
+        Args:
+            directory: The directory to look for the user-defined functions.
+            extension: The file extension for the user-defined functions.
 
         Returns:
-        -------
-        :class:`dict` [ :class:`str`, :class:`.UserDefined` ]
-            The keys are the filenames and the values are :class:`.UserDefined`.
+            The user-defined functions.
         """
         response = self.request32("get_user_defined", str(directory), extension)
-        return {k: UserDefined(**v) for k, v in response.items()}
+        return {Path(k): UserDefined(**v) for k, v in response.items()}
 
     def load_user_defined(self, equation: str, directory: str | Path, extension: str) -> None:
         """Load a user-defined function.
 
-        Parameters
-        ----------
-        equation
-            The equation to load.
-        directory
-            The directory to look for the user-defined function.
-        extension
-            The file extension for the user-defined functions.
+        Args:
+            equation: The equation to load.
+            directory: The directory to look for the user-defined function.
+            extension: The file extension for the user-defined functions.
         """
         self.request32("load_user_defined", equation, str(directory), extension)

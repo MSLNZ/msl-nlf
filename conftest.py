@@ -10,7 +10,7 @@ from doctest import ELLIPSIS, NORMALIZE_WHITESPACE
 import matplotlib as mpl
 import pytest
 from sybil import Sybil
-from sybil.parsers.rest import DocTestParser, PythonCodeBlockParser, SkipParser
+from sybil.parsers.markdown import PythonCodeBlockParser, SkipParser
 
 try:
     import GTC  # type: ignore[import-untyped]
@@ -36,10 +36,12 @@ def no_gtc() -> bool:
 
 pytest_collect_file = Sybil(
     parsers=[
-        DocTestParser(optionflags=NORMALIZE_WHITESPACE | ELLIPSIS),
-        PythonCodeBlockParser(future_imports=["annotations"]),
+        PythonCodeBlockParser(
+            future_imports=["annotations"],
+            doctest_optionflags=NORMALIZE_WHITESPACE | ELLIPSIS,
+        ),
         SkipParser(),
     ],
-    patterns=["*.rst", "*.md", "*.py"],
+    patterns=["*.md", "*.py"],
     fixtures=["no_gtc"],
 ).pytest()

@@ -79,14 +79,28 @@ def fit(  # noqa: PLR0913
 ) -> dict[str, Any]:
     """Call the *DoNonlinearFit* function.
 
-    Parameters
-    ----------
-    lib
-        The library instance.
+    Args:
+        lib: The library instance.
+        cfg_path: Path to the configuration file.
+        equation: The fit equation.
+        weighted: Whether to do a weighted fit.
+        x: The independent variable (stimulus) data.
+        y: The dependent variable (response) data.
+        ux: The x uncertainties.
+        uy: The y uncertainties.
+        npts: The number of points.
+        nvars: The number of variables.
+        a: The fit parameters.
+        constant: Whether each parameter if held fixed during the fit.
+        covar: Array to write the covariance matrix.
+        ua: Array to write the uncertainty of each parameter.
+        correlated: Whether to perform a correlated fit.
+        is_corr_array: Which parameters are correlated.
+        corr_dir: The directory that contains the correlation matrices.
+        max_iterations: The maximum number of fit iterations.
+        nparams: The number of fit paramaters.
 
     Returns:
-    -------
-    dict
         The fit results.
     """
     calls = 0
@@ -156,15 +170,11 @@ def fit(  # noqa: PLR0913
 def delphi_version(lib: CDLL) -> str:
     """Call the *GetVersion* function.
 
-    Parameters
-    ----------
-    lib
-        The library instance.
+    Args:
+        lib: The library instance.
 
     Returns:
-    -------
-    str
-        The version number of the library.
+        The version number of the shared library.
     """
     # the GetVersion function was added in v5.41
     buffer = create_unicode_buffer(16)
@@ -175,15 +185,11 @@ def delphi_version(lib: CDLL) -> str:
 
 
 def define_fit_fcn(lib: CDLL, *, as_ctypes: bool) -> None:
-    r"""Defines the *argtypes* and *restype* of the *DoNonlinearFit* function.
+    """Defines the *argtypes* and *restype* of the *DoNonlinearFit* function.
 
-    Parameters
-    ----------
-    lib
-        The library instance.
-    as_ctypes
-        Whether :mod:`ctypes` arrays or :class:`numpy.ndarray`\\s will be
-        passed to the `DoNonlinearFit` function.
+    Args:
+        lib: The library instance.
+        as_ctypes: Whether [ctypes][] arrays or [numpy.ndarray][]s will be passed to the `DoNonlinearFit` function.
     """
     p_multi_data: PMultiData
     p_data: PData
@@ -237,27 +243,26 @@ def define_fit_fcn(lib: CDLL, *, as_ctypes: bool) -> None:
 
 @dataclass
 class UserDefined:
-    """A user-defined function."""
+    """A user-defined function.
+
+    Attributes:
+        equation: The value to use as the *equation* for a [Model][msl.nlf.model.Model].
+        function: A reference to the *GetFunctionValue* function.
+        name: The name returned by the *GetFunctionName* function.
+        num_parameters: The value returned by the *GetNumParameters* function.
+        num_variables: The value returned by the *GetNumVariables* function.
+    """
 
     equation: str
-    """The value to use as the *equation* for a :class:`~msl.nlf.model.Model`."""
-
     function: GetFunctionValue
-    """A reference to the *GetFunctionValue* function."""
-
     name: str
-    """The name returned by the *GetFunctionName* function."""
-
     num_parameters: int
-    """The value returned by the *GetNumParameters* function."""
-
     num_variables: int
-    """The value returned by the *GetNumVariables* function."""
 
     def to_dict(self) -> UserDefinedDict:
-        """Convert this object to be a pickleable :class:`dict`.
+        """Convert this object to be a pickleable [dict][].
 
-        The value of :attr:`.function` becomes :data:`None`.
+        The value of `function` is always [None][].
         """
         return {
             "equation": self.equation,
@@ -271,17 +276,12 @@ class UserDefined:
 def get_user_defined(directory: str | Path, extension: str) -> dict[Path, UserDefined]:
     """Get all user-defined functions.
 
-    Parameters
-    ----------
-    directory
-        The directory to look for the user-defined functions.
-    extension
-        The file extension for the user-defined functions.
+    Args:
+        directory: The directory to look for the user-defined functions.
+        extension: The file extension for the user-defined functions.
 
     Returns:
-    -------
-    :class:`dict` [ :class:`str`, :class:`.UserDefined` ]
-        The keys are the filenames and the values are :class:`.UserDefined`.
+        The user-defined functions.
     """
     n = c_int()
     buffer = create_string_buffer(255)
@@ -337,23 +337,14 @@ def evaluate(
 ) -> EvaluateArray:
     """Call *GetFunctionValue* in the user-defined function.
 
-    Parameters
-    ----------
-    fcn
-        Reference to *GetFunctionValue*.
-    a
-        Parameter values.
-    x
-        Independent variable (stimulus) data. The data must already be
-        transposed and flat.
-    shape
-        The shape of the *x* data.
-    y
-        Pre-allocated array for the dependent variable (response) data.
+    Args:
+        fcn: Reference to *GetFunctionValue*.
+        a: Parameter values.
+        x: Independent variable (stimulus) data. The data must already be transposed and flat.
+        shape: The shape of the `x` data.
+        y: Pre-allocated array for the dependent variable (response) data.
 
     Returns:
-    -------
-    :class:`~array.array` or :class:`~numpy.ndarray`
         Dependent variable (response) data.
     """
     j = 0
@@ -378,16 +369,12 @@ def evaluate(
 def nlf_info(*, win32: bool = False) -> tuple[Path, bool, str]:
     """Get information about the non-linear fitting library.
 
-    Parameters
-    ----------
-    win32
-        Whether to load the 32-bit Windows library.
+    Args:
+        win32: Whether to load the 32-bit Windows library.
 
     Returns:
-    -------
-    The path to the non-linear fitting library, whether to
-    load the library using inter-process communication and the
-    file extension for a user-defined function.
+        The path to the non-linear fitting library, whether to load the library using
+        inter-process communication and the file extension for a user-defined function.
     """
     if win32 and sys.platform != "win32":
         msg = "Enabling the 'win32' feature is only supported on Windows"

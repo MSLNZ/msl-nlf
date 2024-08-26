@@ -7,7 +7,7 @@ import pytest
 
 from msl.nlf import LinearModel, Model
 from msl.nlf.datatypes import Result
-from msl.nlf.parameter import InputParameters, ResultParameters
+from msl.nlf.parameters import InputParameters, ResultParameters
 
 GTC = pytest.importorskip("GTC", reason="GTC cannot be imported")
 get_correlation = GTC.get_correlation

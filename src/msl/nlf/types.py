@@ -10,10 +10,13 @@ from numpy import bool_, dtype, float64
 from numpy.ctypeslib import _ndptr
 from numpy.typing import NDArray
 
-from .parameter import InputParameter
+from .parameters import InputParameter
 
 ArrayLike1D: TypeAlias = Sequence[float] | NDArray[float64]
+"""A 1-dimensional, array-like sequence."""
+
 ArrayLike2D: TypeAlias = Sequence[Sequence[float]] | NDArray[float64]
+"""A 2-dimensional, array-like sequence."""
 
 EvaluateArray = TypeVar("EvaluateArray", array[float], NDArray[float64])
 
@@ -58,4 +61,4 @@ InputParameterType: TypeAlias = (
     | list[str | float | bool | None]
     | dict[str, str | float | bool | None]
 )
-"""Allowed types to create an :class:`~msl.nlf.parameter.InputParameter`."""
+"""Allowed types to create an [InputParameter][msl.nlf.parameters.InputParameter]."""

@@ -1,0 +1,118 @@
+site_name: MSL NLF
+site_description: Wrapper around the Delphi non-linear fitting software
+copyright: Copyright &copy; 2024 Measurement Standards Laboratory of New Zealand
+repo_url: https://github.com/MSLNZ/msl-nlf
+
+theme:
+  name: material
+  language: en
+  favicon: assets/images/favicon.ico
+  features:
+    - content.code.copy
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - search.highlight
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+watch: [src/msl/nlf]
+
+nav:
+  - Overview: index.md
+  - Install: install.md
+  - Getting Started: getting_started.md
+  - Examples:
+    - Uncertain Real Numbers (GTC): examples/gtc.md
+    - Plotting Results (Matplotlib): examples/matplotlib.md
+    - 2D, Weighted and Correlated: examples/weighted_and_correlated.md
+    - Composite Model: examples/damped_oscillator_composite.md
+  - Compiled Functions: compiled_functions.md
+  - API:
+    - Generic Model: api/model.md
+    - Built-in Models: api/models.md
+    - .nlf files: api/loader.md
+    - Datatypes: api/datatypes.md
+    - Parameters: api/parameters.md
+  - About:
+    - Release Notes: about/release-notes.md
+    - Developers: about/developers.md
+    - License: about/license.md
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list  # enables: [link](url){:target="_blank"}
+  - footnotes
+  - pymdownx.arithmatex:  # enable LaTeX
+      generic: true
+  - pymdownx.details
+  - pymdownx.highlight:  # enables syntax highlighting
+      use_pygments: true
+  - pymdownx.snippets:  # enables: --8<--
+      check_paths: true
+  - pymdownx.superfences  # enables syntax highlighting
+  - toc:
+      permalink: "¤"
+
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          import:
+            - url: https://docs.python.org/3/objects.inv
+              domains: [std, py]
+            - url: https://gtc.readthedocs.io/en/stable/objects.inv
+              domains: [std, py]
+            - https://numpy.org/doc/stable/objects.inv
+
+          options:
+            # General
+            show_source: false
+
+            # Headings
+            show_root_toc_entry: false
+
+            # Members
+            filters: ["!^_"]
+            inherited_members: false
+
+            # Docstrings
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
+
+            # Signatures
+            separate_signature: true
+
+extra:
+  social:
+  - icon: fontawesome/brands/github
+    link: https://github.com/MSLNZ/msl-nlf
+  - icon: fontawesome/brands/python
+    link: https://pypi.org/project/msl-nlf/
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js

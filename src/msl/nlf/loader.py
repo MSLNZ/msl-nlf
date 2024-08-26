@@ -1,4 +1,8 @@
-"""Load a **.nlf** file."""
+"""The Delphi GUI allows for a fit to be saved to a file, which may later be reloaded.
+
+The [load][msl.nlf.loader.load] function loads a `.nlf` file and the
+[save][msl.nlf.model.Model.save] method creates a `.nlf` file.
+"""
 
 from __future__ import annotations
 
@@ -22,10 +26,8 @@ class Loader:
     def __init__(self, path: str | Path) -> None:
         """Helper class to read a **.nlf** file.
 
-        Parameters
-        ----------
-        path
-            The path to a **.nlf** file.
+        Args:
+            path: The path to a **.nlf** file.
         """
         self._data = Path(path).read_bytes()
         self._offset = 0
@@ -89,10 +91,8 @@ class Loader:
     def read_string_padded(self, length: int) -> str:
         """Read a string that is null padded.
 
-        Parameters
-        ----------
-        length
-            The total length of the null-padded string.
+        Args:
+            length: The total length of the null-padded string.
         """
         n = self.read_byte()
         buffer: bytes = self._read(f"{length}s", length)
@@ -107,14 +107,10 @@ class Loader:
 def load_graph(loader: Loader) -> dict[str, Any]:  # noqa: PLR0915
     """Load a *TGraphWindow*.
 
-    Parameters
-    ----------
-    loader
-        The class helper.
+    Args:
+        loader: The class helper.
 
     Returns:
-    -------
-    dict
         The settings of the *TGraphWindow*.
     """
     # See the repository "Nonlinear-Fitting/NLFGraph.pas"
@@ -222,14 +218,10 @@ def load_graph(loader: Loader) -> dict[str, Any]:  # noqa: PLR0915
 def load_form(loader: Loader) -> dict[str, Any]:
     """Load a *TDataForm*.
 
-    Parameters
-    ----------
-    loader
-        The class helper.
+    Args:
+        loader: The class helper.
 
     Returns:
-    -------
-    dict
         The settings of the *TDataForm*.
     """
     # See the repository "Nonlinear-Fitting/NLFDataForm.pas"
@@ -275,15 +267,11 @@ def load_form(loader: Loader) -> dict[str, Any]:
 def _load(path: str | Path) -> dict[str, Any]:  # noqa: C901, PLR0912, PLR0915
     """Load a **.nlf** file.
 
-    Parameters
-    ----------
-    path
-        The path to a **.nlf** file.
+    Args:
+        path: The path to a **.nlf** file.
 
     Returns:
-    -------
-    dict
-        The settings of the file.
+        The settings from the file.
     """
     # See the repository "Nonlinear-Fitting/NLFMain.pas"
     # procedure TNLFMainForm.LoadFile(FromDisk:Boolean; FileName: string);
@@ -466,47 +454,44 @@ def _load(path: str | Path) -> dict[str, Any]:  # noqa: C901, PLR0912, PLR0915
 
 
 def load(path: str | Path, *, win32: bool = False) -> LoadedModel:
-    """Load a **.nlf** file.
+    """Load a `.nlf` file.
 
     No information about the fit results are read from the file. The fit
     equation, the fit options and the correlation coefficients have been
-    set in the :class:`~msl.nlf.model.LoadedModel` that is returned, but
-    you must specify the *x*, *y*, *params*, *ux* and/or *uy* attributes
-    of the :class:`~msl.nlf.model.LoadedModel` to the
-    :meth:`~msl.nlf.model.Model.fit` method (or specify different data
-    to the :meth:`~msl.nlf.model.Model.fit` method).
+    set in the [LoadedModel][msl.nlf.model.LoadedModel] that is returned, but
+    you must specify the `x`, `y`, `params`, `ux` and/or `uy` attributes
+    of the [LoadedModel][msl.nlf.model.LoadedModel] to the
+    [fit][msl.nlf.model.Model.fit] method (or you may specify different data
+    to the [fit][msl.nlf.model.Model.fit] method).
 
-    Parameters
-    ----------
-    path
-        The path to a **.nlf** file. The file could have been created by the
-        Delphi GUI application or by the :meth:`~msl.nlf.model.Model.save` method.
-    win32
-        Passed to the *win32* keyword argument in :class:`~msl.nlf.model.Model`.
+    Args:
+        path:
+            The path to a `.nlf` file. The file could have been created by the
+            Delphi GUI application or by the [save][msl.nlf.model.Model.save] method.
+        win32:
+            Passed to the `win32` keyword argument of a [Model][msl.nlf.model.Model].
 
     Returns:
-    -------
-    :class:`~msl.nlf.model.LoadedModel`
         The loaded model.
 
+    <!-- invisible-code-block: python
+    >>> from msl.nlf import LinearModel
+    >>> m = LinearModel()
+    >>> results = m.fit([1, 2, 3], [0.07, 0.27, 0.33])
+    >>> m.save("samples.nlf", overwrite=True)
+
+    -->
+
     Examples:
-    --------
-    .. invisible-code-block: pycon
+        >>> from msl.nlf import load
+        >>> loaded = load("samples.nlf")
+        >>> results = loaded.fit(loaded.x, loaded.y, params=loaded.params)
 
-        >>> from msl.nlf import LinearModel
-        >>> m = LinearModel()
-        >>> results = m.fit([1, 2, 3], [0.07, 0.27, 0.33])
-        >>> m.save('samples.nlf', overwrite=True)
+    <!-- invisible-code-block: python
+    >>> import os
+    >>> if os.path.isfile("samples.nlf"): os.remove("samples.nlf")
 
-    >>> from msl.nlf import load
-    >>> loaded = load('samples.nlf')
-    >>> results = loaded.fit(loaded.x, loaded.y, params=loaded.params)
-
-    .. invisible-code-block: pycon
-
-        >>> import os
-        >>> if os.path.isfile('samples.nlf'): os.remove('samples.nlf')
-
+    -->
     """
     # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas => TFittingMethod=(LM,AmLS,AmMD,AmMM,PwLS,PwMD,PwMM);
     methods = {

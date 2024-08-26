@@ -3,7 +3,7 @@ import pytest
 
 from msl.nlf import ExponentialModel, LinearModel, Model, PolynomialModel, SineModel
 from msl.nlf.datatypes import Result
-from msl.nlf.parameter import InputParameters, ResultParameters
+from msl.nlf.parameters import InputParameters, ResultParameters
 
 
 def test_sin() -> None:

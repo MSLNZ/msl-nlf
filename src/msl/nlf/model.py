@@ -1,6 +1,4 @@
-"""A model to use for a non-linear fit."""
-
-from __future__ import annotations
+from __future__ import annotations  # noqa: D100
 
 import re
 import warnings
@@ -18,7 +16,7 @@ from msl.loadlib import LoadLibrary  # type: ignore[import-untyped]
 from .client_server import ClientNLF
 from .datatypes import Correlation, Correlations, FitMethod, Input, ResidualType, Result
 from .delphi import NPAR, NPTS, NVAR, define_fit_fcn, delphi_version, evaluate, fit, get_user_defined, nlf_info
-from .parameter import InputParameters, ResultParameters
+from .parameters import InputParameters, ResultParameters
 from .saver import save
 
 if TYPE_CHECKING:
@@ -118,15 +116,6 @@ _np_map = {
 class Model:
     """A model for non-linear fitting."""
 
-    MAX_POINTS: int = NPTS
-    """Maximum number of data points allowed."""
-
-    MAX_PARAMETERS: int = NPAR
-    """Maximum number of fit parameters allowed."""
-
-    MAX_VARIABLES: int = NVAR
-    """Maximum number of x (stimulus) variables allowed."""
-
     def __init__(  # noqa: PLR0915
         self,
         equation: str,
@@ -137,41 +126,41 @@ class Model:
     ) -> None:
         """A model for non-linear fitting.
 
-        Parameters
-        ----------
-        equation
-            The fit equation. The x variables (stimulus) must be specified as
-            *x1*, *x2*, etc. and the parameters as *a1*, *a2*, etc. If only
-            one x-variable is required, it can be simply entered as x. The
-            arithmetic operations and functions that are recognised are:
+        Args:
+            equation:
+                The fit equation. The $x$ variables (stimulus) must be specified as
+                `x1`, `x2`, etc. and the parameters as `a1`, `a2`, etc. If only one
+                $x$-variable is required, it can be simply specified as `x`.
 
-            .. centered::
-                + - * / ^ sin cos tan exp ln log arcsin arcos
+                The arithmetic operations that are recognised are:
+                <center>`+ - * / ^`</center>
 
-            where **^** indicates raising to the power. All white space is
-            ignored in the equation. For example, to fit a general quadratic
-            equation one would use ``a1+a2*x+a3*x^2``. The **sqrt** function
-            can be written as **^0.5**, for example, **sqrt(2*x)** would be
-            expressed as **(2*x)^0.5** in the equation.
+                where `^` indicates raising to the power.
 
-            |
+                The functions that are recognised are:
+                <center>`sin cos tan exp ln log arcsin arcos`</center>
 
-            If using a user-defined function, the *equation* name must begin
-            with *f* followed by a positive integer, for example, ``f1``.
-            The *user_dir* keyword argument may also need to be set.
-            See :ref:`nlf-user-defined-function`.
-        user_dir
-            Directory where the user-defined functions are located. The default
-            directory is the directory that the Delphi GUI has set. If the
-            Delphi GUI has not set a directory (because the GUI has not been
-            used) the default directory is the current working directory.
-            See :ref:`nlf-user-defined-function`.
-        win32
-            Whether to load the 32-bit non-linear-fitting library in 64-bit Python.
-            See :ref:`nlf-32vs64` for reasons why you may want to enable this feature.
-            Available on Windows only.
-        **options
-            All additional keyword arguments are passed to :meth:`.options`.
+                The `sqrt` function can be written as `^0.5`, for example, `sqrt(2*x)`
+                would be expressed as `(2*x)^0.5` in the equation.
+
+                All white space is ignored in the equation.
+
+                As an example, to fit a general quadratic equation one could use ``"a1+a2*x+a3*x^2"``.
+
+                If using a [compiled (user-defined) function](../compiled_functions.md), the *equation*
+                name must begin with `f` followed by a positive integer, for example, `"f1"`.
+                The `user_dir` keyword argument may also need to be set.
+            user_dir:
+                Directory where the [compiled (user-defined) function](../compiled_functions.md)
+                are located. The default directory is the directory that the Delphi GUI has set.
+                If the Delphi GUI has not set a directory (because the GUI has not been
+                used) the default directory is the current working directory.
+            win32:
+                Whether to load the 32-bit non-linear-fitting library in 64-bit Python.
+                See the [32-bit Compiled Function][32-bit-compiled-function] section for reasons
+                why you may want to enable this feature. Available on Windows only.
+            **options:
+                All additional keyword arguments are passed to [options][msl.nlf.model.Model.options].
         """
         self._nlf: LoadLibrary | ClientNLF | None = None
         self._tmp_dir = Path(mkdtemp(prefix="nlf-"))
@@ -221,8 +210,8 @@ class Model:
             raise ValueError(msg)
 
         self._num_vars: int = len(variables)
-        if self._num_vars > self.MAX_VARIABLES:
-            msg = f"Too many x variables in equation [{self._num_vars} > {self.MAX_VARIABLES}]"
+        if self._num_vars > NVAR:
+            msg = f"Too many x variables in equation [{self._num_vars} > {NVAR}]"
             raise ValueError(msg)
 
         params = set(_n_params_regex.findall(equation))
@@ -231,28 +220,28 @@ class Model:
             raise ValueError(msg)
 
         self._num_params: int = len(params)
-        if self._num_params > self.MAX_PARAMETERS:
-            msg = f"Too many fitting parameters in equation [{self._num_params} > {self.MAX_PARAMETERS}]"
+        if self._num_params > NPAR:
+            msg = f"Too many fitting parameters in equation [{self._num_params} > {NPAR}]"
             raise ValueError(msg)
 
         self._nlf_path, as_client, self._os_extension = nlf_info(win32=win32)
 
         self.options(**options)
 
-        self._x = np.zeros((self.MAX_VARIABLES, self.MAX_POINTS))
-        self._ux = np.zeros((self.MAX_VARIABLES, self.MAX_POINTS))
-        self._y = np.zeros(self.MAX_POINTS)
-        self._uy = np.zeros(self.MAX_POINTS)
-        self._a = np.zeros(self.MAX_PARAMETERS)
-        self._constant = np.zeros(self.MAX_PARAMETERS, dtype=bool)
-        self._is_corr_array = np.zeros((self.MAX_VARIABLES + 1, self.MAX_VARIABLES + 1), dtype=bool)
+        self._x = np.zeros((NVAR, NPTS))
+        self._ux = np.zeros((NVAR, NPTS))
+        self._y = np.zeros(NPTS)
+        self._uy = np.zeros(NPTS)
+        self._a = np.zeros(NPAR)
+        self._constant = np.zeros(NPAR, dtype=bool)
+        self._is_corr_array = np.zeros((NVAR + 1, NVAR + 1), dtype=bool)
 
         if as_client:
             self._nlf = ClientNLF(self._nlf_path)
         else:
             self._nlf = LoadLibrary(self._nlf_path, libtype="cdll")
-            self._covar = np.zeros((self.MAX_PARAMETERS, self.MAX_PARAMETERS))
-            self._ua = np.zeros(self.MAX_PARAMETERS)
+            self._covar = np.zeros((NPAR, NPAR))
+            self._ua = np.zeros(NPAR)
             define_fit_fcn(self._nlf.lib, as_ctypes=False)
 
         if self._is_user_function:
@@ -498,56 +487,55 @@ class Model:
 
     @staticmethod
     def create_parameters(parameters: Iterable[InputParameterType] | None = None) -> InputParameters:
-        r"""Create a new collection of :class:`~msl.nlf.parameter.InputParameter`\\s.
+        """Create a new collection of [InputParameters][msl.nlf.parameters.InputParameters].
 
-        Parameters
-        ----------
-        parameters
-            An iterable of either :class:`~msl.nlf.parameter.InputParameter`
-            instances or objects that can be used to create an
-            :class:`~msl.nlf.parameter.InputParameter` instance. See
-            :meth:`~msl.nlf.parameter.InputParameters.add_many` for examples.
-            If not specified, an empty collection is returned.
+        Args:
+            parameters:
+                An iterable of either [InputParameter][msl.nlf.parameters.InputParameter]
+                instances or objects that can be used to create an
+                [InputParameter][msl.nlf.parameters.InputParameter] instance. See
+                [add_many][msl.nlf.parameters.InputParameters.add_many] for examples.
+                If not specified, an empty collection is returned.
 
         Returns:
-        -------
-        :class:`~msl.nlf.parameter.InputParameters`
             The input parameters.
         """
         return InputParameters(parameters)
 
     @property
     def delphi_library(self) -> Path:
-        """Returns the path to the Delphi library."""
+        """Returns the path to the Delphi shared-library file.
+
+        Returns:
+            The path to the shared library.
+        """
         return self._nlf_path
 
     @property
     def equation(self) -> str:
-        """Returns the fitting equation."""
+        """Returns the fitting equation.
+
+        Returns:
+            The fit equation.
+        """
         return self._equation
 
     def evaluate(self, x: ArrayLike1D | ArrayLike2D, result: Result | dict[str, float]) -> NDArray[np.float64]:
-        """Evaluate the model to get the *y* (response) values.
+        """Evaluate the model to get the `y` (response) values.
 
-        Parameters
-        ----------
-        x
-            The independent variable (stimulus) data to evaluate the model at.
-            If the model requires multiple variables, the *x* array must have
-            a shape of *(num variables, num points)*, i.e., the data for each
-            variable is listed per row
+        Args:
+            x: The independent variable (stimulus) data to evaluate the model at.
+                If the model requires multiple variables, the `x` array must have
+                a shape of `(# variables, # points)`, i.e., the data for each
+                variable is listed per row
+                <center>`[ [data for x1], [data for x2], ... ]`</center>
 
-                .. centered::
-                    [ [data for x1], [data for x2], ... ]
-
-        result
-            The fit result or a mapping between parameter names and values,
-            e.g., *{'a1': 9.51, 'a2': -0.076, 'a3': 0.407}*.
+            result: The fit [Result][msl.nlf.datatypes.Result] or a mapping between
+                parameter names and values, e.g.,
+                <center>`{"a1": 9.51, "a2": -0.076, "a3": 0.407}`</center>
 
         Returns:
-        -------
-        :class:`~numpy.ndarray`
-            The *y* (response) values.
+            The `y` (response) values.
         """
         x = np.asanyarray(x)
         if x.ndim == 1:
@@ -633,50 +621,46 @@ class Model:
     ) -> Result | Input:
         """Fit the model to the data.
 
-        .. tip::
+        !!! tip
 
-            It is more efficient to use an :class:`~numpy.ndarray` rather than
-            a :class:`list` for the *x*, *y*, *ux* and *uy* arrays.
+            It is more efficient to use a [numpy.ndarray][] rather than a [list][]/[tuple][]
+            for the `x`, `y`, `ux` and `uy` arrays.
 
-        Parameters
-        ----------
-        x
-            The independent variable (stimulus) data. If the model requires
-            multiple variables, the *x* array must have a shape of
-            *(num variables, num points)*, i.e., the data for each variable
-            is listed per row
+        Args:
+            x:
+                The independent variable (stimulus) data. If the model requires
+                multiple variables, the `x` array must have a shape of
+                `(# variables, # points)`, i.e., the data for each variable
+                is listed per row
 
-            .. centered::
-                [ [data for x1], [data for x2], ... ]
-        y
-            The dependent variable (response) data.
-        params
-            Fit parameters. If an array is passed in then every parameter will
-            be allowed to vary during the fit. If you want more control, pass
-            in an :class:`~msl.nlf.parameter.InputParameters` instance. If not
-            specified, then the parameters are chosen from the :meth:`.guess`
-            method.
-        ux
-            Standard uncertainties in the x data.
-        uy
-            Standard uncertainties in the y data.
-        debug
-            If enabled, a summary of the input data that would be passed to the
-            non-linear fit algorithm is returned (the algorithm is not called).
-            Enabling this parameter is useful for debugging issues if the algorithm
-            raises an error or if the fit result is unexpected (e.g., the data
-            points with smaller uncertainties are not having a stronger influence
-            on the result, perhaps because an unweighted fit has been selected
-            as one of the fit *options*).
-        **options
-            All additional keyword arguments are passed to :meth:`.options`.
+                <center>`[ [data for x1], [data for x2], ... ]`</center>
+            y:
+                The dependent variable (response) data.
+            params:
+                Fit parameters. If an array is passed in then every parameter will
+                be allowed to vary during the fit. If you want more control, pass
+                in an [InputParameters][msl.nlf.parameters.InputParameters] instance.
+                If not specified, the parameters are chosen from the
+                [guess][msl.nlf.model.Model.guess] method.
+            ux:
+                Standard uncertainties in the `x` data.
+            uy:
+                Standard uncertainties in the `y` data.
+            debug:
+                If enabled, a summary of the input data that would be passed to the
+                non-linear fit algorithm is returned (the algorithm is not called).
+                Enabling this parameter is useful for debugging issues if the algorithm
+                raises an error or if the fit result is unexpected (e.g., the data
+                points with smaller uncertainties are not having a stronger influence
+                on the result, perhaps because an unweighted fit has been selected
+                as one of the fit *options*).
+            **options:
+                All additional keyword arguments are passed to [options][msl.nlf.model.Model.options].
 
         Returns:
-        -------
-        :class:`.Result` or :class:`.Input`
-            The returned type depends on whether *debug* mode is enabled or
-            disabled. If *debug* is :data:`True` then an :class:`.Input` object
-            is returned, otherwise a :class:`.Result` object is returned.
+            The returned type depends on whether `debug` mode is enabled or disabled.
+                If `debug=True`, an [Input][msl.nlf.datatypes.Input] object is returned,
+                otherwise a [Result][msl.nlf.datatypes.Result] object is returned.
         """
         x = _fill_array(self._x, x)
         nvars, npts = (1, x.size) if x.ndim == 1 else x.shape
@@ -805,49 +789,52 @@ class Model:
         return Result(**result)
 
     def guess(self, x: ArrayLike1D | ArrayLike2D, y: ArrayLike1D, **kwargs: Any) -> InputParameters:  # noqa: ANN401, ARG002
-        """Generate an initial guess for the parameters of a :class:`.Model`.
+        """Generate an initial guess for the parameters of a [Model][msl.nlf.model.Model].
 
-        Parameters
-        ----------
-        x
-            The independent variable (stimulus) data. If the model requires
-            multiple variables, the *x* array must have a shape of
-            *(num variables, num points)*, i.e., the data for each variable
-            is listed per row
+        !!! note
+            This method must be overridden in the subclass.
 
-            .. centered::
-                [ [data for x1], [data for x2], ... ]
-        y
-            The dependent variable (response) data.
-        **kwargs
-            All additional keyword arguments are passed to the :class:`.Model`
-            subclass.
+        Args:
+            x:
+                The independent variable (stimulus) data. If the model requires
+                multiple variables, the `x` array must have a shape of
+                `(# variables, # points)`, i.e., the data for each variable
+                is listed per row
+
+                <center>`[ [data for x1], [data for x2], ... ]`</center>
+            y:
+                The dependent variable (response) data.
+            **kwargs:
+                All additional keyword arguments are passed to the subclass.
 
         Returns:
-        -------
-        :class:`~msl.nlf.parameter.InputParameters`
-            Initial guesses for the parameters of a :class:`.Model`. Each
-            :attr:`~msl.nlf.parameter.InputParameter.constant` value is set to
-            :data:`False` and a :attr:`~msl.nlf.parameter.Parameter.label` is
-            chosen. The values of these attributes can be changed by the user
-            in the returned :class:`~msl.nlf.parameter.InputParameters` object.
+            Initial guess parameters. Each [constant][msl.nlf.parameters.InputParameter.constant]
+                value is set to `False` and a [label][msl.nlf.parameters.Parameter.label] is
+                chosen by the subclass. The values of these attributes can be changed by the user
+                in the returned [InputParameters][msl.nlf.parameters.InputParameters] object.
 
         Raises:
-        ------
-        NotImplementedError
-            If the *guess* method is not implemented.
+            NotImplementedError: If the `guess` method has not been overridden.
         """
         msg = f"{self.__class__.__name__!r} has not implemented a guess() method"
         raise NotImplementedError(msg)
 
     @property
     def num_parameters(self) -> int:
-        """Returns the number of fitting parameters in the equation."""
+        """Returns the number of fit parameters in the equation.
+
+        Returns:
+            The number of fit parameters.
+        """
         return self._num_params
 
     @property
     def num_variables(self) -> int:
-        """Returns the number of *x* (stimulus) variables in the equation."""
+        """Returns the number of $x$ (stimulus) variables in the equation.
+
+        Returns:
+            The number of independent variables.
+        """
         return self._num_vars
 
     def options(  # noqa: C901, PLR0913
@@ -865,56 +852,57 @@ class Model:
         uy_weights_only: bool | None = None,
         weighted: bool | None = None,
     ) -> None:
-        """Configure the fitting options.
+        r"""Configure the fitting options.
 
-        Parameters
-        ----------
-        absolute_residuals
-            Whether absolute residuals or relative residuals are used to evaluate
-            the :attr:`~msl.nlf.datatypes.Result.eof`. Default: True (absolute).
-        correlated
-            Whether to include the correlations in the fitting process. Including
-            correlations in the fit is only possible for least-squares fitting,
-            in which case the fit becomes a generalised least-squares fit. The
-            correlations between the correlated variables can be set by calling
-            :meth:`.set_correlation` or :meth:`.set_correlation_dir`.
-            Default: False.
-        delta
-            Only used for Amoeba fitting. Default: 0.1.
-        max_iterations
-            The maximum number of fit iterations allowed. Default: 999.
-        fit_method
-            The fitting method to use. Can be a member name or value of the
-            :class:`~msl.nlf.datatypes.FitMethod` enum.
-            Default: Levenberg-Marquardt.
-        residual_type
-            The residual type to use to evaluate the :attr:`~msl.nlf.datatypes.Result.eof`.
-            Can be a member name or value of the :class:`~msl.nlf.datatypes.ResidualType`
-            enum. Default: DY_X (uncertainty in :math:`y` versus :math:`x`).
-        second_derivs_B
-            Whether the second derivatives in the **B** matrix are included in
-            the propagation of uncertainty calculations. Default: True.
-        second_derivs_H
-            Whether the second derivatives in the curvature matrix, **H**
-            (Hessian), are included in the propagation of uncertainty calculations.
-            Default: True.
-        tolerance
-            The fitting process will stop when the relative change in chi-square
-            (or some other appropriate measure) is less than this value.
-            Default: 1e-20.
-        uy_weights_only
-            Whether the *y* uncertainties only or a combination of the *x* and *y*
-            uncertainties are used to calculate the weights for a weighted fit.
-            Default: False.
-        weighted
-             Whether to include the standard uncertainties in the fitting process
-             to perform a weighted fit. Default: False.
+        Only the parameters that are specified are updated. If you call this method multiple
+        times, the parameters specified in a previous call will still be used if the parameters
+        are not reset.
+
+        Args:
+            absolute_residuals:
+                Whether absolute residuals or relative residuals are used to evaluate
+                the error-of-fit value (the standard deviation of the residuals).
+                Default is `True` (absolute).
+            correlated:
+                Whether to include the correlations in the fitting process. Including
+                correlations in the fit is only possible for least-squares fitting,
+                in which case the fit becomes a generalised least-squares fit. The
+                correlations between the correlated variables can be set by calling
+                [set_correlation][msl.nlf.model.Model.set_correlation] or
+                [set_correlation_dir][msl.nlf.model.Model.set_correlation_dir].
+                Default is `False`.
+            delta:
+                Only used for Amoeba fitting. Default is `0.1`.
+            max_iterations:
+                The maximum number of fit iterations allowed. Default is `999`.
+            fit_method:
+                The fitting method to use. Can be a member name or value of the
+                [FitMethod][msl.nlf.datatypes.FitMethod] enum. Default is `Levenberg-Marquardt`.
+            residual_type:
+                The residual type to use to evaluate the error-of-fit value (the standard deviation
+                of the residuals). Can be a member name or value of the [ResidualType][msl.nlf.datatypes.ResidualType]
+                enum. Default is `DY_X` (uncertainty in $y$ versus $x$).
+            second_derivs_B:
+                Whether the second derivatives in the **B** matrix are included in
+                the propagation of uncertainty calculations. Default is `True`.
+            second_derivs_H:
+                Whether the second derivatives in the curvature matrix, **H**
+                (Hessian), are included in the propagation of uncertainty calculations.
+                Default is `True`.
+            tolerance:
+                The fitting process will stop when the relative change in ${\chi}^2$
+                (or another defined measure) is less than this value. Default is `1e-20`.
+            uy_weights_only:
+                Whether only the `y` uncertainties or a combination of the `x` and `y`
+                uncertainties are used to calculate the weights for a weighted fit.
+                Default is `False`.
+            weighted:
+                Whether to include the standard uncertainties in the fitting process
+                to perform a weighted fit. Default is `False`.
         """
 
         # For details on how to create the file, see the ReadConfigFile function in
         # https://github.com/MSLNZ/Nonlinear-Fitting/blob/main/NLF%20DLL/NLFDLL.dpr
-        # NOTE: Since Nonlinear-Fitting is a private repository, you must be logged
-        #       in to GitHub to view the source code.
         def get_enum(item: Any, enum: Any) -> Any:  # noqa: ANN401
             if not isinstance(item, enum):
                 try:
@@ -989,43 +977,41 @@ class Model:
         """Save a **.nlf** file.
 
         The file can be opened in the Delphi GUI application or loaded via
-        the :func:`~msl.nlf.load` function.
+        the [load][msl.nlf.loader.load] function.
 
         No information about the fit results are written to the file. If you
         are opening the file in the Delphi GUI, you must click the *Calculate*
         button to perform the fit and create the graphs.
 
-        Parameters
-        ----------
-        path
-            The path to save the file to. The file extension must be **.nlf**.
-        x
-            The independent variable (stimulus) data. If not specified, the
-            data that was most recently passed to :meth:`.fit` or a previous
-            call to :meth:`.save` is used.
-        y
-            The dependent variable (response) data. If not specified, the
-            data that was most recently passed to :meth:`.fit` or a previous
-            call to :meth:`.save` is used.
-        params
-            Fit parameters. If not specified, the parameters that were
-            most recently passed to :meth:`.fit` or a previous
-            call to :meth:`.save` are used. Since the Delphi GUI application
-            does not use the :attr:`~msl.nlf.parameter.InputParameter.label`
-            attribute, the *labels* are not saved and will be :data:`None`
-            when the file is reloaded.
-        ux
-            Standard uncertainties in the x data. If not specified, the
-            data that was most recently passed to :meth:`.fit` is used.
-        uy
-            Standard uncertainties in the y data. If not specified, the
-            data that was most recently passed to :meth:`.fit` is used.
-        comments
-            Additional comments to add to the file. This text will appear in
-            the *Comments* window in the Delphi GUI application.
-        overwrite
-            Whether to overwrite the file if it already exists. If the file
-            exists, and this value is :data:`False` then an error is raised.
+        Args:
+            path:
+                The path to save the file to. The file extension must be `.nlf`.
+            x:
+                The independent variable (stimulus) data. If not specified, the
+                data that was most recently passed to [fit][msl.nlf.model.Model.fit]
+                or a previous call to [save][msl.nlf.model.Model.save] is used.
+            y:
+                The dependent variable (response) data. If not specified, the
+                data that was most recently passed to [fit][msl.nlf.model.Model.fit]
+                or a previous call to [save][msl.nlf.model.Model.save] is used.
+            params:
+                Fit parameters. If not specified, the parameters that were
+                most recently passed to [fit][msl.nlf.model.Model.fit] or a previous
+                call to [save][msl.nlf.model.Model.save] are used. Since the Delphi
+                GUI application does not use the [label][msl.nlf.parameters.InputParameter.label]
+                attribute, the *labels* are not saved and will be `None` when the file is reloaded.
+            ux:
+                Standard uncertainties in the $x$ data. If not specified, the
+                data that was most recently passed to [fit][msl.nlf.model.Model.fit] is used.
+            uy:
+                Standard uncertainties in the $y$ data. If not specified, the
+                data that was most recently passed to [fit][msl.nlf.model.Model.fit] is used.
+            comments:
+                Additional comments to add to the file. This text will appear in
+                the *Comments* window in the Delphi GUI application.
+            overwrite:
+                Whether to overwrite the file if it already exists. If the file
+                exists, and this value is `False` then an error is raised.
         """
         nvars, npts = self._num_vars, self._npts
 
@@ -1058,28 +1044,21 @@ class Model:
     ) -> None:
         """Set the correlation coefficients for the correlated variables.
 
-        Note that the *x1-x2* correlation coefficients are identically equal
-        to the *x2-x1* correlation coefficients, so only one of these relations
-        needs to be defined.
+        Note that the `x1-x2` correlation coefficients are identically equal to the `x2-x1`
+        correlation coefficients, so only one of these relations needs to be defined.
 
-        .. warning::
-
-           It is recommended to not call :meth:`.set_correlation` and
-           :meth:`.set_correlation_dir` with the same :class:`.Model` instance.
-           Pick only one method. If you set correlations using both methods an
-           error will *not* be raised, but you *may* be surprised which
+        !!! warning
+           It is recommended to not mix [set_correlation][msl.nlf.model.Model.set_correlation]
+           and [set_correlation_dir][msl.nlf.model.Model.set_correlation_dir] with the same
+           [Model][msl.nlf.model.Model] instance. Pick only one method. If you set correlations
+           using both methods an error will *not* be raised, but you *may* be surprised which
            correlations are used.
 
-        Parameters
-        ----------
-        n1
-            The name of the first correlated variable (e.g., *y*, *x*, *x1*, *x2*).
-        n2
-            The name of the second correlated variable.
-        matrix
-            The coefficients of the correlation matrix.
-        value
-            Set all off-diagonal correlation coefficients to this value.
+        Args:
+            n1: The name of the first correlated variable (e.g., `y`, `x`, `x1`, `x2`).
+            n2: The name of the second correlated variable.
+            matrix: The coefficients of the correlation matrix.
+            value: Set all off-diagonal correlation coefficients to this value.
         """
         if value is None and matrix is None:
             msg = "Specify either 'value' or 'matrix'"
@@ -1124,27 +1103,24 @@ class Model:
         """Set the directory where the correlation coefficients are located.
 
         The directory should contain correlation-coefficient files that must
-        be named *CorrCoeffs Y-Y.txt*, *CorrCoeffs X1-X1.txt*,
-        *CorrCoeffs X1-X2.txt*, etc. Note that the *X1-X2* correlation
-        coefficients are identically equal to the *X2-X1* correlation
-        coefficients, so only one of the files *CorrCoeffs X1-X2.txt* or
-        *CorrCoeffs X2-X1.txt* needs to be created.
+        be named `CorrCoeffs Y-Y.txt`, `CorrCoeffs X1-X1.txt`,
+        `CorrCoeffs X1-X2.txt`, etc. Note that the `X1-X2` correlation
+        coefficients are identically equal to the `X2-X1` correlation
+        coefficients, so only one of the files `CorrCoeffs X1-X2.txt` or
+        `CorrCoeffs X2-X1.txt` needs to be created.
 
         Whitespace is used to separate the value for each column in a file.
 
-        .. warning::
-
-           It is recommended to not call :meth:`.set_correlation` and
-           :meth:`.set_correlation_dir` with the same :class:`.Model` instance.
-           Pick only one method. If you set correlations using both methods an
-           error will *not* be raised, but you *may* be surprised which
+        !!! warning
+           It is recommended to not mix [set_correlation][msl.nlf.model.Model.set_correlation]
+           and [set_correlation_dir][msl.nlf.model.Model.set_correlation_dir] with the same
+           [Model][msl.nlf.model.Model] instance. Pick only one method. If you set correlations
+           using both methods an error will *not* be raised, but you *may* be surprised which
            correlations are used.
 
-        Parameters
-        ----------
-        directory
-            The directory (folder) where the correlation coefficients are located.
-            Specify ``.`` for the current working directory.
+        Args:
+            directory: The directory (folder) where the correlation coefficients are located.
+                Specify ``"."`` for the current working directory.
         """
         if not directory:
             self._corr_dir = ""  # must always be a string
@@ -1162,9 +1138,12 @@ class Model:
         """Whether warning messages are shown.
 
         Warnings are shown if correlations are defined and the fit option is
-        set to be uncorrelated, or if *ux* or *uy* are specified and the fit
+        set to be uncorrelated, or if `ux` or `uy` are specified and the fit
         option is unweighted, or if the maximum number of fit iterations
         has been exceeded.
+
+        Returns:
+            Whether warning messages are shown.
         """
         return self._show_warnings
 
@@ -1178,16 +1157,14 @@ class Model:
 
         This is the value that *GetFunctionName* returns. If a user-defined
         function is not used, an empty string is returned.
-        See :ref:`nlf-user-defined-function`.
+        See [compiled (user-defined) function](../compiled_functions.md).
         """
         return self._user_function_name
 
     def version(self) -> str:
-        """Get the version number of the Delphi library.
+        """Get the version number of the Delphi shared library.
 
         Returns:
-        -------
-        str
             The library version number.
         """
         if self._version:
@@ -1208,16 +1185,11 @@ class CompositeModel(Model):
     def __init__(self, op: str, left: Model, right: Model, **kwargs: Any) -> None:  # noqa: ANN401
         """Combine two models.
 
-        Parameters
-        ----------
-        op
-            A binary operator: ``+ - * /``.
-        left
-            The model on the left side of the operator.
-        right
-            The model on the right side of the operator.
-        **kwargs
-            All keyword arguments are passed to :class:`.Model`.
+        Args:
+            op: A binary operator: ``+ - * /``.
+            left: The model on the left side of the operator.
+            right: The model on the right side of the operator.
+            **kwargs: All keyword arguments are passed to [Model][msl.nlf.model.Model].
         """
         if op not in ("+", "-", "*", "/"):
             msg = f"Unsupported operator {op!r}"
@@ -1255,44 +1227,38 @@ class CompositeModel(Model):
 
 
 class LoadedModel(Model):
-    """A :class:`.Model` that was loaded from a **.nlf** file."""
+    """A [Model][msl.nlf.model.Model] that was loaded from a `.nlf` file.
+
+    Attributes:
+        comments: Comments that were specified.
+        nlf_path: The path to the `.nlf` file that was loaded.
+        nlf_version: The software version that created the `.nlf` file.
+        params: Input parameters to the fit model.
+        ux: Standard uncertainties in the $x$ (stimulus) data.
+        uy: Standard uncertainties in the $y$ (response) data.
+        x: The independent variable(s), $x$, (stimulus) data.
+        y: The dependent variable, $y$, (response) data.
+    """
 
     def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401
-        """A :class:`.Model` that was loaded from a **.nlf** file.
+        """A [Model][msl.nlf.model.Model] that was loaded from a `.nlf` file.
 
         Do not instantiate this class directly. The proper way to load a
-        **.nlf** file is via the :func:`~msl.nlf.load` function.
+        `.nlf` file is via the [load][msl.nlf.loader.load] function.
 
-        Parameters
-        ----------
-        **kwargs
-            All keyword arguments are passed to :meth:`~.Model`.
+        Args:
+            **kwargs: All keyword arguments are passed to [Model][msl.nlf.model.Model].
         """
         super().__init__(**kwargs)
 
         self.comments: str = ""
-        """Comments that were specified."""
-
         self.nlf_path: str = ""
-        """The path to the **.nlf** file that was loaded."""
-
         self.nlf_version: str = ""
-        """The version that created the **.nlf** file."""
-
         self.params: InputParameters = InputParameters()
-        """Input parameters to the fit model."""
-
         self.ux: NDArray[np.float64] = np.empty(0)
-        """Standard uncertainties in the x (stimulus) data."""
-
         self.uy: NDArray[np.float64] = np.empty(0)
-        """Standard uncertainties in the y (response) data."""
-
         self.x: NDArray[np.float64] = np.empty(0)
-        """The independent variable(s) (stimulus) data."""
-
         self.y: NDArray[np.float64] = np.empty(0)
-        """The dependent variable (response) data."""
 
     def __repr__(self) -> str:
         """Return object representation."""

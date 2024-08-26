@@ -20,10 +20,8 @@ class Saver:
     def __init__(self, version: str) -> None:
         """Helper class to create a **.nlf** file.
 
-        Parameters
-        ----------
-        version
-            The version number.
+        Args:
+            version: The version number.
         """
         self._buffer = bytearray()
         self.write_string_padded(version, 10)
@@ -31,40 +29,32 @@ class Saver:
     def save(self, path: str | Path) -> None:
         """Save the buffer to a **.nlf** file.
 
-        Parameters
-        ----------
-        path
-            The **.nlf** file path.
+        Args:
+            path: The **.nlf** file path.
         """
         Path(path).write_bytes(self._buffer)
 
     def write_boolean(self, value: bool) -> None:  # noqa: FBT001
         """Write a boolean.
 
-        Parameters
-        ----------
-        value
-            Write `value` to the buffer.
+        Args:
+            value: Write `value` to the buffer.
         """
         self._buffer.extend(pack("?", value))
 
     def write_byte(self, value: int) -> None:
         """Write a byte.
 
-        Parameters
-        ----------
-        value
-            Write `value` to the buffer.
+        Args:
+            value: Write `value` to the buffer.
         """
         self._buffer.extend(pack("b", value))
 
     def write_extended(self, value: float) -> None:
         """Write a Delphi 10-byte extended float.
 
-        Parameters
-        ----------
-        value
-            Write `value` to the buffer.
+        Args:
+            value: Write `value` to the buffer.
         """
         # See Loader.read_extended for structure of an 80-bit float
         if math.isfinite(value):
@@ -84,20 +74,16 @@ class Saver:
     def write_integer(self, value: int) -> None:
         """Write an unsigned integer.
 
-        Parameters
-        ----------
-        value
-            Write `value` to the buffer.
+        Args:
+            value: Write `value` to the buffer.
         """
         self._buffer.extend(pack("I", value))
 
     def write_string(self, value: str) -> None:
         """Write a string.
 
-        Parameters
-        ----------
-        value
-            Write `value` to the buffer.
+        Args:
+            value: Write `value` to the buffer.
         """
         length = len(value)
         self.write_integer(length)
@@ -106,14 +92,11 @@ class Saver:
     def write_string_padded(self, value: str, pad: int) -> None:
         """Write a string with null padding at the end.
 
-        Parameters
-        ----------
-        value
-            Write `value` to the buffer.
-        pad
-            The total number of bytes the string must be. Pads
-            null bytes until the number of bytes written is
-            the appropriate length.
+        Args:
+            value: Write `value` to the buffer.
+            pad: The total number of bytes the string must be. Pads
+                null bytes until the number of bytes written is
+                the appropriate length.
         """
         length = len(value)
         self.write_byte(length)
@@ -125,10 +108,8 @@ class Saver:
     def write_word(self, value: int) -> None:
         """Write an unsigned short.
 
-        Parameters
-        ----------
-        value
-            Write `value` to the buffer.
+        Args:
+            value: Write `value` to the buffer.
         """
         self._buffer.extend(pack("H", value))
 
@@ -136,12 +117,9 @@ class Saver:
 def save_graph(saver: Saver, name: str) -> None:  # noqa: PLR0915
     """Save a *TGraphWindow*.
 
-    Parameters
-    ----------
-    saver
-        The class helper.
-    name
-        The name of the graph window.
+    Args:
+        saver: The class helper.
+        name: The name of the graph window.
     """
     # See the repository "Nonlinear-Fitting/NLFGraph.pas"
     # procedure TGraphWindow.StoreFile(TheStream:TStream);
@@ -247,15 +225,12 @@ def save_graph(saver: Saver, name: str) -> None:  # noqa: PLR0915
 def save_form(saver: Saver, data: dict[str, Any]) -> None:  # noqa: C901, PLR0912
     """Save a *TDataForm*.
 
-    Parameters
-    ----------
-    saver
-        The class helper.
-    data
-        The data to add to the form. The x, y, ux, ux
-        arrays should be added to the Data form. The Results
-        form should have the appropriate number of columns
-        and number of rows. Covariance forms is not populated.
+    Args:
+        saver: The class helper.
+        data: The data to add to the form. The x, y, ux, ux
+            arrays should be added to the Data form. The Results
+            form should have the appropriate number of columns
+            and number of rows. Covariance forms is not populated.
     """
     # See the repository "Nonlinear-Fitting/NLFDataForm.pas"
     # procedure TDataForm.StoreFile(TheStream: TStream; OnDisk:Boolean);
@@ -360,20 +335,15 @@ def save(*, path: str | Path, comments: str, overwrite: bool, data: Input) -> No
     """Save a **.nlf** file.
 
     The file can be opened in the Delphi GUI application or loaded via
-    the :func:`~msl.nlf.load` function.
+    the [load][msl.nlf.loader.load] function.
 
-    Parameters
-    ----------
-    path
-        The **.nlf** file path.
-    comments
-        Additional comments to add to the file. This text will appear in
-        the *Comments* window in the Delphi GUI application.
-    overwrite
-        Whether to overwrite the file if it already exists. If the file
-        exists, and this value is :data:`False`, then an error is raised.
-    data
-        The input data to the fit model.
+    Args:
+        path: The **.nlf** file path.
+        comments: Additional comments to add to the file. This text will appear in
+            the *Comments* window in the Delphi GUI application.
+        overwrite: Whether to overwrite the file if it already exists. If the file
+            exists, and this value is `False`, then an error is raised.
+        data: The input data to the fit model.
     """
     path = Path(path)
     if not overwrite and path.is_file():
