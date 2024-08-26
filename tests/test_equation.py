@@ -3,6 +3,7 @@ import math
 import pytest
 
 from msl.nlf import ConstantModel, ExponentialModel, GaussianModel, LinearModel, Model, PolynomialModel, SineModel
+from msl.nlf.delphi import NPAR, NVAR
 
 sq2pi = str(math.sqrt(2.0 * math.pi))
 
@@ -20,8 +21,8 @@ sq2pi = str(math.sqrt(2.0 * math.pi))
         "a0",  # cannot use a0
         "a0/x-273.15",  # cannot use a0
         "a1*(1-x)+x*a0",  # cannot use a0
-        "+".join(f"x{i}" for i in range(1, Model.MAX_VARIABLES + 2)),  # too many x's
-        "+".join(f"a{i}*x" for i in range(1, Model.MAX_PARAMETERS + 2)),  # too many a's
+        "+".join(f"x{i}" for i in range(1, NVAR + 2)),  # too many x's
+        "+".join(f"a{i}*x" for i in range(1, NPAR + 2)),  # too many a's
     ],
 )
 def test_invalid(equation: str) -> None:

@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from msl.nlf import LinearModel, Model, PolynomialModel
+from msl.nlf.delphi import NPAR, NPTS, NVAR
 
 
 def test_x_linear_model() -> None:
@@ -9,11 +10,11 @@ def test_x_linear_model() -> None:
 
     # too many x variables, this error is raised by numpy
     with pytest.raises(ValueError, match="could not broadcast"):
-        model.fit(x=np.empty((model.MAX_VARIABLES + 1, 5)), y=[], params=[])
+        model.fit(x=np.empty((NVAR + 1, 5)), y=[], params=[])
 
     # too many points, this error is raised by numpy
     with pytest.raises(ValueError, match="could not broadcast"):
-        model.fit(x=np.empty(model.MAX_POINTS + 1), y=[], params=[])
+        model.fit(x=np.empty(NPTS + 1), y=[], params=[])
 
     # dimension too high
     with pytest.raises(ValueError, match=r"An array of shape \(5, 6, 7\)"):
@@ -64,7 +65,7 @@ def test_y() -> None:
 
     # too many points, this error is raised by numpy
     with pytest.raises(ValueError, match="could not broadcast"):
-        model.fit(x=[], y=np.empty(model.MAX_POINTS + 1), params=[])
+        model.fit(x=[], y=np.empty(NPTS + 1), params=[])
 
     # dimension too high
     with pytest.raises(ValueError, match=r"An array of shape \(2, 3, 4\)"):
@@ -133,7 +134,7 @@ def test_param_poly_model() -> None:
 
     # too many parameters
     with pytest.raises(ValueError, match="Invalid parameter name"):
-        model.fit(x=[], y=[], params=np.empty(model.MAX_PARAMETERS + 1))
+        model.fit(x=[], y=[], params=np.empty(NPAR + 1))
 
 
 def test_ux() -> None:
@@ -147,11 +148,11 @@ def test_ux() -> None:
 
     # this error is raised by numpy
     with pytest.raises(ValueError, match=r"could not broadcast"):
-        model.fit(x=[1, 2], y=[1, 2], params=[1, 2], ux=np.empty((model.MAX_VARIABLES + 1, 3)))
+        model.fit(x=[1, 2], y=[1, 2], params=[1, 2], ux=np.empty((NVAR + 1, 3)))
 
     # this error is raised by numpy
     with pytest.raises(ValueError, match=r"could not broadcast"):
-        model.fit(x=[1, 2], y=[1, 2], params=[1, 2], ux=np.empty(model.MAX_POINTS + 1))
+        model.fit(x=[1, 2], y=[1, 2], params=[1, 2], ux=np.empty(NPTS + 1))
 
     with pytest.raises(ValueError, match=r"An array of shape \(2, 2, 2\)"):
         model.fit(x=[1, 2], y=[1, 2], params=[1, 2], ux=[[[0, 0], [0, 0]], [[0, 0], [0, 0]]])  # type: ignore[arg-type]
@@ -179,4 +180,4 @@ def test_uy() -> None:
 
     # this error is raised by numpy
     with pytest.raises(ValueError, match=r"could not broadcast"):
-        model.fit(x=[1, 2], y=[1, 2], params=[1, 2], uy=np.empty(model.MAX_POINTS + 1))
+        model.fit(x=[1, 2], y=[1, 2], params=[1, 2], uy=np.empty(NPTS + 1))
