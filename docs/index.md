@@ -1,5 +1,5 @@
 # Overview
-`msl-nlf` is a Python wrapper for the non-linear fitting software that was written by Peter Saunders at the Measurement Standards Laboratory (MSL) of New Zealand. The original source code is written in Delphi and compiled to a shared library to be accessed by other programming languages. The Delphi software also provides a GUI (for Windows only) to visualize and interact with the data. Please [contact](https://www.measurement.govt.nz/contact-us-2/) MSL if you are interested in using the GUI version.
+`msl-nlf` is a Python wrapper for the non-linear fitting software that was written by Peter Saunders at the Measurement Standards Laboratory (MSL) of New Zealand. The original source code is written in Delphi and compiled to a shared library to be accessed by other programming languages. The Delphi software also provides a GUI (for Windows only) to visualize and interact with the data. Please [contact](https://www.measurement.govt.nz/contact-us-2/){:target="_blank"} MSL if you are interested in using the GUI version.
 
 The application of non-linear fitting is a general-purpose, curving-fitting program that will fit any curve of the form
 
