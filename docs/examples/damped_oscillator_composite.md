@@ -1,4 +1,4 @@
-modelsIn this example, a composite model is created using built-in [models](../api/models.md) to create a model for a [damped oscillator](http://hyperphysics.phy-astr.gsu.edu/hbase/oscda.html) (underdamped case).
+In this example, a composite model is created using built-in [models](../api/models.md) to create a model for a [damped oscillator](http://hyperphysics.phy-astr.gsu.edu/hbase/oscda.html) (underdamped case).
 
 The equation for the underdamped oscillator is
 
