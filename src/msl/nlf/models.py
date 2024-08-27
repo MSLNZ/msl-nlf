@@ -60,11 +60,7 @@ class GaussianModel(Model):
             **kwargs: All additional keyword arguments are passed to [Model][msl.nlf.model.Model].
         """
         exp = "exp(-0.5*((x-a2)/a3)^2)"
-        if normalized:
-            sq2pi = math.sqrt(2.0 * math.pi)
-            equation = f"a1/(a3*{sq2pi})*{exp}"
-        else:
-            equation = f"a1*{exp}"
+        equation = f"a1/(a3*(2*pi)^0.5)*{exp}" if normalized else f"a1*{exp}"
         self._normalized = normalized
         super().__init__(equation, **kwargs)
 

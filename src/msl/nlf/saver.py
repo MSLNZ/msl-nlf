@@ -9,7 +9,7 @@ from typing import Any
 
 import numpy as np
 
-from .datatypes import FitMethod, Input, ResidualType
+from .datatypes import PI, FitMethod, Input, ResidualType
 
 ansi = {"encoding": "ansi"}
 
@@ -385,7 +385,7 @@ def save(*, path: str | Path, comments: str, overwrite: bool, data: Input) -> No
     # See the repository "Nonlinear-Fitting/NLFMain.pas"
     # procedure TNLFMainForm.StoreFile(OnDisk:Boolean);
     saver = Saver(version)
-    saver.write_string(data.equation)
+    saver.write_string(data.equation.replace("pi", PI))
     saver.write_integer(len(data.params))
     saver.write_integer(npts)
     saver.write_boolean(data.weighted)

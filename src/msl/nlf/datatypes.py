@@ -27,6 +27,9 @@ if TYPE_CHECKING:
     from .parameters import InputParameters, ResultParameters
 
 
+PI = str(np.pi)
+
+
 class FitMethod(Enum):
     """Fitting methods.
 

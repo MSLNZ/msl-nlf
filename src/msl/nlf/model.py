@@ -14,7 +14,7 @@ import numpy as np
 from msl.loadlib import LoadLibrary  # type: ignore[import-untyped]
 
 from .client_server import ClientNLF
-from .datatypes import Correlation, Correlations, FitMethod, Input, ResidualType, Result
+from .datatypes import PI, Correlation, Correlations, FitMethod, Input, ResidualType, Result
 from .delphi import NPAR, NPTS, NVAR, define_fit_fcn, delphi_version, evaluate, fit, get_user_defined, nlf_info
 from .parameters import InputParameters, ResultParameters
 from .saver import save
@@ -110,6 +110,7 @@ _np_map = {
     "log": np.log10,
     "arcsin": np.arcsin,
     "arcos": np.arccos,
+    "pi": np.pi,
 }
 
 
@@ -137,19 +138,21 @@ class Model:
 
                 where `^` indicates raising to the power.
 
-                The functions that are recognised are:
+                The mathematical functions that are recognised are:
                 <center>`sin cos tan exp ln log arcsin arcos`</center>
 
-                The `sqrt` function can be written as `^0.5`, for example, `sqrt(2*x)`
+                The `sqrt` function should be written as `^0.5`, for example, `sqrt(2*x)`
                 would be expressed as `(2*x)^0.5` in the equation.
+
+                You may use `pi` to represent the numeric value 3.141592653589793.
 
                 All white space is ignored in the equation.
 
                 As an example, to fit a general quadratic equation one could use ``"a1+a2*x+a3*x^2"``.
 
                 If using a [compiled (user-defined) function](../compiled_functions.md), the *equation*
-                name must begin with `f` followed by a positive integer, for example, `"f1"`.
-                The `user_dir` keyword argument may also need to be set.
+                must begin with `f` and is followed by a positive integer, for example, `"f1"`.
+                The `user_dir` keyword argument may also need to be specified.
             user_dir:
                 Directory where the [compiled (user-defined) function](../compiled_functions.md)
                 are located. The default directory is the directory that the Delphi GUI has set.
@@ -166,6 +169,7 @@ class Model:
         self._tmp_dir = Path(mkdtemp(prefix="nlf-"))
         self._cfg_path = self._tmp_dir / "options.cfg"
         self._equation = equation
+        self._equation_replaced = equation.replace("pi", PI)
         self._version = ""
         self._corr_dir = ""
         self._corr_dict: dict[tuple[int, int], CorrDict] = {}
@@ -741,7 +745,7 @@ class Model:
 
         kwargs = {
             "cfg_path": str(self._cfg_path),
-            "equation": self._equation,
+            "equation": self._equation_replaced,
             "x": self._x,
             "y": self._y,
             "ux": self._ux,

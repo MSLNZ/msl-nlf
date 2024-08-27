@@ -14,7 +14,7 @@ from typing import Any
 
 import numpy as np
 
-from .datatypes import FitMethod, ResidualType
+from .datatypes import PI, FitMethod, ResidualType
 from .model import LoadedModel
 
 ansi = {"encoding": "ansi", "errors": "replace"}
@@ -530,10 +530,10 @@ def load(path: str | Path, *, win32: bool = False) -> LoadedModel:
         "weighted": file["weighted"],
     }
 
-    mod = LoadedModel(equation=file["equation"], win32=win32, **options)
-    if file["correlated_data"]:
-        import numpy as np
+    equation = file["equation"].replace(PI, "pi")
+    mod = LoadedModel(equation=equation, win32=win32, **options)
 
+    if file["correlated_data"]:
         for i, j in np.argwhere(file["is_correlated"]):
             matrix = file["corr_coeff"][i, j]
             n1 = "Y" if i == 0 else f"X{i}"

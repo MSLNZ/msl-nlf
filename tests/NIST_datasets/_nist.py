@@ -49,15 +49,10 @@ class NIST:
             lines = [line.strip() for line in fp.readlines()]
 
         self.equation, num_params = datasets[name]
-        if name in ("ENSO", "Roszman1"):
-            # defined in Roszman1, used in ENSO and Roszman1
-            pi = "3.141592653589793238462643383279"
-            self.equation = self.equation.replace("pi", pi)
         assert "b" not in self.equation
         assert "[" not in self.equation
         assert "]" not in self.equation
         assert "**" not in self.equation
-        assert "pi" not in self.equation
 
         # read the Start values and Certified values
         self.guess1, self.guess2, self.certified = [], [], {}

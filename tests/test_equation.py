@@ -1,11 +1,7 @@
-import math
-
 import pytest
 
 from msl.nlf import ConstantModel, ExponentialModel, GaussianModel, LinearModel, Model, PolynomialModel, SineModel
 from msl.nlf.delphi import NPAR, NVAR
-
-sq2pi = str(math.sqrt(2.0 * math.pi))
 
 
 @pytest.mark.parametrize(
@@ -80,7 +76,7 @@ def test_sine() -> None:
 
 def test_gaussian() -> None:
     with GaussianModel(normalized=True) as m:
-        assert m.equation == f"a1/(a3*{sq2pi})*exp(-0.5*((x-a2)/a3)^2)"
+        assert m.equation == "a1/(a3*(2*pi)^0.5)*exp(-0.5*((x-a2)/a3)^2)"
 
     with GaussianModel() as m:
         assert m.equation == "a1*exp(-0.5*((x-a2)/a3)^2)"
@@ -111,10 +107,10 @@ def test_polynomial(n: int, expected: str) -> None:
 
 def test_gaussian_constant() -> None:
     m = GaussianModel(normalized=True) + ConstantModel()
-    assert m.equation == f"(a1/(a3*{sq2pi})*exp(-0.5*((x-a2)/a3)^2))+(a4)"
+    assert m.equation == "(a1/(a3*(2*pi)^0.5)*exp(-0.5*((x-a2)/a3)^2))+(a4)"
 
     m = ConstantModel() - GaussianModel(normalized=True)
-    assert m.equation == f"(a1)-(a2/(a4*{sq2pi})*exp(-0.5*((x-a3)/a4)^2))"
+    assert m.equation == "(a1)-(a2/(a4*(2*pi)^0.5)*exp(-0.5*((x-a3)/a4)^2))"
 
     m = GaussianModel() + ConstantModel()
     assert m.equation == "(a1*exp(-0.5*((x-a2)/a3)^2))+(a4)"
@@ -243,7 +239,7 @@ def test_exponential_gaussian() -> None:
 
 def test_gaussian_linear() -> None:
     m = GaussianModel(normalized=True) + LinearModel()
-    assert m.equation == f"(a1/(a3*{sq2pi})*exp(-0.5*((x-a2)/a3)^2))+(a4+a5*x)"
+    assert m.equation == "(a1/(a3*(2*pi)^0.5)*exp(-0.5*((x-a2)/a3)^2))+(a4+a5*x)"
 
     m = LinearModel() - GaussianModel()
     assert m.equation == "(a1+a2*x)-(a3*exp(-0.5*((x-a4)/a5)^2))"
@@ -252,7 +248,7 @@ def test_gaussian_linear() -> None:
     assert m.equation == "(a1*exp(-0.5*((x-a2)/a3)^2))*(a4+a5*x)"
 
     m = LinearModel() / GaussianModel(normalized=True)
-    assert m.equation == f"(a1+a2*x)/(a3/(a5*{sq2pi})*exp(-0.5*((x-a4)/a5)^2))"
+    assert m.equation == "(a1+a2*x)/(a3/(a5*(2*pi)^0.5)*exp(-0.5*((x-a4)/a5)^2))"
 
     m = LinearModel() / (LinearModel() * GaussianModel())
     assert m.equation == "(a1+a2*x)/((a3+a4*x)*(a5*exp(-0.5*((x-a6)/a7)^2)))"
@@ -303,10 +299,10 @@ def test_numeric_exponential_linear_polynomial() -> None:
 
 
 def test_delphi_raises() -> None:
-    # arctan and pi are not supported
+    # arctan is not supported
     x = [-4868.68, -4868.09, -4867.41, -3375.19, -3373.14, -3372.03]
     y = [0.252429, 0.252141, 0.251809, 0.297989, 0.296257, 0.295319]
-    with Model("a1 - a2*x - arctan(a3/(x-a4))/pi") as model:
+    with Model("a1 - a2*x - arctan(a3/(x-a4))/2.0") as model:
         assert model.num_variables == 1
         assert model.num_parameters == 4
         with pytest.raises(RuntimeError, match="Invalid Equation"):
