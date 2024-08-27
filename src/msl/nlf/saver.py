@@ -347,7 +347,7 @@ def save(*, path: str | Path, comments: str, overwrite: bool, data: Input) -> No
     """
     path = Path(path)
     if not overwrite and path.is_file():
-        msg = f"Will not overwrite {path!r}"
+        msg = f"Will not overwrite {str(path)!r}"
         raise FileExistsError(msg)
 
     if path.suffix.lower() != ".nlf":
