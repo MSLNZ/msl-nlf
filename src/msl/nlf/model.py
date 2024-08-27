@@ -144,14 +144,15 @@ class Model:
                 The `sqrt` function should be written as `^0.5`, for example, `sqrt(2*x)`
                 would be expressed as `(2*x)^0.5` in the equation.
 
-                You may use `pi` to represent the numeric value 3.141592653589793.
+                You may use `pi` to represent the numeric value `3.141592653589793`.
 
                 All white space is ignored in the equation.
 
-                As an example, to fit a general quadratic equation one could use ``"a1+a2*x+a3*x^2"``.
+                Only round brackets `(` and `)` may be used. The brackets can be nested,
+                for example, `a1*(x+a2*(x-a3*(x/(1-a4))))`.
 
-                If using a [compiled (user-defined) function](../compiled_functions.md), the *equation*
-                must begin with `f` and is followed by a positive integer, for example, `"f1"`.
+                If using a [compiled (user-defined) function](../compiled_functions.md), the equation
+                value must begin with `f` and is followed by a positive integer, for example, `"f1"`.
                 The `user_dir` keyword argument may also need to be specified.
             user_dir:
                 Directory where the [compiled (user-defined) function](../compiled_functions.md)
