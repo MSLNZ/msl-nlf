@@ -98,7 +98,7 @@ def fit(  # noqa: PLR0913
         is_corr_array: Which parameters are correlated.
         corr_dir: The directory that contains the correlation matrices.
         max_iterations: The maximum number of fit iterations.
-        nparams: The number of fit paramaters.
+        nparams: The number of fit parameters.
 
     Returns:
         The fit results.
