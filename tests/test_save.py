@@ -46,7 +46,7 @@ def test_default_x_y(tmp_path: Path) -> None:
     assert loaded.comments == ""
     assert loaded.equation == "a1+a2*x"
     assert loaded.nlf_path.endswith("x_y.nlf")
-    assert loaded.nlf_version == "5.44"
+    assert loaded.nlf_version == "5.46"
     assert np.array_equal(loaded.x, x)
     assert np.array_equal(loaded.y, y)
     assert np.array_equal(loaded.ux, [[0, 0, 0]])
@@ -210,7 +210,7 @@ def test_save_demo(tmp_path: Path) -> None:  # noqa: PLR0915
     assert loaded.comments == "demo"
     assert loaded.equation == "a1+a2*(x+exp(a3*x))+x2"
     assert loaded.nlf_path.endswith("demo.nlf")
-    assert loaded.nlf_version == "5.44"
+    assert loaded.nlf_version == "5.46"
     assert np.array_equal(loaded.x, x)
     assert np.array_equal(loaded.y, y)
     assert np.array_equal(loaded.ux, ux)

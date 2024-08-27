@@ -8,7 +8,7 @@ from msl.nlf import LinearModel
 def test_default() -> None:
     with LinearModel() as m:
         version = m.version()
-        assert version == "5.44"
+        assert version == "5.46"
         assert m.version() is version  # value gets cached
 
 
@@ -16,5 +16,5 @@ def test_default() -> None:
 def test_win32() -> None:
     with LinearModel(win32=True) as m:
         version = m.version()
-        assert version == "5.44"
+        assert version == "5.46"
         assert m.version() is version  # value gets cached

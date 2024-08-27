@@ -359,7 +359,7 @@ def save(*, path: str | Path, comments: str, overwrite: bool, data: Input) -> No
     from . import version_tuple
 
     # only use version_tuple once a release is made for version 5.46
-    version = "5.44" if version_tuple[0] == 0 else f"{version_tuple[0]}.{version_tuple[1]}"
+    version = "5.46" if version_tuple[0] == 0 else f"{version_tuple[0]}.{version_tuple[1]}"
 
     # Nonlinear-Fitting/NLF DLL/NLFDLLMaths.pas => TFittingMethod=(LM,AmLS,AmMD,AmMM,PwLS,PwMD,PwMM);
     methods = {

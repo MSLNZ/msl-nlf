@@ -12,7 +12,7 @@ def get_path(filename: str) -> Path:
 
 def test_3_0() -> None:
     loaded = load(get_path("3_0"))
-    assert loaded.version() == "5.44"
+    assert loaded.version() == "5.46"
     assert loaded.nlf_version == "3.0"
     assert loaded.nlf_path.endswith("3_0.nlf")
     assert loaded.equation == "a3/(exp(a5/(a1*(1-6*a2^2/a1^2)*(x+273.15)+a5/2*a2^2/a1^2))-a4)"
@@ -231,7 +231,7 @@ def test_3_0() -> None:
 
 def test_5_41() -> None:  # noqa: PLR0915
     loaded = load(get_path("5_41"))
-    assert loaded.version() == "5.44"
+    assert loaded.version() == "5.46"
     assert loaded.nlf_version == "5.41"
     assert loaded.nlf_path.endswith("5_41.nlf")
     assert loaded.equation == "a1+a2*(x+exp(a3*x))+x2"
@@ -318,7 +318,7 @@ def test_str() -> None:
 
 def test_5_43() -> None:
     loaded = load(get_path("5_43"))
-    assert loaded.version() == "5.44"
+    assert loaded.version() == "5.46"
     assert loaded.nlf_version == "5.43"
     assert loaded.nlf_path.endswith("5_43.nlf")
     assert loaded.equation == "a1+a2*x"
