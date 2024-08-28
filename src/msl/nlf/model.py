@@ -626,8 +626,7 @@ class Model:
     ) -> Result | Input:
         """Fit the model to the data.
 
-        !!! tip
-
+        Tip:
             It is more efficient to use a [numpy.ndarray][] rather than a [list][]/[tuple][]
             for the `x`, `y`, `ux` and `uy` arrays.
 
@@ -796,7 +795,7 @@ class Model:
     def guess(self, x: ArrayLike1D | ArrayLike2D, y: ArrayLike1D, **kwargs: Any) -> InputParameters:  # noqa: ANN401, ARG002
         """Generate an initial guess for the parameters of a [Model][msl.nlf.model.Model].
 
-        !!! note
+        Note:
             This method must be overridden in the subclass.
 
         Args:
@@ -1052,7 +1051,7 @@ class Model:
         Note that the `x1-x2` correlation coefficients are identically equal to the `x2-x1`
         correlation coefficients, so only one of these relations needs to be defined.
 
-        !!! warning
+        Warning:
            It is recommended to not mix [set_correlation][msl.nlf.model.Model.set_correlation]
            and [set_correlation_dir][msl.nlf.model.Model.set_correlation_dir] with the same
            [Model][msl.nlf.model.Model] instance. Pick only one method. If you set correlations
@@ -1116,7 +1115,7 @@ class Model:
 
         Whitespace is used to separate the value for each column in a file.
 
-        !!! warning
+        Warning:
            It is recommended to not mix [set_correlation][msl.nlf.model.Model.set_correlation]
            and [set_correlation_dir][msl.nlf.model.Model.set_correlation_dir] with the same
            [Model][msl.nlf.model.Model] instance. Pick only one method. If you set correlations
