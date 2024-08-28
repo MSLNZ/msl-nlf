@@ -1,9 +1,9 @@
-In this example, a composite model is created using built-in [models](../api/models.md) to create a model for a [damped oscillator](http://hyperphysics.phy-astr.gsu.edu/hbase/oscda.html) (underdamped case).
+In this example, a composite model is created using [built-in models](../api/models.md) to create a model for a [damped oscillator](http://hyperphysics.phy-astr.gsu.edu/hbase/oscda.html) (underdamped case).
 
 The equation for the underdamped oscillator is
 
 $$
-f(x; a) = a_1 e^{-a_2 x} \sin(a_3 x + a_4) + a_5
+f(x; a) = a_1 e^{-a_2 x} \sin(2 \pi a_3 x + a_4) + a_5
 $$
 
 First, simulate some noisy data *(we can also see what the expected results of the $a_i$ parameters are)*
@@ -13,10 +13,10 @@ import numpy as np
 
 x = np.linspace(0, 1, num=200)
 noise = np.random.normal(scale=0.15, size=x.size)
-y = 2.6 * np.exp(-4.3*x) * np.sin(48.3*x + 0.5) + 0.7 + noise
+y = 2.6 * np.exp(-4.3*x) * np.sin(2*np.pi*7.68*x + 0.5) + 0.7 + noise
 ```
 
-Next, set up the model by creating a composite model from built-in [models](../api/models.md), create the initial-guess parameters and apply the fit
+Next, set up the model by creating a composite model from [built-in models](../api/models.md), create the initial-guess parameters and apply the fit
 
 ```python
 from msl.nlf import ExponentialModel, SineModel, ConstantModel
@@ -25,16 +25,16 @@ from msl.nlf import ExponentialModel, SineModel, ConstantModel
 model = ExponentialModel() * SineModel() + ConstantModel()
 
 # Equivalently, one could have explicitly written the equation
-# model = Model("a1*exp(-a2*x)*sin(a3*x+a4)+a5")
+# model = Model("a1*exp(-a2*x)*sin(2*pi*a3*x+a4)+a5")
 
 # Create the initial-guess parameters. All are allowed to vary during the
 # fitting process and assign helpful labels
 params = model.create_parameters()
-params["a1"] = 1, False, "amplitude"
-params["a2"] = 1, False, "damping"
-params["a3"] = 10, False, "omega"
-params["a4"] = 0, False, "phase"
-params["a5"] = 0, False, "offset"
+params["a1"] = {"value": 1, "label": "amplitude"}
+params["a2"] = {"value": 1, "label": "damping"}
+params["a3"] = {"value": 10, "label": "frequency"}
+params["a4"] = {"value": 0, "label": "phase"}
+params["a5"] = {"value": 0, "label": "offset"}
 
 # Apply the fit
 result = model.fit(x, y, params=params)

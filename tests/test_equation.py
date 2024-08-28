@@ -71,6 +71,9 @@ def test_linear() -> None:
 
 def test_sine() -> None:
     with SineModel() as m:
+        assert m.equation == "a1*sin(2*pi*a2*x+a3)"
+
+    with SineModel(angular=True) as m:
         assert m.equation == "a1*sin(a2*x+a3)"
 
 
@@ -200,11 +203,11 @@ def test_gaussian_numeric_truediv() -> None:
 
 
 def test_sine_constant() -> None:
-    m = SineModel() + ConstantModel()
+    m = SineModel(angular=True) + ConstantModel()
     assert m.equation == "(a1*sin(a2*x+a3))+(a4)"
 
     m = ConstantModel() - SineModel()
-    assert m.equation == "(a1)-(a2*sin(a3*x+a4))"
+    assert m.equation == "(a1)-(a2*sin(2*pi*a3*x+a4))"
 
 
 def test_exponential_constant() -> None:
@@ -217,16 +220,16 @@ def test_exponential_constant() -> None:
 
 def test_exponential_sine() -> None:
     m = ExponentialModel() * SineModel()
-    assert m.equation == "(a1*exp(-a2*x))*(sin(a3*x+a4))"
+    assert m.equation == "(a1*exp(-a2*x))*(sin(2*pi*a3*x+a4))"
 
-    m = SineModel() / ExponentialModel(cumulative=True)
+    m = SineModel(angular=True) / ExponentialModel(cumulative=True)
     assert m.equation == "(a1*sin(a2*x+a3))/((1-exp(-a4*x)))"
 
-    m = ExponentialModel() + SineModel()
+    m = ExponentialModel() + SineModel(angular=True)
     assert m.equation == "(a1*exp(-a2*x))+(a3*sin(a4*x+a5))"
 
     m = SineModel() - ExponentialModel()
-    assert m.equation == "(a1*sin(a2*x+a3))-(a4*exp(-a5*x))"
+    assert m.equation == "(a1*sin(2*pi*a2*x+a3))-(a4*exp(-a5*x))"
 
 
 def test_exponential_gaussian() -> None:
@@ -285,7 +288,7 @@ def test_polynomial_constant() -> None:
 
 def test_sine_constant_exponential() -> None:
     m = ExponentialModel() * (SineModel() + ConstantModel())
-    assert m.equation == "(a1*exp(-a2*x))*((a3*sin(a4*x+a5))+(a6))"
+    assert m.equation == "(a1*exp(-a2*x))*((a3*sin(2*pi*a4*x+a5))+(a6))"
 
 
 def test_linear_linear() -> None:

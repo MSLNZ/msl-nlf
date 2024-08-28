@@ -159,22 +159,30 @@ class LinearModel(Model):
 class SineModel(Model):
     """A model based on a sine function."""
 
-    def __init__(self, **kwargs: Any) -> None:  # noqa: ANN401
+    def __init__(self, *, angular: bool = False, **kwargs: Any) -> None:  # noqa: ANN401
         r"""A model based on a sine function.
 
-        The function is defined as
+        If `angular` is `False` (default), the function is defined as
+
+        $$f(x; a) = a_1 \sin(2 \pi a_2 x + a_3)$$
+
+        and $a_2$ represents the frequency of oscillation, otherwise
 
         $$f(x; a) = a_1 \sin(a_2 x + a_3)$$
 
+        and $a_2$ represents the angular frequency.
+
         Args:
+            angular: Whether to use angular frequency in the equation.
             **kwargs: All keyword arguments are passed to [Model][msl.nlf.model.Model].
         """
-        sin = "sin(a2*x+a3)"
+        sin = "sin(a2*x+a3)" if angular else "sin(2*pi*a2*x+a3)"
         super().__init__(f"a1*{sin}", **kwargs)
 
         # must define after calling super()
         self._factor = "a1"
         self._composite_equation = sin
+        self._angular = angular
 
     def guess(self, x: ArrayLike1D, y: ArrayLike1D, *, uniform: bool = True, n: int = 11) -> InputParameters:  # type: ignore[override]
         r"""Uses an FFT to determine the amplitude and angular frequency.
@@ -197,11 +205,23 @@ class SineModel(Model):
         amplitudes = np.absolute(np.fft.fft(y))
         argmax = np.argmax(amplitudes)
         a1 = 2.0 * amplitudes[argmax] / len(amplitudes)
-        a2 = two_pi * abs(frequencies[argmax])
+        frequency = abs(frequencies[argmax])
         phases = np.linspace(0, two_pi, n, endpoint=False)
-        norms = [np.linalg.norm(y - a1 * np.sin(a2 * x + p)) for p in phases]
+        norms = [np.linalg.norm(y - a1 * np.sin(two_pi * frequency * x + p)) for p in phases]
         a3 = phases[np.argmin(norms)]
-        return InputParameters((("a1", a1, False, "amplitude"), ("a2", a2, False, "omega"), ("a3", a3, False, "phase")))
+
+        if self._angular:
+            a2_value, a2_name = two_pi * frequency, "omega"
+        else:
+            a2_value, a2_name = frequency, "frequency"
+
+        return InputParameters(
+            (
+                ("a1", a1, False, "amplitude"),
+                ("a2", a2_value, False, a2_name),
+                ("a3", a3, False, "phase"),
+            )
+        )
 
 
 class ExponentialModel(Model):

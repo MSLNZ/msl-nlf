@@ -15,7 +15,7 @@ def test_sin() -> None:
     x = np.linspace(0, 1, 100)
     with SineModel() as model:
         y = model.evaluate(x, {"a1": a1, "a2": a2, "a3": a3})
-    assert np.allclose(a1 * np.sin(a2 * x + a3), y)
+    assert np.allclose(a1 * np.sin(2*np.pi*a2 * x + a3), y)
 
     result = Result(
         num_calls=1,
@@ -34,7 +34,7 @@ def test_sin() -> None:
         y2 = model.evaluate(x, result)
 
     # pass in a Result object
-    assert np.allclose(a1 * np.sin(a2 * x + a3), y2)
+    assert np.allclose(a1 * np.sin(2*np.pi*a2 * x + a3), y2)
 
 
 def test_cos() -> None:
