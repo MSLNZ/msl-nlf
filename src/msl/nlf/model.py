@@ -757,7 +757,7 @@ class Model:
             "constant": self._constant,
             "correlated": self._correlated,
             "is_corr_array": self._is_corr_array,
-            "corr_dir": "" if not self._corr_dir else self._corr_dir + os.sep,
+            "corr_dir": self._corr_dir.rstrip(os.sep) + os.sep if self._corr_dir else "",
             "nparams": nparams,
             "max_iterations": self._max_iterations,
             "weighted": self._weighted,
