@@ -201,10 +201,12 @@ def test_sin_omega(amplitude: float, omega: float, phase: float) -> None:
         assert pytest.approx(phase, abs=2 * math.pi / 11) == params["phase"].value
 
 
-@pytest.mark.parametrize(("amplitude", "frequency", "phase"), [(10, 25/(2*np.pi), 0.23), (1, 50/(2*np.pi), 3.86)])
+@pytest.mark.parametrize(
+    ("amplitude", "frequency", "phase"), [(10, 25 / (2 * np.pi), 0.23), (1, 50 / (2 * np.pi), 3.86)]
+)
 def test_sin_frequency(amplitude: float, frequency: float, phase: float) -> None:
     x = np.linspace(-1, 1, 100)
-    y = amplitude * np.sin(2 *np.pi * frequency * x + phase)
+    y = amplitude * np.sin(2 * np.pi * frequency * x + phase)
     with SineModel() as model:
         params = model.guess(x, y)
         assert len(params) == 3
