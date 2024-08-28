@@ -1,5 +1,6 @@
 from __future__ import annotations  # noqa: D100
 
+import os
 import re
 import warnings
 from array import array
@@ -756,7 +757,7 @@ class Model:
             "constant": self._constant,
             "correlated": self._correlated,
             "is_corr_array": self._is_corr_array,
-            "corr_dir": self._corr_dir,
+            "corr_dir": "" if not self._corr_dir else self._corr_dir + os.sep,
             "nparams": nparams,
             "max_iterations": self._max_iterations,
             "weighted": self._weighted,
@@ -955,7 +956,7 @@ class Model:
                 f"second_derivs_B={self._second_derivs_B}\n"  # S='True';
                 f"uy_weights_only={self._uy_weights_only}\n"  # S='True';
                 f"os_extension={self._os_extension}\n"
-                f"user_dir={self._user_dir}\\"
+                f"user_dir={self._user_dir.absolute()}{os.sep}\n"
             )
 
     def remove_correlations(self) -> None:
