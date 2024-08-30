@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "msl-nlf"
 dynamic = ["version"]
-dependencies = ["msl-loadlib"]
+dependencies = ["msl-loadlib", "numpy"]
 requires-python = ">= 3.8"
 description = "Wrapper around the Delphi non-linear fitting software."
 license = {file = "LICENSE.txt"}
