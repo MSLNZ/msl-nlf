@@ -746,7 +746,7 @@ class Model:
 
         kwargs = {
             "cfg_path": str(self._cfg_path),
-            "equation": self._equation_replaced,
+            "equation": self._equation_encoded,
             "x": self._x,
             "y": self._y,
             "ux": self._ux,

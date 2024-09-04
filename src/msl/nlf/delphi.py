@@ -5,7 +5,18 @@ from __future__ import annotations
 import os
 import sys
 import sysconfig
-from ctypes import CDLL, POINTER, byref, c_bool, c_double, c_int, c_wchar_p, create_string_buffer, create_unicode_buffer
+from ctypes import (
+    CDLL,
+    POINTER,
+    byref,
+    c_bool,
+    c_char_p,
+    c_double,
+    c_int,
+    c_wchar_p,
+    create_string_buffer,
+    create_unicode_buffer,
+)
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -48,10 +59,10 @@ is_correlated = c_bool * ((NVAR + 1) * (NVAR + 1))
 # returned to the 64-bit client as a list[list[float]]
 square_matrix = (c_double * NPAR) * NPAR
 
-here = Path(__file__).parent
+bin_dir = Path(__file__).parent / "bin"
 filename_map: dict[str, Path] = {
-    "win32": here / "bin" / "nlf-windows-i386.dll",
-    "win-amd64": here / "bin" / "nlf-windows-x86_64.dll",
+    "win32": bin_dir / "nlf-windows-i386.dll",
+    "win-amd64": bin_dir / "nlf-windows-x86_64.dll",
 }
 
 
@@ -260,7 +271,7 @@ class UserDefined:
     num_variables: int
 
     def to_dict(self) -> UserDefinedDict:
-        """Convert this object to be a pickleable [dict][].
+        """Convert this object to be a picklable [dict][].
 
         The value of `function` is always [None][].
         """
@@ -318,7 +329,7 @@ def get_user_defined(directory: str | Path, extension: str) -> dict[Path, UserDe
         except AttributeError:
             continue
 
-        name = buffer.value.decode(encoding="ansi", errors="replace")
+        name = buffer.value.decode(encoding="ascii", errors="replace")
         equation, *rest = name.split(":")
 
         functions[file] = UserDefined(

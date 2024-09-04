@@ -165,7 +165,7 @@ def test_result_2() -> None:
         got = model.fit(x=x, y=y, params=a, uy=uy, ux=ux)
 
     expected = """Result(
-  chisq=0.854875600205648
+  chisq=0.8548756002056517
   correlation=[[ 1.         -0.81341696  0.33998683]
                [-0.81341696  1.         -0.41807236]
                [ 0.33998683 -0.41807236  1.        ]]
@@ -173,14 +173,14 @@ def test_result_2() -> None:
               [-8.76652826e-02  2.50946556e-02 -7.88442937e-06]
               [ 2.75368388e-05 -7.88442937e-06  1.41728236e-08]]
   dof=inf
-  eof=0.32710857899179385
+  eof=0.3271085789917946
   iterations=33
   num_calls=3
   params=
     ResultParameters(
-      ResultParameter(name='a1', value=-0.6101880747640294, uncert=0.6803365385456976, label=None),
-      ResultParameter(name='a2', value=0.8100288869777268, uncert=0.1584129274256673, label=None),
-      ResultParameter(name='a3', value=4.585005881907852e-05, uncert=0.00011904966869376515, label=None)
+      ResultParameter(name='a1', value=-0.6101880747640288, uncert=0.6803365385456954, label=None),
+      ResultParameter(name='a2', value=0.8100288869777266, uncert=0.1584129274256644, label=None),
+      ResultParameter(name='a3', value=4.585005881942617e-05, uncert=0.00011904966869241327, label=None)
     )
 )"""
     for g, e in zip(str(got).splitlines(), expected.splitlines()):
