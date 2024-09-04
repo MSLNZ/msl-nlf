@@ -8,7 +8,7 @@ def test_log_bracket_x_issue(xs: str) -> None:
     # Keith reported a "RuntimeError: Error calculating derivatives for parameter covariances"
     # for the following model. Ensure that the fit now succeeds.
     with Model(f"a1+a2*{xs}+a3*log({xs})", weighted=True) as model:
-        params = [-1.2643837268033873, -0.0005665840259614689, 0.34589838624460595]
+        params = [-1., 0., 0.]
         ux = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         uy = [0.0584211, 0.02414976, 0.02222908, 0.01654807, 0.01195032, 0.01123268, 0.01284842]
         x = [5.0, 10.0, 20.0, 40.0, 60.0, 100.0, 120.0]
