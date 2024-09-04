@@ -7,7 +7,10 @@ from ctypes import POINTER, c_bool, c_double, cast
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from msl.loadlib import Client64, Server32  # type: ignore[import-untyped]
+try:
+    from msl.loadlib import Client64, Server32  # type: ignore[import-untyped]
+except ModuleNotFoundError:
+    Client64, Server32 = object, object
 
 if Server32.is_interpreter():
     from delphi import (  # type: ignore[import-not-found]

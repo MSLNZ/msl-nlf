@@ -12,7 +12,10 @@ from typing import TYPE_CHECKING, overload
 
 import numpy as np
 
-from msl.loadlib import LoadLibrary  # type: ignore[import-untyped]
+try:
+    from msl.loadlib import LoadLibrary  # type: ignore[import-untyped]
+except ModuleNotFoundError:
+    LoadLibrary = None
 
 from .client_server import ClientNLF
 from .datatypes import PI, Correlation, Correlations, FitMethod, Input, ResidualType, Result

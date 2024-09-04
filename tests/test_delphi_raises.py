@@ -1,7 +1,11 @@
 import sys
 
 import pytest
-from msl.loadlib import Server32Error  # type: ignore[import-untyped]
+
+try:
+    from msl.loadlib import Server32Error  # type: ignore[import-untyped]
+except ModuleNotFoundError:
+    Server32Error = Exception
 
 from msl.nlf import FitMethod, LinearModel, Model
 
