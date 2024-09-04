@@ -84,7 +84,7 @@ addopts = [
   "--verbose",
   "--import-mode=importlib",
   "-p no:doctest",
-"-p no:faulthandler",
+  "-p no:faulthandler",
 ]
 doctest_optionflags = [
   "NORMALIZE_WHITESPACE",
