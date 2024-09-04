@@ -171,7 +171,7 @@ class Model:
         self._tmp_dir = Path(mkdtemp(prefix="nlf-"))
         self._cfg_path = self._tmp_dir / "options.cfg"
         self._equation = equation
-        self._equation_replaced = equation.replace("pi", PI)
+        self._equation_encoded = equation.replace("pi", PI).encode("ascii")
         self._version = ""
         self._corr_dir = ""
         self._corr_dict: dict[tuple[int, int], CorrDict] = {}

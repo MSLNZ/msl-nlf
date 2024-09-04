@@ -59,7 +59,7 @@ def fit(  # noqa: PLR0913
     *,
     lib: CDLL,
     cfg_path: str,
-    equation: str,
+    equation: bytes,
     weighted: bool,
     x: CtypesOrNumpyDouble,
     y: CtypesOrNumpyDouble,
@@ -218,7 +218,7 @@ def define_fit_fcn(lib: CDLL, *, as_ctypes: bool) -> None:
     lib.DoNonlinearFit.restype = None
     lib.DoNonlinearFit.argtypes = [
         c_wchar_p,  # ConfigFile:PChar
-        c_wchar_p,  # EquationStr:PChar
+        c_char_p,  # EquationStr:PChar
         c_bool,  # WeightedFit:Boolean (added in v5.44)
         p_multi_data,  # xData:PMultiData
         p_data,  # yData:PData
