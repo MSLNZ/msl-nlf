@@ -11,7 +11,7 @@ import numpy as np
 
 from .datatypes import PI, FitMethod, Input, ResidualType
 
-ansi = {"encoding": "ansi"}
+ansi = {"encoding": "utf-8"}
 
 
 class Saver:

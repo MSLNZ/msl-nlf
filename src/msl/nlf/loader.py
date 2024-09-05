@@ -17,7 +17,7 @@ import numpy as np
 from .datatypes import PI, FitMethod, ResidualType
 from .model import LoadedModel
 
-ansi = {"encoding": "ansi", "errors": "replace"}
+ansi = {"encoding": "utf-8", "errors": "replace"}
 
 
 class Loader:
