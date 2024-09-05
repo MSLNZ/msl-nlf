@@ -6,7 +6,7 @@
 * https://www.itl.nist.gov/div898/strd/nls/data/LINKS/DATA/Nelson.dat
 */
 #include <math.h>  // exp
-#include <string.h>  // strcpy_s
+#include <string.h>  // strcpy
 #include "Nelson.h"
 
 void GetFunctionName(char* name) {
@@ -15,7 +15,8 @@ void GetFunctionName(char* name) {
   //   - followed by a positive integer that uniquely identifies this function,
   //   - followed by a colon.
   // The remainder of the string is optional (to describe the function).
-  strcpy_s(name, 255, "f2: Nelson log(f2)=a1-a2*x1*exp(-a3*x2)");
+  // The total length of the function name must be < 256 characters.
+  strcpy(name, "f2: Nelson log(f2)=a1-a2*x1*exp(-a3*x2)");
 }
 
 void GetFunctionValue(double* x, double* a, double* y) {

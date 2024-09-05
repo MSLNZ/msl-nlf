@@ -6,7 +6,7 @@
 * https://www.itl.nist.gov/div898/strd/nls/data/LINKS/DATA/Roszman1.dat
 */
 #include <math.h>  // atan
-#include <string.h>  // strcpy_s
+#include <string.h>  // strcpy
 #include "Roszman1.h"
 
 void GetFunctionName(char* name) {
@@ -15,7 +15,8 @@ void GetFunctionName(char* name) {
   //   - followed by a positive integer that uniquely identifies this function,
   //   - followed by a colon.
   // The remainder of the string is optional (to describe the function).
-  strcpy_s(name, 255, "f1: Roszman1 f1=a1-a2*x-arctan(a3/(x-a4))/pi");
+  // The total length of the function name must be < 256 characters.
+  strcpy(name, "f1: Roszman1 f1=a1-a2*x-arctan(a3/(x-a4))/pi");
 }
 
 void GetFunctionValue(double* x, double* a, double* y) {

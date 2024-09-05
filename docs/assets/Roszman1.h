@@ -1,5 +1,10 @@
 // Roszman1.h
-#define EXPORT __declspec(dllexport)
+
+#if defined(_MSC_VER)  // Microsoft
+    #define EXPORT __declspec(dllexport)
+#elif defined(__GNUC__)  // GCC
+    #define EXPORT __attribute__((visibility("default")))
+#endif
 
 #define pi 3.141592653589793238462643383279
 

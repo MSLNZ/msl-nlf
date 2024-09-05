@@ -29,7 +29,13 @@ and the source file is
 To compile the C++ source code to a shared library, one could use [Visual Studio C++]{:target="_blank"}
 
 ```console
-cl.exe /LD Roszman1.cpp
+cl /LD Roszman1.cpp
+```
+
+or [gcc]{:target="_blank"}
+
+```console
+gcc -shared Roszman1.cpp
 ```
 
 ### C++ (2D data)
@@ -50,7 +56,13 @@ and the source file is
 To compile the C++ source code to a shared library, one could use [Visual Studio C++]{:target="_blank"}
 
 ```console
-cl.exe /LD Nelson.cpp
+cl /LD Nelson.cpp
+```
+
+or [gcc]{:target="_blank"}
+
+```console
+gcc -shared Nelson.cpp
 ```
 
 ### Delphi
@@ -101,3 +113,4 @@ with LinearModel(win32=True) as model:
 [Roszman1]: https://www.itl.nist.gov/div898/strd/nls/data/LINKS/DATA/Roszman1.dat
 [Nelson]: https://www.itl.nist.gov/div898/strd/nls/data/LINKS/DATA/Nelson.dat
 [Visual Studio C++]: https://visualstudio.microsoft.com/vs/features/cplusplus/
+[gcc]: https://gcc.gnu.org/
