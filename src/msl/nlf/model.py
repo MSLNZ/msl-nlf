@@ -1176,7 +1176,7 @@ class Model:
         if isinstance(self._nlf, ClientNLF):  # noqa: SIM108
             ver = self._nlf.delphi_version()
         else:
-            ver = delphi_version(self._nlf.lib)  # type: ignore[union-attr]
+            ver = delphi_version(self._nlf)  # type: ignore[union-attr]
 
         self._version = ver
         return ver
