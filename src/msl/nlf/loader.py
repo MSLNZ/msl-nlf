@@ -244,8 +244,7 @@ def load_form(loader: Loader) -> dict[str, Any]:
     for i in range(form["the_size"]):
         col_widths[i] = loader.read_integer()
         the_count[i] = loader.read_integer()
-        if the_count[i] > max_count:
-            max_count = the_count[i]
+        max_count = max(the_count[i], max_count)
     form["max_count"] = max_count
     form["col_widths"] = col_widths
     form["the_count"] = the_count
