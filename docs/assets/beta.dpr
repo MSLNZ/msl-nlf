@@ -30,7 +30,8 @@ begin
        - begin with the letter "f",
        - followed by a positive integer that uniquely identifies this function,
        - followed by a colon.
-     The remainder of the string is optional (to describe the function)}
+     The remainder of the string is optional (to describe the function).
+     The total length of the function name must be < 256 characters.}
     StrCopy(Name, 'f3: Beta Distribution (f3=a3/(a5-a4)*Gamma(a1+a2)/(Gamma(a1)*Gamma(a2))*((x-a4)/(a5-a4))^(a1-1)*((a5-x)/(a5-a4))^(a2-1))');
 end;
 
