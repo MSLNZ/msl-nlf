@@ -10,7 +10,16 @@ from typing import TYPE_CHECKING
 try:
     from msl.loadlib import Client64, Server32  # type: ignore[import-untyped]
 except ModuleNotFoundError:
-    Client64, Server32 = object, object
+    Client64 = object
+
+    class Server32:  # type: ignore[no-redef]
+        """Mocked Server."""
+
+        @staticmethod
+        def is_interpreter() -> bool:
+            """Mocked is_interpreter method."""
+            return False
+
 
 if Server32.is_interpreter():
     from delphi import (  # type: ignore[import-not-found]
