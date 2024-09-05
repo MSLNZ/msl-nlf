@@ -4,18 +4,13 @@ import os
 import re
 import warnings
 from array import array
-from ctypes import POINTER, c_double
+from ctypes import CDLL, POINTER, c_double
 from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
 from typing import TYPE_CHECKING, overload
 
 import numpy as np
-
-try:
-    from msl.loadlib import LoadLibrary  # type: ignore[import-untyped]
-except ModuleNotFoundError:
-    LoadLibrary = None
 
 from .client_server import ClientNLF
 from .datatypes import PI, Correlation, Correlations, FitMethod, Input, ResidualType, Result
@@ -170,7 +165,7 @@ class Model:
             **options:
                 All additional keyword arguments are passed to [options][msl.nlf.model.Model.options].
         """
-        self._nlf: LoadLibrary | ClientNLF | None = None
+        self._nlf: CDLL | ClientNLF | None = None
         self._tmp_dir = Path(mkdtemp(prefix="nlf-"))
         self._cfg_path = self._tmp_dir / "options.cfg"
         self._equation = equation
@@ -248,10 +243,10 @@ class Model:
         if as_client:
             self._nlf = ClientNLF(self._nlf_path)
         else:
-            self._nlf = LoadLibrary(self._nlf_path, libtype="cdll")
+            self._nlf = CDLL(str(self._nlf_path))
             self._covar = np.zeros((NPAR, NPAR))
             self._ua = np.zeros(NPAR)
-            define_fit_fcn(self._nlf.lib, as_ctypes=False)
+            define_fit_fcn(self._nlf, as_ctypes=False)
 
         if self._is_user_function:
             # this must come at the end since self._nlf must not be None
@@ -769,7 +764,7 @@ class Model:
         if isinstance(self._nlf, ClientNLF):
             result = self._nlf.fit(**kwargs)
         else:
-            result = fit(lib=self._nlf.lib, covar=self._covar, ua=self._ua, **kwargs)  # type: ignore[union-attr]
+            result = fit(lib=self._nlf, covar=self._covar, ua=self._ua, **kwargs)  # type: ignore[union-attr]
 
         if self._weighted or self._correlated:
             result["dof"] = float("inf")
