@@ -28,7 +28,7 @@ sys.path.append("src/msl")
 sys.path.append("tests")
 
 
-@pytest.fixture()
+@pytest.fixture
 def no_gtc() -> bool:
     """Checks if GTC is installed."""
     return GTC is None
