@@ -764,7 +764,7 @@ class Model:
         if isinstance(self._nlf, ClientNLF):
             result = self._nlf.fit(**kwargs)
         else:
-            result = fit(lib=self._nlf, covar=self._covar, ua=self._ua, **kwargs)  # type: ignore[union-attr]
+            result = fit(lib=self._nlf, covar=self._covar, ua=self._ua, **kwargs)  # type: ignore[arg-type]
 
         if self._weighted or self._correlated:
             result["dof"] = float("inf")
@@ -1176,7 +1176,7 @@ class Model:
         if isinstance(self._nlf, ClientNLF):  # noqa: SIM108
             ver = self._nlf.delphi_version()
         else:
-            ver = delphi_version(self._nlf)  # type: ignore[union-attr]
+            ver = delphi_version(self._nlf)  # type: ignore[arg-type]
 
         self._version = ver
         return ver
