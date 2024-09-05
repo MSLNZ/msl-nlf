@@ -372,7 +372,7 @@ class Model:
         # load the options.cfg file
         options = {}
         ignore = ("os_extension", "user_dir")
-        with self._cfg_path.open() as f:
+        with self._cfg_path.open(encoding="utf-8") as f:
             for line in f:
                 k, v = line.split("=")
                 if k in ignore:
@@ -742,8 +742,10 @@ class Model:
             )
             return Input(**info)
 
+        corr_dir = self._corr_dir.rstrip(os.sep) + os.sep if self._corr_dir else ""
+
         kwargs = {
-            "cfg_path": str(self._cfg_path),
+            "cfg_path": str(self._cfg_path).encode("utf-8"),
             "equation": self._equation_encoded,
             "x": self._x,
             "y": self._y,
@@ -755,7 +757,7 @@ class Model:
             "constant": self._constant,
             "correlated": self._correlated,
             "is_corr_array": self._is_corr_array,
-            "corr_dir": self._corr_dir.rstrip(os.sep) + os.sep if self._corr_dir else "",
+            "corr_dir": corr_dir.encode("utf-8"),
             "nparams": nparams,
             "max_iterations": self._max_iterations,
             "weighted": self._weighted,
@@ -942,7 +944,7 @@ class Model:
             self._fit_method = get_enum(fit_method, FitMethod)
 
         abs_res = "Absolute" if self._absolute_residuals else "Relative"
-        with self._cfg_path.open(mode="w") as f:
+        with self._cfg_path.open(mode="w", encoding="utf-8") as f:
             f.write(
                 f"max_iterations={self._max_iterations}\n"  # StrToInt(S);
                 f"tolerance={self._tolerance}\n"  # StrToFloat(S);

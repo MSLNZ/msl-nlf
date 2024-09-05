@@ -5,18 +5,7 @@ from __future__ import annotations
 import os
 import sys
 import sysconfig
-from ctypes import (
-    CDLL,
-    POINTER,
-    byref,
-    c_bool,
-    c_char_p,
-    c_double,
-    c_int,
-    c_wchar_p,
-    create_string_buffer,
-    create_unicode_buffer,
-)
+from ctypes import CDLL, POINTER, byref, c_bool, c_char_p, c_double, c_int, create_string_buffer
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -69,7 +58,7 @@ filename_map: dict[str, Path] = {
 def fit(  # noqa: PLR0913
     *,
     lib: CDLL,
-    cfg_path: str,
+    cfg_path: bytes,
     equation: bytes,
     weighted: bool,
     x: CtypesOrNumpyDouble,
@@ -84,7 +73,7 @@ def fit(  # noqa: PLR0913
     ua: CtypesOrNumpyDouble,
     correlated: bool,
     is_corr_array: CtypesOrNumpyBool,
-    corr_dir: str,
+    corr_dir: bytes,
     max_iterations: int,
     nparams: int,
 ) -> dict[str, Any]:
@@ -120,7 +109,7 @@ def fit(  # noqa: PLR0913
     chisq = c_double()
     eof = c_double()
     error = c_bool()
-    error_str = create_unicode_buffer(1024)
+    error_str = create_string_buffer(1024)
 
     # the ResetFile function was added in v5.43
     lib.ResetFile()
@@ -152,7 +141,7 @@ def fit(  # noqa: PLR0913
         )
 
         if error.value:
-            raise RuntimeError(error_str.value)
+            raise RuntimeError(error_str.value.decode())
 
         iter_total += iterations.value
         if iterations.value <= 3:  # noqa: PLR2004
@@ -188,11 +177,11 @@ def delphi_version(lib: CDLL) -> str:
         The version number of the shared library.
     """
     # the GetVersion function was added in v5.41
-    buffer = create_unicode_buffer(16)
+    buffer = create_string_buffer(16)
     lib.GetVersion.restype = None
-    lib.GetVersion.argtypes = [c_wchar_p]
+    lib.GetVersion.argtypes = [c_char_p]
     lib.GetVersion(buffer)
-    return buffer.value
+    return buffer.value.decode()
 
 
 def define_fit_fcn(lib: CDLL, *, as_ctypes: bool) -> None:
@@ -228,7 +217,7 @@ def define_fit_fcn(lib: CDLL, *, as_ctypes: bool) -> None:
 
     lib.DoNonlinearFit.restype = None
     lib.DoNonlinearFit.argtypes = [
-        c_wchar_p,  # ConfigFile:PChar
+        c_char_p,  # ConfigFile:PChar
         c_char_p,  # EquationStr:PChar
         c_bool,  # WeightedFit:Boolean (added in v5.44)
         p_multi_data,  # xData:PMultiData
@@ -243,12 +232,12 @@ def define_fit_fcn(lib: CDLL, *, as_ctypes: bool) -> None:
         p_real_param_data,  # ParamUncerts:PRealParamData
         c_bool,  # CorrData:Boolean
         p_is_correlated,  # IsCorrelated:PIsCorrelated
-        c_wchar_p,  # CorrCoeffsDirectory:PChar
+        c_char_p,  # CorrCoeffsDirectory:PChar
         POINTER(c_double),  # var ChiSquared:Double
         POINTER(c_double),  # var EofFit:Double
         POINTER(c_int),  # var NumIterations:Integer
         POINTER(c_bool),  # var Error:Boolean
-        c_wchar_p,  # ErrorStr:PChar
+        c_char_p,  # ErrorStr:PChar
     ]
 
 
@@ -295,7 +284,7 @@ def get_user_defined(directory: str | Path, extension: str) -> dict[Path, UserDe
         The user-defined functions.
     """
     n = c_int()
-    buffer = create_string_buffer(255)
+    buffer = create_string_buffer(256)
 
     functions: dict[Path, UserDefined] = {}
     for file in Path(directory).glob(f"*{extension}"):
