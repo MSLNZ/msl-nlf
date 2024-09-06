@@ -407,7 +407,7 @@ class Model:
         ud_matches = [ud for ud in functions.values() if ud.equation == self._equation]
 
         if not ud_matches:
-            e = f"No user-defined function named {self._equation!r} is in {self._user_dir!r}"
+            e = f"No user-defined function named {self._equation!r} is in {str(self._user_dir)!r}"
             if functions:
                 names = "\n  ".join({v.name for v in functions.values()})
                 e += f"\nThe functions available are:\n  {names}"
@@ -423,7 +423,7 @@ class Model:
             names = "\n  ".join(str(filename) for filename in sorted(functions))
             e = (
                 f"Multiple user-defined functions named {self._equation!r} "
-                f"were found in {self._user_dir!r}\n  {names}"
+                f"were found in {str(self._user_dir)!r}\n  {names}"
             )
             raise ValueError(e)
 
