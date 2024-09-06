@@ -15,8 +15,6 @@ except ModuleNotFoundError:
     set_correlation = None
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from numpy.typing import NDArray
 
     try:
@@ -90,7 +88,7 @@ class Correlation:
         coefficients: The correlation coefficients.
     """
 
-    path: Path
+    path: str
     coefficients: NDArray[np.float64]
 
     def __repr__(self) -> str:

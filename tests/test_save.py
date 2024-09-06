@@ -245,8 +245,8 @@ def test_save_demo(tmp_path: Path) -> None:  # noqa: PLR0915
 
     c = data.correlations
     assert np.array_equal(c.is_correlated, [[True, False, False], [False, True, False], [False, False, False]])
-    assert c.data[0].path.name.endswith("X1-X1.txt")
-    assert c.data[1].path.name.endswith("Y-Y.txt")
+    assert c.data[0].path.endswith("X1-X1.txt")
+    assert c.data[1].path.endswith("Y-Y.txt")
     assert np.array_equal(
         c.data[0].coefficients,
         np.array([[1.0, 0.8, 0.8, 0.8], [0.8, 1.0, 0.8, 0.8], [0.8, 0.8, 1.0, 0.8], [0.8, 0.8, 0.8, 1.0]]),

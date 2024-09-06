@@ -357,15 +357,14 @@ class Model:
     def _load_correlations(self, num_x_vars: int) -> Correlations:
         # load the correlation files
         num_corr = num_x_vars + 1  # include y-variable
-        coeffs = []
+        paths: list[str] = []
         if self._corr_dir:
             corr_dir = Path(self._corr_dir)
             for filename in corr_dir.glob("*.txt"):
-                match = _corr_file_regex.match(filename.name)
-                if match:
-                    path = corr_dir / filename
-                    coeffs.append(Correlation(path=path, coefficients=np.loadtxt(path)))
+                if _corr_file_regex.match(filename.name):
+                    paths.append(str(corr_dir / filename))  # noqa: PERF401
 
+        coeffs = [Correlation(path=path, coefficients=np.loadtxt(path)) for path in sorted(paths)]
         return Correlations(is_correlated=self._is_corr_array[:num_corr, :num_corr], data=coeffs)
 
     def _load_options(self) -> dict[str, Any]:

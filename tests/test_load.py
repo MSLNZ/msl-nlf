@@ -262,11 +262,11 @@ def test_5_41() -> None:  # noqa: PLR0915
     assert np.array_equal(is_correlated, [[True, True, False], [True, True, False], [False, False, False]])
 
     for data in inputs.correlations.data:
-        if data.path.name.endswith("Y-Y.txt"):
+        if data.path.endswith("Y-Y.txt"):
             assert np.array_equal(y_y_corr, data.coefficients)
-        elif data.path.name.endswith("Y-X1.txt") or data.path.name.endswith("X1-Y.txt"):
+        elif data.path.endswith("Y-X1.txt") or data.path.endswith("X1-Y.txt"):
             assert np.array_equal(y_x1_corr, data.coefficients)
-        elif data.path.name.endswith("X1-X1.txt"):
+        elif data.path.endswith("X1-X1.txt"):
             assert np.array_equal(x1_x1_corr, data.coefficients)
         else:
             msg = f"Could not find correction identifier in {str(data.path)!r}"

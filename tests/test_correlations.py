@@ -58,7 +58,7 @@ def test_set_correlation_dir(tmp_path: Path) -> None:  # noqa: PLR0915
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
             assert len(c.data) == 1
-            assert c.data[0].path == y_y_file
+            assert c.data[0].path == str(y_y_file)
             assert np.array_equal(c.data[0].coefficients, dummy1)
             assert np.array_equal(c.is_correlated, [[True, False], [False, False]])
 
@@ -72,7 +72,7 @@ def test_set_correlation_dir(tmp_path: Path) -> None:  # noqa: PLR0915
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
             assert len(c.data) == 1
-            assert c.data[0].path == y_x1_file
+            assert c.data[0].path == str(y_x1_file)
             assert np.array_equal(c.data[0].coefficients, dummy2)
             assert np.array_equal(c.is_correlated, [[False, True], [True, False]])
 
@@ -84,9 +84,9 @@ def test_set_correlation_dir(tmp_path: Path) -> None:  # noqa: PLR0915
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
             assert len(c.data) == 2
-            assert c.data[0].path == x1_x1_file
+            assert c.data[0].path == str(x1_x1_file)
             assert np.array_equal(c.data[0].coefficients, dummy3)
-            assert c.data[1].path == y_x1_file
+            assert c.data[1].path == str(y_x1_file)
             assert np.array_equal(c.data[1].coefficients, dummy2)
             assert np.array_equal(c.is_correlated, [[False, True], [True, True]])
 
@@ -100,11 +100,11 @@ def test_set_correlation_dir(tmp_path: Path) -> None:  # noqa: PLR0915
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
             assert len(c.data) == 3
-            assert c.data[0].path == x1_x1_file
+            assert c.data[0].path == str(x1_x1_file)
             assert np.array_equal(c.data[0].coefficients, dummy3)
-            assert c.data[1].path == y_x1_file
+            assert c.data[1].path == str(y_x1_file)
             assert np.array_equal(c.data[1].coefficients, dummy2)
-            assert c.data[2].path == y_y_file
+            assert c.data[2].path == str(y_y_file)
             assert np.array_equal(c.data[2].coefficients, dummy1)
             assert np.array_equal(c.is_correlated, [[True, True], [True, True]])
 
@@ -174,7 +174,7 @@ def test_set_correlation() -> None:  # noqa: PLR0915
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
             assert len(c.data) == 1
-            assert c.data[0].path == corr_dir / "CorrCoeffs Y-Y.txt"
+            assert c.data[0].path == str(corr_dir / "CorrCoeffs Y-Y.txt")
             assert np.array_equal(c.data[0].coefficients, np.ones((4, 4)))
             assert np.array_equal(c.is_correlated, [[True, False, False], [False, False, False], [False, False, False]])
 
@@ -189,8 +189,8 @@ def test_set_correlation() -> None:  # noqa: PLR0915
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
             assert len(c.data) == 2
-            assert c.data[0].path == corr_dir / "CorrCoeffs X1-Y.txt"
-            assert c.data[1].path == corr_dir / "CorrCoeffs Y-X1.txt"
+            assert c.data[0].path == str(corr_dir / "CorrCoeffs X1-Y.txt")
+            assert c.data[1].path == str(corr_dir / "CorrCoeffs Y-X1.txt")
             assert np.array_equal(c.data[1].coefficients, y_x1_matrix)
             assert np.array_equal(c.data[0].coefficients, y_x1_matrix)
             assert np.array_equal(c.is_correlated, [[False, True, False], [True, False, False], [False, False, False]])
@@ -207,9 +207,9 @@ def test_set_correlation() -> None:  # noqa: PLR0915
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
             assert len(c.data) == 3
-            assert c.data[0].path == corr_dir / "CorrCoeffs X1-X1.txt"
-            assert c.data[1].path == corr_dir / "CorrCoeffs X1-Y.txt"
-            assert c.data[2].path == corr_dir / "CorrCoeffs Y-X1.txt"
+            assert c.data[0].path == str(corr_dir / "CorrCoeffs X1-X1.txt")
+            assert c.data[1].path == str(corr_dir / "CorrCoeffs X1-Y.txt")
+            assert c.data[2].path == str(corr_dir / "CorrCoeffs Y-X1.txt")
             assert np.array_equal(c.data[0].coefficients, x1_x1_matrix)
             assert np.array_equal(c.data[1].coefficients, y_x1_matrix)
             assert np.array_equal(c.data[2].coefficients, y_x1_matrix)
@@ -221,10 +221,10 @@ def test_set_correlation() -> None:  # noqa: PLR0915
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
             assert len(c.data) == 4
-            assert c.data[0].path == corr_dir / "CorrCoeffs X1-X1.txt"
-            assert c.data[1].path == corr_dir / "CorrCoeffs X1-Y.txt"
-            assert c.data[2].path == corr_dir / "CorrCoeffs Y-X1.txt"
-            assert c.data[3].path == corr_dir / "CorrCoeffs Y-Y.txt"
+            assert c.data[0].path == str(corr_dir / "CorrCoeffs X1-X1.txt")
+            assert c.data[1].path == str(corr_dir / "CorrCoeffs X1-Y.txt")
+            assert c.data[2].path == str(corr_dir / "CorrCoeffs Y-X1.txt")
+            assert c.data[3].path == str(corr_dir / "CorrCoeffs Y-Y.txt")
             assert np.array_equal(c.data[0].coefficients, x1_x1_matrix)
             assert np.array_equal(c.data[1].coefficients, y_x1_matrix)
             assert np.array_equal(c.data[2].coefficients, y_x1_matrix)
@@ -240,12 +240,12 @@ def test_set_correlation() -> None:  # noqa: PLR0915
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
             assert len(c.data) == 6
-            assert c.data[0].path == corr_dir / "CorrCoeffs X1-X1.txt"
-            assert c.data[1].path == corr_dir / "CorrCoeffs X1-Y.txt"
-            assert c.data[2].path == corr_dir / "CorrCoeffs X2-Y.txt"
-            assert c.data[3].path == corr_dir / "CorrCoeffs Y-X1.txt"
-            assert c.data[4].path == corr_dir / "CorrCoeffs Y-X2.txt"
-            assert c.data[5].path == corr_dir / "CorrCoeffs Y-Y.txt"
+            assert c.data[0].path == str(corr_dir / "CorrCoeffs X1-X1.txt")
+            assert c.data[1].path == str(corr_dir / "CorrCoeffs X1-Y.txt")
+            assert c.data[2].path == str(corr_dir / "CorrCoeffs X2-Y.txt")
+            assert c.data[3].path == str(corr_dir / "CorrCoeffs Y-X1.txt")
+            assert c.data[4].path == str(corr_dir / "CorrCoeffs Y-X2.txt")
+            assert c.data[5].path == str(corr_dir / "CorrCoeffs Y-Y.txt")
             assert np.array_equal(c.data[0].coefficients, x1_x1_matrix)
             assert np.array_equal(c.data[1].coefficients, y_x1_matrix)
             assert np.array_equal(
