@@ -178,7 +178,7 @@ def test_result_2() -> None:
   eof=0\.32710857899179\d{2}
   iterations=33
   num_calls=3
-  params=
+  params=\s{4}
     ResultParameters\(
       ResultParameter\(name='a1', value=-0\.61018807476402\d{2}, uncert=0\.68033653854569\d{2}, label=None\),
       ResultParameter\(name='a2', value=0\.81002888697772\d{2}, uncert=0\.158412927425664\d{1,2}, label=None\),
@@ -186,8 +186,4 @@ def test_result_2() -> None:
     \)
 \)"""
     for g, e in zip(str(got).splitlines(), expected.splitlines()):
-        # In case the IDE removes trailing whitespace
-        if e == "  params=":
-            assert g == "  params=    "
-        else:
-            assert re.match(e, g) is not None
+        assert re.match(e, g) is not None
