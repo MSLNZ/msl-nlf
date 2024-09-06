@@ -604,9 +604,9 @@ def test_nelson(win32: bool) -> None:  # noqa: FBT001
     [
         "./tests/user_defined",
         "./tests/user_defined/",
-        ".\\tests\\user_defined",
-        ".\\tests\\user_defined\\",
+        "./tests/user_defined///",
         Path(__file__).parent / "user_defined",
+        Path(__file__).parent / "user_defined" / "",
     ],
 )
 def test_path_separator_ending(user_dir: str | Path) -> None:
