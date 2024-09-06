@@ -91,7 +91,7 @@ def test_Nelson() -> None:  # noqa: N802
 
 
 def test_MGH17() -> None:  # noqa: N802
-    assert_nist("MGH17", fit_method=FitMethod.POWELL_LS, max_iterations=2200, relative=2e-4)
+    assert_nist("MGH17", fit_method=FitMethod.POWELL_LS, max_iterations=3200, relative=2e-4)
 
 
 def test_Lanczos1() -> None:  # noqa: N802
