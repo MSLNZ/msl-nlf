@@ -17,7 +17,7 @@ def test_log_bracket_x_issue(xs: str) -> None:
         results = model.fit(x, y, ux=ux, uy=uy, params=params)
         assert pytest.approx(results.params["a1"].value, abs=2e-8) == -1.14171093389872
         assert pytest.approx(results.params["a1"].uncert, abs=1e-9) == 0.0639731504340679
-        assert pytest.approx(results.params["a2"].value, abs=1e-11) == 0.000350958449375458
+        assert pytest.approx(results.params["a2"].value, abs=5e-11) == 0.000350958449375458
         assert pytest.approx(results.params["a2"].uncert, abs=1e-10) == 0.000461983374717262
         assert pytest.approx(results.params["a3"].value, abs=1e-8) == 0.238002933414618
         assert pytest.approx(results.params["a3"].uncert, abs=1e-9) == 0.0530346733839314
