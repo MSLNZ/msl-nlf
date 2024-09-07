@@ -52,6 +52,7 @@ bin_dir = Path(__file__).parent / "bin"
 filename_map: dict[str, Path] = {
     "win32": bin_dir / "nlf-windows-i386.dll",
     "win-amd64": bin_dir / "nlf-windows-x86_64.dll",
+    "linux-x86_64": bin_dir / "nlf-linux-x86_64.so",
 }
 
 
@@ -387,6 +388,8 @@ def nlf_info(*, win32: bool = False) -> tuple[Path, bool, str]:
 
     # must be Unix
     uname = os.uname()
+    if uname.sysname == "Linux":
+        return filename_map[sysconfig.get_platform()], False, ".so"
 
     msg = (
         f"The non-linear-fitting library is not available for:\n"
