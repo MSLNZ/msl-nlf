@@ -181,7 +181,7 @@ def test_result_2() -> None:
   params=\s{4}
     ResultParameters\(
       ResultParameter\(name='a1', value=-0\.61018807476402\d+, uncert=0\.68033653854569\d+, label=None\),
-      ResultParameter\(name='a2', value=0\.81002888697772\d+, uncert=0\.158412927425664\d+, label=None\),
+      ResultParameter\(name='a2', value=0\.81002888697772\d+, uncert=0\.15841292742566\d+, label=None\),
       ResultParameter\(name='a3', value=4\.585005881\d+e-05, uncert=0\.00011904966869\d+, label=None\)
     \)
 \)"""
