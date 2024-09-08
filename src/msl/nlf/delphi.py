@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import platform
 import sys
 import sysconfig
 from ctypes import CDLL, POINTER, byref, c_bool, c_char_p, c_double, c_int, create_string_buffer
@@ -50,6 +51,8 @@ square_matrix = (c_double * NPAR) * NPAR
 
 bin_dir = Path(__file__).parent / "bin"
 filename_map: dict[str, Path] = {
+    "darwin-arm64": bin_dir / "nlf-darwin-arm64.dylib",
+    "darwin-x86_64": bin_dir / "nlf-darwin-x86_64.dylib",
     "win32": bin_dir / "nlf-windows-i386.dll",
     "win-amd64": bin_dir / "nlf-windows-x86_64.dll",
     "linux-x86_64": bin_dir / "nlf-linux-x86_64.so",
@@ -389,7 +392,16 @@ def nlf_info(*, win32: bool = False) -> tuple[Path, bool, str]:
     # must be Unix
     uname = os.uname()
     if uname.sysname == "Linux":
-        return filename_map[sysconfig.get_platform()], False, ".so"
+        try:
+            return filename_map[sysconfig.get_platform()], False, ".so"
+        except KeyError:
+            pass
+
+    if uname.sysname == "Darwin":
+        try:
+            return filename_map[f"darwin-{platform.machine()}"], False, ".dylib"
+        except KeyError:
+            pass
 
     msg = (
         f"The non-linear-fitting library is not available for:\n"
@@ -398,4 +410,4 @@ def nlf_info(*, win32: bool = False) -> tuple[Path, bool, str]:
         f"version={uname.version}\n"
         f"machine={uname.machine}\n"
     )
-    raise ValueError(msg)
+    raise OSError(msg)

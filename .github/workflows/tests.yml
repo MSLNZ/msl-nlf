@@ -10,13 +10,13 @@ env:
 jobs:
   test:
     name: Test
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
     strategy:
       fail-fast: false
       matrix:
-        os: ["windows", "ubuntu"]
+        os: ["windows-latest", "ubuntu-latest", "macos-latest", "macos-13"]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13.0-rc.1"]
 
     steps:
