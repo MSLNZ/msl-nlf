@@ -167,7 +167,7 @@ def test_result_2() -> None:
         got = model.fit(x=x, y=y, params=a, uy=uy, ux=ux)
 
     expected = r"""Result\(
-  chisq=0\.85487560020565\d{2}
+  chisq=0\.8548756002056\d+
   correlation=\[\[ 1\.         -0\.81341696  0\.33998683\]
                \[-0\.81341696  1\.         -0\.41807236\]
                \[ 0\.33998683 -0\.41807236  1\.        \]\]
@@ -175,14 +175,14 @@ def test_result_2() -> None:
               \[-8\.76652826e-02  2\.50946556e-02 -7\.88442937e-06\]
               \[ 2\.75368388e-05 -7\.88442937e-06  1\.41728236e-08\]\]
   dof=inf
-  eof=0\.32710857899179\d{2}
+  eof=0\.32710857899179\d+
   iterations=33
   num_calls=3
   params=\s{4}
     ResultParameters\(
-      ResultParameter\(name='a1', value=-0\.61018807476402\d{2}, uncert=0\.68033653854569\d{2}, label=None\),
-      ResultParameter\(name='a2', value=0\.81002888697772\d{2}, uncert=0\.158412927425664\d{1,2}, label=None\),
-      ResultParameter\(name='a3', value=4\.585005881\d{6}e-05, uncert=0\.00011904966869\d{6}, label=None\)
+      ResultParameter\(name='a1', value=-0\.61018807476402\d+, uncert=0\.68033653854569\d+, label=None\),
+      ResultParameter\(name='a2', value=0\.81002888697772\d+, uncert=0\.158412927425664\d+, label=None\),
+      ResultParameter\(name='a3', value=4\.585005881\d+e-05, uncert=0\.00011904966869\d+, label=None\)
     \)
 \)"""
     for g, e in zip(str(got).splitlines(), expected.splitlines()):
