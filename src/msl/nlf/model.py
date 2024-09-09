@@ -394,7 +394,7 @@ class Model:
             return
 
         if not self._user_dir.is_dir():
-            msg = f"The user-defined directory does not exist: {str(self._user_dir)!r}"
+            msg = f"The compiled (user-defined) directory does not exist: {str(self._user_dir)!r}"
             raise FileNotFoundError(msg)
 
         if isinstance(self._nlf, ClientNLF):
@@ -406,22 +406,23 @@ class Model:
         ud_matches = [ud for ud in functions.values() if ud.equation == self._equation]
 
         if not ud_matches:
-            e = f"No user-defined function named {self._equation!r} is in {str(self._user_dir)!r}"
+            e = f"No compiled (user-defined) function named {self._equation!r} is in {str(self._user_dir)!r}"
             if functions:
                 names = "\n  ".join({v.name for v in functions.values()})
                 e += f"\nThe functions available are:\n  {names}"
             else:
                 e += "\nThere are no valid functions in this directory."
-            e += (
-                "\nMake sure that the bitness of the user-defined function and "
-                "the bitness of the NLF library are the same."
-            )
+            if os.name == "nt":
+                e += (
+                    "\nIf you are confident that the function exists in this directory, make sure that the "
+                    "bitness of the compiled function and the bitness of the NLF library are the same."
+                )
             raise ValueError(e)
 
         if len(ud_matches) > 1:
             names = "\n  ".join(str(filename) for filename in sorted(functions))
             e = (
-                f"Multiple user-defined functions named {self._equation!r} "
+                f"Multiple compiled (user-defined) functions named {self._equation!r} "
                 f"were found in {str(self._user_dir)!r}\n  {names}"
             )
             raise ValueError(e)

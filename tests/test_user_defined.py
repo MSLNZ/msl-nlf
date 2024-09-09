@@ -40,14 +40,14 @@ def test_invalid(equation: str) -> None:
 
 @pytest.mark.parametrize("win32", win32s)
 def test_does_not_exist(win32: bool) -> None:  # noqa: FBT001
-    with pytest.raises(ValueError, match=r"No user-defined function"):  # noqa: SIM117
+    with pytest.raises(ValueError, match=r"No compiled \(user-defined\) function"):  # noqa: SIM117
         with Model("f4", win32=win32, user_dir="./tests/user_defined"):
             pass
 
 
 @pytest.mark.parametrize("win32", win32s)
 def test_multiple_exist(win32: bool) -> None:  # noqa: FBT001
-    with pytest.raises(ValueError, match=r"Multiple user-defined functions"):  # noqa: SIM117
+    with pytest.raises(ValueError, match=r"Multiple compiled \(user-defined\) functions"):  # noqa: SIM117
         with Model("f1", win32=win32, user_dir="./tests/user_defined/multiple"):
             pass
 
@@ -60,7 +60,7 @@ def test_none_exist(win32: bool) -> None:  # noqa: FBT001
 
 
 def test_invalid_directory() -> None:
-    with pytest.raises(FileNotFoundError, match="user-defined directory does not exist: 'invalid'"):  # noqa: SIM117
+    with pytest.raises(FileNotFoundError, match=r"compiled \(user-defined\) directory does not exist: 'invalid'"):  # noqa: SIM117
         with Model("f1", user_dir="invalid"):
             pass
 
