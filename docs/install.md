@@ -7,7 +7,8 @@ pip install msl-nlf
 
 ## Dependencies
 * Python 3.8+
-* [numpy](https://www.numpy.org/){:target="_blank"}
+* [numpy](https://pypi.org/project/numpy/){:target="_blank"}
+* [msl-loadlib](https://pypi.org/project/msl-loadlib/){:target="_blank"} (Windows only)
 
 ### Optional Dependencies
 The GUM Tree Calculator, [GTC]{:target="_blank"}, is not automatically installed when `msl-nlf` is installed, but it is required to create a correlated ensemble of [uncertain real numbers][uncertain_real_number]{:target="_blank"} from a [Result][msl.nlf.datatypes.Result].
@@ -18,4 +19,4 @@ To automatically include [GTC]{:target="_blank"} when installing `msl-nlf` you m
 pip install msl-nlf[gtc]
 ```
 
-[GTC]: https://gtc.readthedocs.io/en/stable/
+[GTC]: https://pypi.org/project/GTC/
