@@ -18,8 +18,9 @@ def test_runtime_error() -> None:
 
 @pytest.mark.skipif(sys.platform != "win32", reason="Windows only")
 def test_server32_error() -> None:
+    exception = Server32Error if sys.maxsize > 2**32 else RuntimeError
     with LinearModel(weighted=True, win32=True) as model:  # noqa: SIM117
-        with pytest.raises(Server32Error, match=r"The uncertainties are not complete"):
+        with pytest.raises(exception, match=r"The uncertainties are not complete"):
             model.fit(x=[1, 2, 3, 4], y=[1, 2, 3, 4], params=[1, 1])
 
 
