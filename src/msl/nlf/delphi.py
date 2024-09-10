@@ -53,9 +53,10 @@ bin_dir = Path(__file__).parent / "bin"
 filename_map: dict[str, Path] = {
     "darwin-arm64": bin_dir / "nlf-darwin-arm64.dylib",
     "darwin-x86_64": bin_dir / "nlf-darwin-x86_64.dylib",
+    "linux-i686": bin_dir / "nlf-linux-i686.so",
+    "linux-x86_64": bin_dir / "nlf-linux-x86_64.so",
     "win32": bin_dir / "nlf-windows-i386.dll",
     "win-amd64": bin_dir / "nlf-windows-x86_64.dll",
-    "linux-x86_64": bin_dir / "nlf-linux-x86_64.so",
 }
 
 
