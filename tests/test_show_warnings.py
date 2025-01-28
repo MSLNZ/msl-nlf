@@ -41,7 +41,7 @@ def test_fit_correlated(tmp_path: Path) -> None:
     model = LinearModel()
 
     assert model.show_warnings is True
-    model.set_correlation("y", "y", value=0.5)
+    model.set_correlation("y", "y", 0.5)
 
     # check with set_correlation
     with pytest.warns(UserWarning, match="correlations are specified"):
@@ -109,8 +109,8 @@ def test_max_iterations() -> None:
     guess = np.array([0, 0.9, 0])
     model = Model("a1+a2*(x1+exp(a3*x1))+x2")
     model.options(weighted=True, correlated=True)
-    model.set_correlation("y", "y", value=0.5)
-    model.set_correlation("x1", "x1", value=0.8)
+    model.set_correlation("y", "y", 0.5)
+    model.set_correlation("x1", "x1", 0.8)
 
     assert model.show_warnings is True
     with pytest.warns(UserWarning, match="fit iterations exceeded"):

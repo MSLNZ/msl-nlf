@@ -65,7 +65,7 @@ def test_weighted_correlated() -> None:
     eof = sqrt(fsum((y_i - mean) ** 2 for y_i in y) / float(len(y) - len(params)))
 
     with Model("a1*x", weighted=True, correlated=True) as model:
-        model.set_correlation("y", "y", matrix=correlation)
+        model.set_correlation("y", "y", correlation)
         result = model.fit(x, y, uy=uy, params=params)
         assert pytest.approx(mean, rel=1e-10) == result.params["a1"].value
         assert pytest.approx(uncert, rel=1e-10) == result.params["a1"].uncert
@@ -103,7 +103,7 @@ def test_weighted_correlated_linear(no_gtc: bool) -> None:  # noqa: FBT001
     eof = sqrt(fsum((y[i] - (a1 + a2 * x[i])) ** 2 for i in range(len(y))) / float(len(y) - len(params)))
 
     with Model("a1+a2*x", weighted=True, correlated=True) as model:
-        model.set_correlation("y", "y", matrix=correlation)
+        model.set_correlation("y", "y", correlation)
         result = model.fit(x, y, uy=uy, params=params)
         assert pytest.approx(a1, rel=1e-8) == result.params["a1"].value
         assert pytest.approx(ua1, rel=1e-10) == result.params["a1"].uncert

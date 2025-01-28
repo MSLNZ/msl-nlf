@@ -25,8 +25,8 @@ def test_demo(win32: bool) -> None:  # noqa: FBT001
     ux = np.array([[0.01, 0.02, 0.03, 0.04], [0.002, 0.004, 0.006, 0.008]])
 
     with Model("a1+a2*(x+exp(a3*x))+x2", win32=win32, weighted=True, correlated=True) as model:
-        model.set_correlation("y", "y", value=0.5)
-        model.set_correlation("x", "x", value=0.8)
+        model.set_correlation("y", "y", 0.5)
+        model.set_correlation("x", "x", 0.8)
         r = model.fit(x=x, y=y, params=a, uy=uy, ux=ux)
         assert len(r.params) == 3
         assert r.params["a1"].name == "a1"

@@ -198,8 +198,8 @@ def test_save_demo(tmp_path: Path) -> None:  # noqa: PLR0915
     uy = np.array([0.5, 0.5, 0.5, 0.5])
     ux = np.array([[0.01, 0.02, 0.03, 0.04], [0.002, 0.004, 0.006, 0.008]])
     with Model("a1+a2*(x+exp(a3*x))+x2", weighted=True, correlated=True) as model:
-        model.set_correlation("y", "y", value=0.5)
-        model.set_correlation("x", "x", value=0.8)
+        model.set_correlation("y", "y", 0.5)
+        model.set_correlation("x", "x", 0.8)
         model.options(second_derivs_B=False, max_iterations=200)
         result1 = model.fit(x, y, params=a, uy=uy, ux=ux, tolerance=1.23e-12, delta=0.01)
         model.save(path, comments="demo")

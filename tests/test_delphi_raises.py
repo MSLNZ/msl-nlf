@@ -29,7 +29,7 @@ def test_correlated(method: FitMethod) -> None:
     # Minimum Distance and MiniMax are invalid for correlated data
     match = r"cannot be performed as a correlated fit"
     with LinearModel(fit_method=method, correlated=True) as model:
-        model.set_correlation("x", "y", value=0.5)
+        model.set_correlation("x", "y", 0.5)
         with pytest.raises(RuntimeError, match=match):
             model.fit(x=[1, 2, 3], y=[1, 2, 3], params=[1, 1])
 

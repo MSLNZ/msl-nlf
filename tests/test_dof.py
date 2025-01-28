@@ -38,7 +38,7 @@ def test_weighted_uncorrelated() -> None:
 def test_unweighted_correlated() -> None:
     with LinearModel(correlated=True) as model:
         model.show_warnings = False
-        model.set_correlation("y", "y", value=0.5)
+        model.set_correlation("y", "y", 0.5)
 
         result = model.fit(x, y, params=p, uy=uy)
         assert isinf(result.dof)
@@ -50,7 +50,7 @@ def test_unweighted_correlated() -> None:
 
 def test_weighted_correlated() -> None:
     with LinearModel(weighted=True, correlated=True) as model:
-        model.set_correlation("y", "y", value=0.5)
+        model.set_correlation("y", "y", 0.5)
 
         result = model.fit(x, y, params=p, uy=uy)
         assert isinf(result.dof)

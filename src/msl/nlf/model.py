@@ -1044,9 +1044,7 @@ class Model:
             data = self.fit(x, y, params=params, ux=ux, uy=uy, debug=True)
         save(path=path, comments=c, overwrite=overwrite, data=data)
 
-    def set_correlation(
-        self, n1: str, n2: str, *, matrix: ArrayLike2D | None = None, value: float | None = None
-    ) -> None:
+    def set_correlation(self, n1: str, n2: str, correlation: float | ArrayLike2D) -> None:
         """Set the correlation coefficients for the correlated variables.
 
         Note that the `x1-x2` correlation coefficients are identically equal to the `x2-x1`
@@ -1062,16 +1060,9 @@ class Model:
         Args:
             n1: The name of the first correlated variable (e.g., `y`, `x`, `x1`, `x2`).
             n2: The name of the second correlated variable.
-            matrix: The coefficients of the correlation matrix.
-            value: Set all off-diagonal correlation coefficients to this value.
+            correlation: If a `float` then all off-diagonal coefficients in the correlation
+                matrix will be set to this value, otherwise the 2D correlation matrix.
         """
-        if value is None and matrix is None:
-            msg = "Specify either 'value' or 'matrix'"
-            raise ValueError(msg)
-        if value is not None and matrix is not None:
-            msg = "Cannot specify both 'value' and 'matrix'"
-            raise ValueError(msg)
-
         s1, s2 = n1.upper(), n2.upper()
         if s1 == "X":
             s1 = "X1"
@@ -1091,11 +1082,10 @@ class Model:
         _check_var_name(s1, n1)
         _check_var_name(s2, n2)
 
-        corr: float | NDArray[np.float64]
-        if value is not None:
-            corr = float(value)
+        if isinstance(correlation, (float, int)):
+            corr = float(correlation)
         else:
-            corr = np.asanyarray(matrix)
+            corr = np.asanyarray(correlation)
             if corr.ndim != 2:  # noqa: PLR2004
                 msg = f"Invalid correlation matrix dimension [{corr.ndim} != 2]"
                 raise ValueError(msg)

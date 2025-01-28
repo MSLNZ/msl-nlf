@@ -537,7 +537,7 @@ def load(path: str | Path, *, win32: bool = False) -> LoadedModel:
             matrix = file["corr_coeff"][i, j]
             n1 = "Y" if i == 0 else f"X{i}"
             n2 = "Y" if j == 0 else f"X{j}"
-            mod.set_correlation(n1, n2, matrix=matrix)
+            mod.set_correlation(n1, n2, matrix)
 
     for i, (a, c) in enumerate(zip(file["a"], file["constant"]), start=1):
         mod.params[f"a{i}"] = a, c

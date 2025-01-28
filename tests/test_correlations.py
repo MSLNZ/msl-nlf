@@ -124,23 +124,20 @@ def test_set_correlation_dir(tmp_path: Path) -> None:  # noqa: PLR0915
 def test_set_correlation_raises() -> None:
     # the Model type is irrelevant
     with LinearModel() as model:
-        with pytest.raises(ValueError, match=r"either 'value' or 'matrix'"):
-            model.set_correlation("y", "y")
-
-        with pytest.raises(ValueError, match=r"both 'value' and 'matrix'"):
-            model.set_correlation("y", "y", matrix=[[1, 1], [1, 1]], value=1)
-
         for name in ["a1", " ", "y1"]:
             with pytest.raises(ValueError, match=r"Invalid correlation variable name"):
-                model.set_correlation(name, "y", value=1)
+                model.set_correlation(name, "y", 1)
 
         for name in ["x0", "x3"]:
             with pytest.raises(ValueError, match=r"X index outside of range"):
-                model.set_correlation("y", name, value=1)
+                model.set_correlation("y", name, 1)
 
-        for m in [[1, 2], 3, np.empty((3, 4, 5))]:
+        for m in [[], [1, 2], np.empty((3, 4, 5))]:
             with pytest.raises(ValueError, match=r"Invalid correlation matrix dimension"):
-                model.set_correlation("y", "y", matrix=m)  # type: ignore[arg-type]
+                model.set_correlation("y", "y", m)
+
+        with pytest.raises(ValueError, match=r"inhomogeneous shape"):
+            model.set_correlation("y", "y", [[1, 2], [3]])
 
 
 def test_set_correlation() -> None:  # noqa: PLR0915
@@ -167,7 +164,7 @@ def test_set_correlation() -> None:  # noqa: PLR0915
         # The correlated flag is used by the NLF library to decide if correlations are to be used
 
         # create Y-Y correlation file
-        model.set_correlation("y", "y", value=1)
+        model.set_correlation("y", "y", 1)
         corr_dir = Path(model._corr_dir)  # noqa: SLF001
 
         for boolean in (False, True):
@@ -184,7 +181,7 @@ def test_set_correlation() -> None:  # noqa: PLR0915
         # 'x' gets automatically renamed to 'X1'
         # Y-Y correlations were removed
         y_x1_matrix = 7 * np.ones((4, 4))
-        model.set_correlation("y", "x", matrix=y_x1_matrix)
+        model.set_correlation("y", "x", y_x1_matrix)
         for boolean in (False, True):
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
@@ -196,13 +193,13 @@ def test_set_correlation() -> None:  # noqa: PLR0915
             assert np.array_equal(c.is_correlated, [[False, True, False], [True, False, False], [False, False, False]])
 
         # create bad X1-X1 correlation file, must have shape (4, 4)
-        model.set_correlation("x", "x", matrix=np.ones((5, 5)))
+        model.set_correlation("x", "x", np.ones((5, 5)))
         with pytest.raises(ValueError, match=r"Invalid 'X1-X1' correlation array shape"):
             model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
 
         # create proper X1-X1 correlation file (Y-X1 still exists)
         x1_x1_matrix = 2 * np.ones((4, 4))
-        model.set_correlation("x", "x", matrix=x1_x1_matrix)
+        model.set_correlation("x", "x", x1_x1_matrix)
         for boolean in (False, True):
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
@@ -216,7 +213,7 @@ def test_set_correlation() -> None:  # noqa: PLR0915
             assert np.array_equal(c.is_correlated, [[False, True, False], [True, True, False], [False, False, False]])
 
         # create Y-Y correlation file (X1-X1 and Y-X1 still exist)
-        model.set_correlation("y", "y", value=3)
+        model.set_correlation("y", "y", 3)
         for boolean in (False, True):
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
@@ -235,7 +232,7 @@ def test_set_correlation() -> None:  # noqa: PLR0915
             assert np.array_equal(c.is_correlated, [[True, True, False], [True, True, False], [False, False, False]])
 
         # create X2-Y correlation file (Y-Y, X1-X1 and Y-X1 still exist)
-        model.set_correlation("x2", "y", value=5)
+        model.set_correlation("x2", "y", 5)
         for boolean in (False, True):
             _input = model.fit(correlated=boolean, **kwargs)  # type: ignore[call-overload]
             c = _input.correlations
@@ -308,7 +305,7 @@ def test_correlations_reset() -> None:
     with LinearModel(correlated=True) as model:
         model.show_warnings = False
 
-        model.set_correlation("y", "y", value=0.9)
+        model.set_correlation("y", "y", 0.9)
         result = model.fit(x=x, y=y, params=p, uy=uy)
         assert pytest.approx(0.2, rel=1e-9) == result.params["a1"].value
         assert pytest.approx(0.0774596669241483, rel=1e-9) == result.params["a1"].uncert
@@ -316,7 +313,7 @@ def test_correlations_reset() -> None:
         assert pytest.approx(0.103247275993122, rel=1e-9) == result.params["a2"].uncert
 
         # the correlation is different so the uncertainties are different
-        model.set_correlation("y", "y", value=0.1)
+        model.set_correlation("y", "y", 0.1)
         result = model.fit(x=x, y=y, params=p, uy=uy)
         assert pytest.approx(0.2, rel=1e-9) == result.params["a1"].value
         assert pytest.approx(0.232379000772445, rel=1e-9) == result.params["a1"].uncert

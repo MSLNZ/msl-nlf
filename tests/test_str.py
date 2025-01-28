@@ -58,8 +58,8 @@ def test_input_correlated() -> None:
     uy = [0.5, 0.5, 0.5, 0.5]
     ux = [[0.01, 0.02, 0.03, 0.04], [0.002, 0.004, 0.006, 0.008]]
     with Model("a1+a2*(x+exp(a3*x))+x2", weighted=True, correlated=True) as model:
-        model.set_correlation("y", "y", value=0.5)
-        model.set_correlation("x", "x", value=0.8)
+        model.set_correlation("y", "y", 0.5)
+        model.set_correlation("x", "x", 0.8)
         got = model.fit(x=x, y=y, params=a, uy=uy, ux=ux, debug=True)
 
     expected = """Input(
@@ -162,8 +162,8 @@ def test_result_2() -> None:
     uy = np.array([0.5, 0.5, 0.5, 0.5])
     ux = np.array([[0.01, 0.02, 0.03, 0.04], [0.002, 0.004, 0.006, 0.008]])
     with Model("a1+a2*(x+exp(a3*x))+x2", weighted=True, correlated=True) as model:
-        model.set_correlation("y", "y", value=0.5)
-        model.set_correlation("x", "x", value=0.8)
+        model.set_correlation("y", "y", 0.5)
+        model.set_correlation("x", "x", 0.8)
         got = model.fit(x=x, y=y, params=a, uy=uy, ux=ux)
 
     expected = r"""Result\(

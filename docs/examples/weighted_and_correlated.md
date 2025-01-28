@@ -25,8 +25,8 @@ model.options(weighted=True, correlated=True)
 
 # Define the correlation coefficient matrices, the value is set in the
 # off-diagonal matrix elements of the correlation matrix
-model.set_correlation("y", "y", value=0.5)
-model.set_correlation("x1", "x1", value=0.8)
+model.set_correlation("y", "y", 0.5)
+model.set_correlation("x1", "x1", 0.8)
 ```
 
 To see a summary of the data that would be sent to the fit function in the shared library, call the [fit][msl.nlf.model.Model.fit] method with `debug=True` and print the returned object (an instance of [Input][msl.nlf.datatypes.Input] is returned)
