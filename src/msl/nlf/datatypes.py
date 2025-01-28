@@ -54,13 +54,13 @@ class FitMethod(Enum):
         POWELL_MM: Powell minimax.
     """
 
-    LM: str = "Levenberg-Marquardt"
-    AMOEBA_LS: str = "Amoeba least squares"
-    AMOEBA_MD: str = "Amoeba minimum distance"
-    AMOEBA_MM: str = "Amoeba minimax"
-    POWELL_LS: str = "Powell least squares"
-    POWELL_MD: str = "Powell minimum distance"
-    POWELL_MM: str = "Powell minimax"
+    LM = "Levenberg-Marquardt"
+    AMOEBA_LS = "Amoeba least squares"
+    AMOEBA_MD = "Amoeba minimum distance"
+    AMOEBA_MM = "Amoeba minimax"
+    POWELL_LS = "Powell least squares"
+    POWELL_MD = "Powell minimum distance"
+    POWELL_MM = "Powell minimax"
 
 
 class ResidualType(Enum):
@@ -73,10 +73,10 @@ class ResidualType(Enum):
         DY_Y: Uncertainty in $y$ versus $y$.
     """
 
-    DX_X: str = "dx v x"
-    DX_Y: str = "dx v y"
-    DY_X: str = "dy v x"
-    DY_Y: str = "dy v y"
+    DX_X = "dx v x"
+    DX_Y = "dx v y"
+    DY_X = "dy v x"
+    DY_Y = "dy v y"
 
 
 @dataclass(eq=False, order=False, frozen=True)
@@ -347,7 +347,7 @@ class Result:
 
         # set correlations
         for i, row in enumerate(self.correlation):
-            for j, value in enumerate(row[i + 1 :], start=i + 1):
+            for j, value in enumerate(row[i + 1 :], start=i + 1):  # type: ignore[index]
                 # cast the value to float so that it is not of type np.float
                 set_correlation(float(value), ensemble[i], ensemble[j])
 

@@ -415,7 +415,7 @@ def _load(path: str | Path) -> dict[str, Any]:  # noqa: C901, PLR0912, PLR0915
                         num_corr_points[i, j] = 0
             the_size = loader.read_integer()
             if the_size > 0:
-                w_matrix = np.zeros((the_size, the_size), dtype=float)
+                w_matrix = np.zeros((the_size, the_size), dtype=float)  # type: ignore[assignment]
                 for i in range(the_size):
                     for j in range(the_size):
                         w_matrix[i, j] = loader.read_extended()

@@ -98,7 +98,7 @@ class ServerNLF(Server32):  # type: ignore[misc]
             if isinstance(v, array):
                 address, length = v.buffer_info()
                 c_type = c_bool if v.itemsize == 1 else c_double
-                kw[k] = cast(address, POINTER(c_type * length))  # type: ignore[arg-type, operator]
+                kw[k] = cast(address, POINTER(c_type * length))
             else:
                 kw[k] = v
 

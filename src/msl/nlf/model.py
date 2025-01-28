@@ -571,7 +571,7 @@ class Model:
             y = np.empty(npts, dtype=float)
             return evaluate(self._user_function, a, xtf, shape, y)
 
-        namespace = {p.name: p.value for p in result.params} if hasattr(result, "params") else result
+        namespace: dict[str, Any] = {p.name: p.value for p in result.params} if hasattr(result, "params") else result
         namespace.update(**_np_map)
 
         if nvars == 1:
