@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     else:
         from typing import Self
 
-    from .types import ArrayLike1D, ArrayLike2D, CorrDict, GetFunctionValue, InputParameterType
+    from ._types import ArrayLike1D, ArrayLike2D, CorrDict, GetFunctionValue, InputParameterType
 
 
 _n_params_regex = re.compile(r"a\d+")

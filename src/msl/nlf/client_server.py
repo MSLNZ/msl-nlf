@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from ctypes import CDLL
     from typing import Any
 
-    from .types import GetFunctionValue, UserDefinedDict
+    from ._types import GetFunctionValue, UserDefinedDict
 
 
 class ServerNLF(Server32):  # type: ignore[misc]

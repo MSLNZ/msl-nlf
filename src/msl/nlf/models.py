@@ -15,7 +15,7 @@ from .parameters import InputParameters
 if TYPE_CHECKING:
     from typing import Any
 
-    from .types import ArrayLike1D, ArrayLike2D
+    from ._types import ArrayLike1D, ArrayLike2D
 
 __all__ = (
     "ConstantModel",

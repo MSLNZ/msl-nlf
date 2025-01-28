@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Any
 
-    from .types import (
+    from ._types import (
         ArrayLike1D,
         ArrayLike2D,
         CtypesOrNumpyBool,

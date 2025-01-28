@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from .types import InputParameterType
+    from ._types import InputParameterType
 
 _name_regex = re.compile(r"^a(?P<i>\d+)$")
 
