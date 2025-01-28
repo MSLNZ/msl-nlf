@@ -8,7 +8,7 @@ from msl.nlf.delphi import NPAR
 from msl.nlf.parameters import ResultParameter, ResultParameters
 
 
-@pytest.mark.parametrize("name", ["a", " a ", "ax", "a 1", "a0", f"a{NPAR+1}"])
+@pytest.mark.parametrize("name", ["a", " a ", "ax", "a 1", "a0", f"a{NPAR + 1}"])
 def test_invalid_name(name: str) -> None:
     with pytest.raises(ValueError, match="Invalid parameter name"):
         InputParameter(name, 1)

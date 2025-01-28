@@ -788,12 +788,12 @@ class Model:
 
         if self._show_warnings and result["iterations"] >= self._max_iterations:
             warnings.warn(
-                f'maximum number of fit iterations exceeded [{result["iterations"]}]', UserWarning, stacklevel=2
+                f"maximum number of fit iterations exceeded [{result['iterations']}]", UserWarning, stacklevel=2
             )
 
         return Result(**result)
 
-    def guess(self, x: ArrayLike1D | ArrayLike2D, y: ArrayLike1D, **kwargs: Any) -> InputParameters:  # noqa: ANN401, ARG002
+    def guess(self, x: ArrayLike1D | ArrayLike2D, y: ArrayLike1D, **kwargs: Any) -> InputParameters:  # noqa: ANN401
         """Generate an initial guess for the parameters of a [Model][msl.nlf.model.Model].
 
         Note:

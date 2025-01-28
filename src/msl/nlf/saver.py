@@ -267,7 +267,7 @@ def save_form(saver: Saver, data: dict[str, Any]) -> None:  # noqa: C901, PLR091
         # add Parameter column
         write_cell(header[0])
         for i in range(data["nparams"]):
-            write_cell(f"a{i+1}")
+            write_cell(f"a{i + 1}")
         write_cell("Chi Squared")
         write_cell("Error Of Fit")
 
@@ -285,10 +285,10 @@ def save_form(saver: Saver, data: dict[str, Any]) -> None:  # noqa: C901, PLR091
         header.extend(["x", "y", "ux"])
     else:
         for i in range(nvars):
-            header.append(f"x{i+1}")
+            header.append(f"x{i + 1}")
         header.append("y")
         for i in range(nvars):
-            header.append(f"ux{i+1}")
+            header.append(f"ux{i + 1}")
     header.extend(["uy", "x Fit", "y Fit", "x Res", "y Res", "x Uncert", "y Uncert"])
 
     the_size = len(header)

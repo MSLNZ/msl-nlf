@@ -302,7 +302,7 @@ class PolynomialModel(Model):
             if i == 1:
                 eqn.append("+a2*x")
             else:
-                eqn.append(f"+a{i+1}*x^{i}")
+                eqn.append(f"+a{i + 1}*x^{i}")
 
         self._n = n
         equation = "".join(eqn)
@@ -330,7 +330,7 @@ class PolynomialModel(Model):
             elif i == 2:  # noqa: PLR2004
                 label = "a2*x"
             else:
-                label = f"a{i}*x^{i-1}"
+                label = f"a{i}*x^{i - 1}"
             params[f"a{i}"] = coeff, False, label
         return params
 

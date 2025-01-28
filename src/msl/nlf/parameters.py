@@ -170,11 +170,7 @@ class ResultParameter(Parameter):
     def __repr__(self) -> str:
         """Object representation."""
         return (
-            f"ResultParameter("
-            f"name={self._name!r}, "
-            f"value={self._value}, "
-            f"uncert={self._uncert}, "
-            f"label={self._label!r})"
+            f"ResultParameter(name={self._name!r}, value={self._value}, uncert={self._uncert}, label={self._label!r})"
         )
 
     @property
@@ -338,7 +334,7 @@ class InputParameters(Parameters[InputParameter]):
 
         if len(args) == 1:
             if not isinstance(args[0], InputParameter):
-                msg = "Must be an InputParameter object " "if specifying only one argument"
+                msg = "Must be an InputParameter object if specifying only one argument"
                 raise TypeError(msg)
             return args[0]
 
