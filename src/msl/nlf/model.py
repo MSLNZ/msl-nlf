@@ -1082,6 +1082,7 @@ class Model:
         _check_var_name(s1, n1)
         _check_var_name(s2, n2)
 
+        corr: float | NDArray[np.float64]
         if isinstance(correlation, (float, int)):
             corr = float(correlation)
         else:
