@@ -1,6 +1,6 @@
 site_name: MSL NLF
 site_description: Python wrapper for the Delphi non-linear fitting software
-copyright: Copyright &copy; 2024 Measurement Standards Laboratory of New Zealand
+copyright: Copyright &copy; 2025 Measurement Standards Laboratory of New Zealand
 repo_url: https://github.com/MSLNZ/msl-nlf
 
 theme:
