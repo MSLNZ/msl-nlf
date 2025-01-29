@@ -46,25 +46,28 @@ Issues = "https://github.com/MSLNZ/msl-nlf/issues"
 Source = "https://github.com/MSLNZ/msl-nlf"
 
 [project.optional-dependencies]
-tests = [
-  "GTC",
-  "pytest",
-  "pytest-cov",
-  "matplotlib",
-  "sybil",
-]
-docs = [
-  "black",
-  "mkdocs",
-  "mkdocs-material",
-  "mkdocstrings-python",
-]
-dev = [
-  "msl-nlf[tests,docs]",
-  "mypy",
-]
 gtc = [
   "GTC",
+]
+
+[dependency-groups]
+test = [
+    "gtc>=1.5.1",
+    "matplotlib>=3.7.5",
+    "pytest>=8.3.4",
+    "pytest-cov>=5.0.0",
+    "sybil>=7.1.1",
+]
+doc = [
+    "black>=24.8.0",
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.5.50",
+    "mkdocstrings-python>=1.11.1",
+]
+dev = [
+    "mypy>=1.14.1",
+    {include-group = "test"},
+    {include-group = "doc"},
 ]
 
 [tool.hatch.version]
