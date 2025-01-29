@@ -1044,33 +1044,33 @@ class Model:
             data = self.fit(x, y, params=params, ux=ux, uy=uy, debug=True)
         save(path=path, comments=c, overwrite=overwrite, data=data)
 
-    def set_correlation(self, n1: str, n2: str, correlation: float | ArrayLike2D) -> None:
+    def set_correlation(self, name1: str, name2: str, correlation: float | ArrayLike2D) -> None:
         """Set the correlation coefficients for the correlated variables.
 
         Note that the `x1-x2` correlation coefficients are identically equal to the `x2-x1`
         correlation coefficients, so only one of these relations needs to be defined.
 
         Warning:
-           It is recommended to not mix [set_correlation][msl.nlf.model.Model.set_correlation]
+           It is recommended to not call [set_correlation][msl.nlf.model.Model.set_correlation]
            and [set_correlation_dir][msl.nlf.model.Model.set_correlation_dir] with the same
            [Model][msl.nlf.model.Model] instance. Pick only one method. If you set correlations
            using both methods an error will *not* be raised, but you *may* be surprised which
            correlations are used.
 
         Args:
-            n1: The name of the first correlated variable (e.g., `y`, `x`, `x1`, `x2`).
-            n2: The name of the second correlated variable.
+            name1: The name of the first correlated variable (e.g., `y`, `x`, `x1`, `x2`).
+            name2: The name of the second correlated variable.
             correlation: If a `float` then all off-diagonal coefficients in the correlation
                 matrix will be set to this value, otherwise the 2D correlation matrix.
         """
-        s1, s2 = n1.upper(), n2.upper()
-        if s1 == "X":
-            s1 = "X1"
-        if s2 == "X":
-            s2 = "X1"
+        n1u, n2u = name1.upper(), name2.upper()
+        if n1u == "X":
+            n1u = "X1"
+        if n2u == "X":
+            n2u = "X1"
 
-        def _check_var_name(s: str, n: str) -> None:
-            match = _corr_var_regex.match(s)
+        def _check_var_name(u: str, n: str) -> None:
+            match = _corr_var_regex.match(u)
             if not match:
                 msg = f"Invalid correlation variable name {n!r}"
                 raise ValueError(msg)
@@ -1079,8 +1079,8 @@ class Model:
                 msg = f"Invalid correlation variable name {n!r}, variable X index outside of range"
                 raise ValueError(msg)
 
-        _check_var_name(s1, n1)
-        _check_var_name(s2, n2)
+        _check_var_name(n1u, name1)
+        _check_var_name(n2u, name2)
 
         corr: float | NDArray[np.float64]
         if isinstance(correlation, (float, int)):
@@ -1091,8 +1091,8 @@ class Model:
                 msg = f"Invalid correlation matrix dimension [{corr.ndim} != 2]"
                 raise ValueError(msg)
 
-        i, j = self._get_corr_indices(s1, s2)
-        self._corr_dict[(i, j)] = {"corr": corr, "names": (s1, s2)}
+        i, j = self._get_corr_indices(n1u, n2u)
+        self._corr_dict[(i, j)] = {"corr": corr, "names": (n1u, n2u)}
         self._corr_dir = str(self._tmp_dir)
 
     def set_correlation_dir(self, directory: str | Path | None) -> None:
