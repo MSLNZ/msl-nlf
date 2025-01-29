@@ -45,13 +45,13 @@ class FitMethod(Enum):
     type of fit is not available when data is correlated.
 
     Attributes:
-        LM: Levenberg-Marquardt.
-        AMOEBA_LS: Amoeba least squares.
-        AMOEBA_MD: Amoeba minimum distance.
-        AMOEBA_MM: Amoeba minimax.
-        POWELL_LS: Powell least squares.
-        POWELL_MD: Powell minimum distance.
-        POWELL_MM: Powell minimax.
+        LM (str): Levenberg-Marquardt.
+        AMOEBA_LS (str): Amoeba least squares.
+        AMOEBA_MD (str): Amoeba minimum distance.
+        AMOEBA_MM (str): Amoeba minimax.
+        POWELL_LS (str): Powell least squares.
+        POWELL_MD (str): Powell minimum distance.
+        POWELL_MM (str): Powell minimax.
     """
 
     LM = "Levenberg-Marquardt"
@@ -67,10 +67,10 @@ class ResidualType(Enum):
     """Residual Type that is used to evaluate the error-of-fit value (the standard deviation of the residuals).
 
     Attributes:
-        DX_X: Uncertainty in $x$ versus $x$.
-        DX_Y: Uncertainty in $x$ versus $y$.
-        DY_X: Uncertainty in $y$ versus $x$.
-        DY_Y: Uncertainty in $y$ versus $y$.
+        DX_X (str): Uncertainty in $x$ versus $x$.
+        DX_Y (str): Uncertainty in $x$ versus $y$.
+        DY_X (str): Uncertainty in $y$ versus $x$.
+        DY_Y (str): Uncertainty in $y$ versus $y$.
     """
 
     DX_X = "dx v x"
